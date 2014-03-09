@@ -1,0 +1,78 @@
+﻿Usage:
+YahooSportsScraper.exe [options [params]]
+[options] can be one any of the following:
+	get_teams (no parameters)
+		Gets the list of teams from the default Yahoo! Sports teams URL
+		and loads them into the default hard-coded database
+		loads tblteams with:
+			* team (varchar(255))
+			* yahooID (varchar(3))
+	
+	get_games [[poll_period nnn] [start_team]]
+		Uses the team codes that are retrieved with the get_teams option
+		to poll each team page from Yahoo! Sports using the default
+		hard-coded URL
+		(http://rivals.yahoo.com/ncaa/basketball/teams/[TEAMCODE])
+		Note that this doesn't actually get scores; it simply populates
+		the 'tblgames' database table with the following information:
+			* Yahoo! Sports gid (bigint(20))
+			* Yahoo! Sports team ID for the home team (varchar(3))
+			* Yahoo! Sports team ID for the visiting team (varchar(3))
+			* home score (int(10))
+			* visiting score (int(10))
+			* date the game was played (date)
+		poll_period is the number of seconds between eatch page fetch
+		start_team is the three-digit string corresponding to
+			the _last_ team that was scraped (it is non-inclusive)
+	
+	get_roster [poll_period nnn]
+		Uses the team codes that are retrieved with the get_teams option
+		to poll each roster page from Yahoo! Sports using the default
+		hard-coded URL
+		(http://rivals.yahoo.com/ncaa/basketball/teams/[TEAMCODE]/roster)
+		poll_period is the number of seconds between eatch page fetch
+		Note: for now, it only downloads the file and does nothing else with it
+	
+	get_team_stats [poll_period nnn]
+		Uses the team codes that are retrieved with the get_teams option
+		to poll each team's stat page from Yahoo! Sports using the default
+		hard-coded URL
+		(http://rivals.yahoo.com/ncaa/basketball/teams/[TEAMCODE]/stats)
+		poll_period is the number of seconds between eatch page fetch
+		Note: for now, it only downloads the file and does nothing else with it
+	
+	get_boxscores [[poll_period nnn] [[min_boundary] [[max_boundary] [proxy]]]]]
+		Uses the Yahoo! Sports gid table to download each game's boxscore
+		poll_period is the number of seconds between each page fetch
+			If poll_period is zero, the scraper only uses cached files
+			(doesn't pull new ones)
+		min_boundary is a number like yyyyMMdd0000
+		max_boundary is a number like yyyyMMdd0000
+		proxy is an address like http://nodiff.net/urldump.php?url=
+
+	process_local_boxscores
+		Populates the 'tblplayers' table with stats pulled from the
+		local cache of boxscores. Inserts:
+				* Name (varchar(50))
+				* Yahoo! Sports player ID (int(6))
+				* Yahoo! Sports team ID (varchar(3))
+				* Yahoo! Sports gid (bigint(12))
+				* Min (int(11))
+				* FGM (int(11))
+				* FGA (int(11))
+				* TPM (int(11))
+				* TPA (int(11))
+				* FTM (int(11))
+				* FTA (int(11))
+				* Off (int(11))
+				* Reb (int(11))
+				* Ast (int(11))
+				* TRN (int(11))
+				* Stl (int(11))
+				* Blk (int(11))
+				* PF (int(11))
+				* Pts (int(11))
+		
+	check_games
+		Reads player and game stats, then determines if the stats match
+		(eg: sum of points in a game equals sum of player stats for points)
