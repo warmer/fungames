@@ -27,6 +27,10 @@ namespace YahooSportsStatsScraper
             int gamesFound = 0;
             List<RawGame> playedGames = new List<RawGame>();
             List<RawGame> unplayedGames = new List<RawGame>();
+
+            StringBuilder sb = new StringBuilder();
+            MySqlConnection connection = DatabaseHelper.OpenDatabaseConnection();
+
             foreach (FileInfo cachedTeamFile in getCachedFiles("*" + TEAM_FILE_EXT))
             {
                 string team = cachedTeamFile.Name.Substring(0, 3);
@@ -34,193 +38,90 @@ namespace YahooSportsStatsScraper
                 doc.Load(cachedTeamFile.FullName);
 
                 string xpath = "//*[@id=\"ncaab-schedule-table\"]/tr";
-
-                HtmlNodeCollection scheduledGames = doc.DocumentNode.SelectNodes(xpath);
-                if (scheduledGames != null)
+                string game_result_xpath = "//*[@class=\"game  link\"]";
+                string game_preview_xpath = "//*[@class=\"game pre link\"]";
+                if (team.Equals("aaf"))
                 {
-                    foreach (HtmlNode scheduledGame in scheduledGames)
+                    team = team + "";
+                }
+
+                HtmlNodeCollection playedGameRows = doc.DocumentNode.SelectNodes(game_result_xpath);
+
+                if (playedGameRows != null)
+                {
+                    foreach (HtmlNode scheduledGame in playedGameRows)
                     {
-                        // look only for those rows which are actual game schedules;
-                        // note that there are also header rows that we should ignore
-                        if (
-                            "ysprow1".Equals(scheduledGame.GetAttributeValue("class", "")) ||
-                            "ysprow2".Equals(scheduledGame.GetAttributeValue("class", "")))
+                        string dataUrl = scheduledGame.Attributes["data-url"].Value;
+                        string dataGID = scheduledGame.Attributes["data-gid"].Value;
+                        string gameId = scheduledGame.Attributes["data-gid"].Value.Split('.')[2];
+                        string date = gameId.Substring(0, 8);
+
+                        string homeTeam = scheduledGame.SelectSingleNode("//*[@class=\"home\"]/span/em").InnerText.Trim();
+                        string awayTeam = scheduledGame.SelectSingleNode("//*[@class=\"away\"]/span/em").InnerText.Trim();
+                        string scoreString = scheduledGame.SelectSingleNode("//*[@class=\"score\"]/h4").InnerText.Trim();
+                        int homeScore = int.Parse(scoreString.Split('-')[1].Trim());
+                        int awayScore = int.Parse(scoreString.Split('-')[0].Trim());
+
+                        RawGame rawGame = new RawGame(gameId, dataUrl, homeTeam, awayTeam, date, homeScore, awayScore);
+                        playedGames.Add(rawGame);
+
+                        if (sb.Length == 0)
                         {
-                            // only care about three rows; row 1 is a spacer
-                            HtmlNode dateNode = scheduledGame.SelectSingleNode("td[2]");
-                            HtmlNode oppNode = scheduledGame.SelectSingleNode("td[3]");
-                            HtmlNode resultNode = scheduledGame.SelectSingleNode("td[4]");
-
-                            // only attempt to save game data when the columns actually exist
-                            if (dateNode != null && oppNode != null && resultNode != null)
+                            sb.Append(RawGame.GetGamesInsertStatement());
+                        }
+                        sb.Append(rawGame.ToString());
+                        if (sb.Length > DatabaseHelper.MAX_INSERT_LENGTH)
+                        {
+                            sb.Append(RawGame.GetGamesInsertStatementEnd());
+                            using (MySqlCommand cmd = new MySqlCommand(sb.ToString(), connection))
                             {
-                                string gameId = "";
-                                string date = dateNode.InnerText.Trim();
-                                string time = "";
-                                string oppId = "";
-                                bool isVisiting = false;
-                                bool isResult = false;
-                                int teamScore = 0;
-                                int oppScore = 0;
-
-                                // link to the opponent's team page, or null if it does not exist
-                                HtmlNode opponent = oppNode.SelectSingleNode("a");
-                                // link to the boxscore, or null if it does not exist
-                                HtmlNode scoreResult = resultNode.SelectSingleNode("a");
-                                if (opponent != null)
-                                {
-                                    // find the opponent's 3-letter team ID
-                                    string[] urlPaths = opponent.GetAttributeValue("href", "///").Split('/');
-                                    if (urlPaths.Length == 4)
-                                    {
-                                        oppId = urlPaths[3];
-                                    }
-                                }
-                                // was this an away game?
-                                if (oppNode.InnerText.Trim().Contains("at "))
-                                {
-                                    isVisiting = true;
-                                }
-
-                                // was there a link to a boxscore, with a game results?
-                                // note: the regex filters out links to postponed/cancelled games
-                                if (scoreResult != null)
-                                {
-                                    Match match = Regex.Match(scoreResult.InnerText.Trim(), SCORE_REGEX);
-                                    // SKIP unplayed/cancelled games
-                                    if (!match.Success)
-                                    {
-                                        Console.WriteLine("Skipping unplayed/cancelled game from " + team + " vs. " + oppId);
-                                        continue;
-                                    }
-
-                                    string[] urlPaths = scoreResult.GetAttributeValue("href", "").Split('=');
-                                    if (urlPaths.Length == 2)
-                                    {
-                                        gameId = urlPaths[1];
-                                    }
-                                    teamScore = Int32.Parse(match.Groups[1].Value);
-                                    oppScore = Int32.Parse(match.Groups[2].Value);
-
-                                    isResult = true;
-                                }
-                                else
-                                {
-                                    time = resultNode.InnerText.Trim();
-                                }
-
-                                // load the results if the game has already been played
-                                if (isResult)
-                                {
-                                    if (isVisiting)
-                                    {
-                                        playedGames.Add(new RawGame(gameId, oppId, team, date, oppScore, teamScore));
-                                    }
-                                    else
-                                    {
-                                        playedGames.Add(new RawGame(gameId, team, oppId, date, teamScore, oppScore));
-                                    }
-                                }
-                                // otherwise, add to the schedule of unplayed games
-                                else
-                                {
-                                    if (isVisiting)
-                                    {
-                                        unplayedGames.Add(new RawGame(oppId, team, date, time));
-                                    }
-                                    else
-                                    {
-                                        unplayedGames.Add(new RawGame(team, oppId, date, time));
-                                    }
-                                }
+                                gamesFound += cmd.ExecuteNonQuery();
+                                sb.Clear();
+                                sb.Length = 0;
                             }
+                        }
+                        else
+                        {
+                            sb.Append(',');
                         }
                     } // END foreach table row
                 }
             } // END foreach file
-            
-            using (MySqlConnection connection = DatabaseHelper.OpenDatabaseConnection())
+
+            if (sb.Length > 0)
             {
-                // load played games
-                StringBuilder sb = new StringBuilder();
-
-                foreach(RawGame game in playedGames)
+                sb = new StringBuilder(sb.ToString().Trim(','));
+                sb.Append(RawGame.GetGamesInsertStatementEnd());
+                using (MySqlCommand cmd = new MySqlCommand(sb.ToString(), connection))
                 {
-                    if (sb.Length == 0)
-                    {
-                        sb.Append(RawGame.GetGamesInsertStatement());
-                    }
-                    sb.Append(game.ToString());
-
-                    if (sb.Length > DatabaseHelper.MAX_INSERT_LENGTH)
-                    {
-                        MySqlCommand cmd = new MySqlCommand(sb.ToString(), connection);
-                        gamesFound += cmd.ExecuteNonQuery();
-                        sb.Clear();
-                        sb.Length = 0;
-                    }
-                    else
-                    {
-                        sb.Append(',');
-                    }
-                }
-                if (sb.Length > 0)
-                {
-                    MySqlCommand cmd = new MySqlCommand(sb.ToString().Trim(','), connection);
                     gamesFound += cmd.ExecuteNonQuery();
                 }
+            }
 
-                sb.Clear();
-                sb.Length = 0;
-                // load unplayed games
-                foreach (RawGame game in unplayedGames)
-                {
-                    if (sb.Length == 0)
-                    {
-                        sb.Append(RawGame.GetScheduleInsertStatement());
-                    }
-                    sb.Append(game.ToString());
+            string updateScheduledGames = @"SET SQL_SAFE_UPDATES=0;
+                UPDATE tblschedule AS s, tblgames AS g
+                SET
+                    s.gameID=g.gameID
+                WHERE
+                    s.homeTeam=g.homeTeamYahooID
+                    AND
+                    s.awayTeam=g.visitingTeamYahooID
+                    AND
+                    DATE(s.date) = g.date;
 
-                    if (sb.Length > DatabaseHelper.MAX_INSERT_LENGTH)
-                    {
-                        MySqlCommand cmd = new MySqlCommand(sb.ToString(), connection);
-                        gamesFound += cmd.ExecuteNonQuery();
-                        sb.Clear();
-                        sb.Length = 0;
-                    }
-                    else
-                    {
-                        sb.Append(',');
-                    }
-                }
-                if (sb.Length > 0)
-                {
-                    MySqlCommand cmd = new MySqlCommand(sb.ToString().Trim(','), connection);
-                    gamesFound += cmd.ExecuteNonQuery();
-                }
-
-                string updateScheduledGames = @"SET SQL_SAFE_UPDATES=0;
-                    UPDATE tblschedule AS s, tblgames AS g
-                    SET
-                        s.gameID=g.gameID
-                    WHERE
-                        s.homeTeam=g.homeTeamYahooID
-                        AND
-                        s.awayTeam=g.visitingTeamYahooID
-                        AND
-                        DATE(s.date) = g.date;
-
-                    SELECT * FROM tblschedule AS s, tblgames AS g
-                    WHERE
-                        s.homeTeam=g.homeTeamYahooID
-                        AND
-                        s.awayTeam=g.visitingTeamYahooID
-                        AND
-                        DATE(s.date) = g.date
-                        AND
-                        s.id > 0;
-                    SET SQL_SAFE_UPDATES=1;";
-                (new MySqlCommand(updateScheduledGames, connection)).ExecuteNonQuery();
+                SELECT * FROM tblschedule AS s, tblgames AS g
+                WHERE
+                    s.homeTeam=g.homeTeamYahooID
+                    AND
+                    s.awayTeam=g.visitingTeamYahooID
+                    AND
+                    DATE(s.date) = g.date
+                    AND
+                    s.id > 0;
+                SET SQL_SAFE_UPDATES=1;";
+            using (MySqlCommand cmd = new MySqlCommand(updateScheduledGames, connection))
+            {
+                cmd.ExecuteNonQuery();
             }
 
             return gamesFound;

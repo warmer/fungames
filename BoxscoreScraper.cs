@@ -13,7 +13,7 @@ namespace YahooSportsStatsScraper
 {
     class BoxscoreScraper : Scraper
     {
-        private const string BOXSCORE_URL = "http://rivals.yahoo.com/ncaa/basketball/boxscore?gid=";
+        private const string BOXSCORE_URL = "http://sports.yahoo.com";
         private const string LOCAL_FILE_EXTENSION = ".html";
 
         public override string CacheSubDirectory { get { return "boxscores"; } }
@@ -26,17 +26,17 @@ namespace YahooSportsStatsScraper
         /// </summary>
         public override int scrape()
         {
-            List<string> gameIDs = DatabaseHelper.getGamesWithoutStats();
+            Dictionary<string, string> gameUrlDict = DatabaseHelper.getGamesWithoutStats();
             //List<string> gameIDs = DatabaseHelper.GetGamesFromDatabase(StartGame, EndGame);
-            Console.WriteLine("Found {0} games in the database", gameIDs.Count);
+            Console.WriteLine("Found {0} games in the database", gameUrlDict.Count);
             Console.WriteLine("Will be polling for game stats every {0} seconds", ScrapeDelay);
             int pagesDownloaded = 0;
             // get the homepage for each team and derive the games from that
-            foreach (string game in gameIDs)
+            foreach (string gameId in gameUrlDict.Keys)
             {
                 DateTime start = DateTime.UtcNow;
-                Console.WriteLine("Reading stats for game {0}", game);
-                cacheFile(BOXSCORE_URL + game, game + LOCAL_FILE_EXTENSION);
+                Console.WriteLine("Reading stats for game {0}", gameId);
+                cacheFile(BOXSCORE_URL + gameUrlDict[gameId], gameId + LOCAL_FILE_EXTENSION);
                 pagesDownloaded++;
 
                 TimeSpan elapsed = DateTime.UtcNow - start;

@@ -12,6 +12,8 @@ namespace YahooSportsStatsScraper
     {
         public const int MAX_INSERT_LENGTH = 5000;
 
+        private static MySqlConnection _connection;
+
         #region void LoadAllPlayerStats()
         public static List<TeamGameStat> LoadAllTeamGameStats()
         {
@@ -111,6 +113,7 @@ namespace YahooSportsStatsScraper
                     {
                         RawGame rg = new RawGame(
                             dr.GetString("gameID"),
+                            dr.GetString("yahooGameUrl"),
                             dr.GetString("homeTeamYahooID"),
                             dr.GetString("visitingTeamYahooID"),
                             dr.GetString("date"),
@@ -134,34 +137,37 @@ namespace YahooSportsStatsScraper
         /// <returns></returns>
         public static MySqlConnection OpenDatabaseConnection()
         {
-            MySqlConnectionStringBuilder ConStrBuilder = new MySqlConnectionStringBuilder();
-            ConStrBuilder.UserID = "nodiffn1_mm2014";
-            ConStrBuilder.Password = "mm2014vATL";
-            ConStrBuilder.Server = "nodiff.net";
-            ConStrBuilder.Database = "nodiffn1_mm2011";
-            ConStrBuilder.AllowUserVariables = true;
-            ConStrBuilder.Port = 3306;
-
-            MySqlConnection aConnection = new MySqlConnection(ConStrBuilder.ConnectionString);
-            bool success = false;
-            int retries = 0;
-            double sleepTime = 0;
-            while (!success && retries < 10)
+            if (_connection == null || _connection.State != System.Data.ConnectionState.Open)
             {
-                try
+                MySqlConnectionStringBuilder ConStrBuilder = new MySqlConnectionStringBuilder();
+                ConStrBuilder.UserID = "nodiffn1_mm2014";
+                ConStrBuilder.Password = "mm2014vATL";
+                ConStrBuilder.Server = "nodiff.net";
+                ConStrBuilder.Database = "nodiffn1_mm2011";
+                ConStrBuilder.AllowUserVariables = true;
+                ConStrBuilder.Port = 3306;
+
+                _connection = new MySqlConnection(ConStrBuilder.ConnectionString);
+                bool success = false;
+                int retries = 0;
+                double sleepTime = 0;
+                while (!success && retries < 10)
                 {
-                    aConnection.Open();
-                    success = true;
-                }
-                catch (Exception e)
-                {
-                    retries++;
-                    sleepTime = Math.Pow(retries, 2);
-                    Console.WriteLine("Problem opening connection; retrying for {0} seconds. Error: {1}", sleepTime, e.Message);
-                    Thread.Sleep(TimeSpan.FromSeconds(sleepTime));
+                    try
+                    {
+                        _connection.Open();
+                        success = true;
+                    }
+                    catch (Exception e)
+                    {
+                        retries++;
+                        sleepTime = Math.Pow(retries, 2);
+                        Console.WriteLine("Problem opening connection; retrying for {0} seconds. Error: {1}", sleepTime, e.Message);
+                        Thread.Sleep(TimeSpan.FromSeconds(sleepTime));
+                    }
                 }
             }
-            return aConnection;
+            return _connection;
         }
         #endregion
 
@@ -226,23 +232,48 @@ namespace YahooSportsStatsScraper
         }
         #endregion
 
-        public static List<string> getGamesWithoutStats()
+        public static string getTeamId(string teamName)
         {
-            List<string> gameIDs = new List<string>();
+            string teamId = "";
+            Program.connection = DatabaseHelper.OpenDatabaseConnection();
+            string query = String.Format("select yahooID from tblteams where team=\"{0}\";", teamName);
+            MySqlCommandBuilder cmdBuilder = new MySqlCommandBuilder();
+            using (MySqlCommand cmd = new MySqlCommand(query, Program.connection))
+            {
+                using (MySqlDataReader dr = cmd.ExecuteReader())
+                {
+                    while (dr.Read())
+                    {
+                        teamId = dr.GetString(0);
+                    }
+                }
+            }
+            return teamId;
+        }
 
-            string query = "SELECT tblgames.gameID FROM tblgames LEFT JOIN tblteamgamestats ON tblgames.gameID=tblteamgamestats.gameID WHERE tblteamgamestats.Name is null;";
+        public static Dictionary<string, string> getGamesWithoutStats()
+        {
+            Dictionary<string, string> gameUrlDict = new Dictionary<string, string>();
+
+            string query = "SELECT tblgames.yahooGameUrl, tblgames.gameID FROM tblgames LEFT JOIN tblteamgamestats ON tblgames.gameID=tblteamgamestats.gameID WHERE tblteamgamestats.Name is null;";
 
             using (Program.connection = DatabaseHelper.OpenDatabaseConnection())
             {
-                MySqlCommandBuilder cmdBuilder = new MySqlCommandBuilder();
-                MySqlCommand cmd = new MySqlCommand(query, Program.connection);
-                MySqlDataReader dr = cmd.ExecuteReader();
-                while (dr.Read())
+                using (MySqlCommandBuilder cmdBuilder = new MySqlCommandBuilder())
                 {
-                    gameIDs.Add(dr.GetString(0));
+                    using (MySqlCommand cmd = new MySqlCommand(query, Program.connection))
+                    {
+                        using (MySqlDataReader dr = cmd.ExecuteReader())
+                        {
+                            while (dr.Read())
+                            {
+                                gameUrlDict[dr.GetString(1)] = dr.GetString(0);
+                            }
+                        }
+                    }
                 }
             }
-            return gameIDs;
+            return gameUrlDict;
         }
 
         #region static List<string> GetGamesFromDatabase()

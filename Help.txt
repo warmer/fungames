@@ -76,3 +76,7 @@ YahooSportsScraper.exe [options [params]]
 	check_games
 		Reads player and game stats, then determines if the stats match
 		(eg: sum of points in a game equals sum of player stats for points)
+
+Examples:
+	--getGames -l --startTeam=aaa -d 20 -c "C:\Users\Kenneth\Documents\Projects\Bracket\cache"
+	--getBoxscores -d 20 -c "C:\Users\Kenneth\Documents\Projects\Bracket\cache"

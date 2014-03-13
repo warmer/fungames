@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Globalization;
 
 namespace YahooSportsStatsScraper
 {
@@ -10,7 +11,10 @@ namespace YahooSportsStatsScraper
     /// </summary>
     class RawGame
     {
+        public static Dictionary<string, string> teamToId = new Dictionary<string, string>();
+
         public string GameID;
+        public string GameUrl;
         public string HomeTeamYahooID;
         public string VisitingTeamYahooID;
         public DateTime GameDate;
@@ -19,25 +23,52 @@ namespace YahooSportsStatsScraper
         public int VisitingScore;
         public bool Played;
 
-        public RawGame(string gameID, string homeTeam, string visitingTeam, string gameDate, int homeScore, int visitingScore)
+        public RawGame(string gameID, string gameUrl, string homeTeam, string visitingTeam, string gameDate, int homeScore, int visitingScore)
         {
             this.GameID = gameID;
-            this.HomeTeamYahooID = homeTeam;
-            this.VisitingTeamYahooID = visitingTeam;
+            this.GameUrl = gameUrl;
+
+            if (teamToId.ContainsKey(homeTeam))
+            {
+                this.HomeTeamYahooID = teamToId[homeTeam];
+            }
+            else
+            {
+                this.HomeTeamYahooID = DatabaseHelper.getTeamId(homeTeam.Trim());
+                teamToId[homeTeam] = this.HomeTeamYahooID;
+            }
+
+            if (teamToId.ContainsKey(visitingTeam))
+            {
+                this.VisitingTeamYahooID = teamToId[visitingTeam];
+            }
+            else
+            {
+                this.VisitingTeamYahooID = DatabaseHelper.getTeamId(visitingTeam.Trim());
+                teamToId[visitingTeam] = this.VisitingTeamYahooID;
+            }
+            
             try
             {
-                this.GameDate = DateTime.Parse(gameDate);
+                this.GameDate = DateTime.ParseExact(gameDate, "yyyyMMdd", CultureInfo.InvariantCulture);
             }
             catch
             {
                 try
                 {
-                    string newGameDate = String.Format("{0}, {1}", gameDate, DateTime.Now.Year - 1);
-                    this.GameDate = DateTime.Parse(newGameDate);
+                    this.GameDate = DateTime.Parse(gameDate);
                 }
-                catch (FormatException e)
+                catch
                 {
-                    Console.WriteLine("Unable to parse DateTime from string \"{0}\": {1}", gameDate, e.Message);
+                    try
+                    {
+                        string newGameDate = String.Format("{0}, {1}", gameDate, DateTime.Now.Year - 1);
+                        this.GameDate = DateTime.Parse(newGameDate);
+                    }
+                    catch (FormatException e)
+                    {
+                        Console.WriteLine("Unable to parse DateTime from string \"{0}\": {1}", gameDate, e.Message);
+                    }
                 }
             }
             this.HomeScore = homeScore;
@@ -78,6 +109,8 @@ namespace YahooSportsStatsScraper
             {
                 sb.Append('"' + GameID + '"');
                 sb.Append(',');
+                sb.Append('"' + GameUrl + '"');
+                sb.Append(',');
                 sb.Append('"' + HomeTeamYahooID + '"');
                 sb.Append(',');
                 sb.Append('"' + VisitingTeamYahooID + '"');
@@ -106,7 +139,16 @@ namespace YahooSportsStatsScraper
         /// <returns></returns>
         public static string GetGamesInsertStatement()
         {
-            return "INSERT IGNORE INTO tblgames (gameID, homeTeamYahooID, visitingTeamYahooID, date, homeScore, visitingScore) VALUES ";
+            return "INSERT INTO tblgames (gameID, yahooGameUrl, homeTeamYahooID, visitingTeamYahooID, date, homeScore, visitingScore) VALUES ";
+        }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static string GetGamesInsertStatementEnd()
+        {
+            return " ON DUPLICATE KEY UPDATE yahooGameUrl=values(yahooGameUrl), homeTeamYahooID=values(homeTeamYahooID), visitingTeamYahooID=values(visitingTeamYahooID), date=values(date), homeScore=values(homeScore), visitingScore=values(visitingScore)";
         }
 
         /// <summary>
