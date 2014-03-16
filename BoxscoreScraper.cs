@@ -34,7 +34,13 @@ namespace YahooSportsStatsScraper
             // get the homepage for each team and derive the games from that
             foreach (string gameId in gameUrlDict.Keys)
             {
+
                 DateTime start = DateTime.UtcNow;
+                if (getCachedFiles(gameId + LOCAL_FILE_EXTENSION).Count() > 0)
+                {
+                    Console.WriteLine("Skipping already-cached game {0}", gameId);
+                    continue;
+                }
                 Console.WriteLine("Reading stats for game {0}", gameId);
                 cacheFile(BOXSCORE_URL + gameUrlDict[gameId], gameId + LOCAL_FILE_EXTENSION);
                 pagesDownloaded++;
@@ -101,7 +107,7 @@ namespace YahooSportsStatsScraper
 
         private static string getTeamCodeFromUrl(String url)
         {
-            Regex teamCodeFinder = new Regex("/ncaab/teams/?(?<teamCode>[a-z]+)?");
+            Regex teamCodeFinder = new Regex("/ncaab/teams/?(?<teamCode>[a-z_]+)?/?");
             Match m = teamCodeFinder.Match(url);
             string teamCode = "";
             if (m.Success)
@@ -111,94 +117,70 @@ namespace YahooSportsStatsScraper
             return teamCode;
         }
 
-        private static string getGameInfoStat(HtmlDocument doc, string gameInfoDataName)
-        {
-            string statValue = null;
-
-            HtmlNode gameInfoBox = doc.DocumentNode.SelectSingleNode("//div[@id='ysp-reg-box-game_info']");
-            HtmlNodeCollection gameInfoBody = gameInfoBox.SelectNodes("div[@class='bd']/dl");
-            foreach (HtmlNode info in gameInfoBody)
-            {
-                HtmlNode dataHeader = info.SelectSingleNode("dt");
-                HtmlNode dataValue = info.SelectSingleNode("dd");
-                if (dataHeader != null && dataValue != null && gameInfoDataName.Equals(dataHeader.InnerText.Trim()))
-                {
-                    StringBuilder sb = new StringBuilder(dataValue.InnerText);
-                    sb.Replace("\r\n", null);
-                    sb.Replace("\n", null);
-                    statValue = sb.ToString().Trim();
-                    break;
-                }
-            }
-
-            return statValue;
-        }
-
         private static string getGameLocation(HtmlDocument doc)
         {
-            return getGameInfoStat(doc, "Arena:").Replace("'", "\\'");
+            HtmlNode locationNode = doc.DocumentNode.SelectSingleNode("//*[@class='stadium']/abbr");
+            string stadium = locationNode.InnerText.Trim().Replace("'", "\\'");
+            string location = String.Format("{0}, {1}", stadium, locationNode.Attributes["title"].Value.Trim().Replace("'", "\\'"));
+            return location;
         }
 
         private static int getGameAttendance(HtmlDocument doc)
         {
             int attendance = -1;
-            string attendanceString = getGameInfoStat(doc, "Attendance:");
-            if (!String.IsNullOrEmpty(attendanceString))
+            HtmlNode attendanceNode = doc.DocumentNode.SelectSingleNode("//*[@class='attendance']");
+            if (attendanceNode != null)
             {
-                try
+                string attendanceString = attendanceNode.InnerText;
+                if (attendanceNode != null && !String.IsNullOrEmpty(attendanceString))
                 {
-                    attendance = Int32.Parse(attendanceString.Replace(",", ""));
-                }
-                catch (FormatException e)
-                {
-                    attendance = -1;
+                    string numAttendended = attendanceString.Split(':')[1];
+                    try
+                    {
+                        attendance = Int32.Parse(numAttendended.Replace(",", ""));
+                    }
+                    catch (FormatException e)
+                    {
+                        attendance = -1;
+                    }
                 }
             }
-
             return attendance;
         }
 
         /// <summary>
         /// Gets information about the teams playing in this game, as derived from the given HTML doc
+        /// 
+        /// Updated 3/15/2014
         /// </summary>
         /// <param name="doc"></param>
         /// <returns></returns>
         private static Dictionary<BoxscoreTeamKey, string> getTeamsPlaying(HtmlDocument doc)
         {
             Dictionary<BoxscoreTeamKey, string> teamScores = new Dictionary<BoxscoreTeamKey, string>();
-            HtmlNode scoreHeader = doc.DocumentNode.SelectSingleNode("/html/body/div[@id='doc']/div[@id='bd']/div[@id='yui-main']/div/div[@id='ysp-reg-box-line_score_region']/div/div[@class='hd']/h4");
-            if (scoreHeader != null)
+            HtmlNode awayTeamDiv = doc.DocumentNode.SelectSingleNode("//*[@class='team away']");
+            if (awayTeamDiv == null)
             {
-                HtmlNodeCollection schoolLinks = scoreHeader.SelectNodes("a");
-                String headerText = scoreHeader.InnerText;
-                if (schoolLinks.Count == 2)
-                {
-                    teamScores.Add(BoxscoreTeamKey.Away | BoxscoreTeamKey.Name, schoolLinks[0].InnerText.Trim());
-                    teamScores.Add(BoxscoreTeamKey.Home | BoxscoreTeamKey.Name, schoolLinks[1].InnerText.Trim());
-                    teamScores.Add(BoxscoreTeamKey.Away | BoxscoreTeamKey.Code, getTeamCodeFromUrl(schoolLinks[0].GetAttributeValue("href", "").Trim()));
-                    teamScores.Add(BoxscoreTeamKey.Home | BoxscoreTeamKey.Code, getTeamCodeFromUrl(schoolLinks[1].GetAttributeValue("href", "").Trim()));
-                }
-                //else
-                //{
-                //    Console.WriteLine("Game header did not have links to the teams: " + scoreHeader.InnerHtml);
-                //}
+                awayTeamDiv = doc.DocumentNode.SelectSingleNode("//*[@class='team away winner']");
             }
-            if (teamScores.Count == 0)
+            HtmlNode homeTeamDiv = doc.DocumentNode.SelectSingleNode("//*[@class='team home']");
+            if (homeTeamDiv == null)
             {
-                scoreHeader = doc.DocumentNode.SelectSingleNode("//*[@id='ysp-reg-box-header']/div[1]/h4");
-                if (scoreHeader != null)
-                {
-                    HtmlNodeCollection schoolLinks = scoreHeader.SelectNodes("a");
-                    String headerText = scoreHeader.InnerText;
-                    if (schoolLinks.Count == 2)
-                    {
-                        teamScores.Add(BoxscoreTeamKey.Away | BoxscoreTeamKey.Name, schoolLinks[0].InnerText.Trim());
-                        teamScores.Add(BoxscoreTeamKey.Home | BoxscoreTeamKey.Name, schoolLinks[1].InnerText.Trim());
-                        teamScores.Add(BoxscoreTeamKey.Away | BoxscoreTeamKey.Code, getTeamCodeFromUrl(schoolLinks[0].GetAttributeValue("href", "").Trim()));
-                        teamScores.Add(BoxscoreTeamKey.Home | BoxscoreTeamKey.Code, getTeamCodeFromUrl(schoolLinks[1].GetAttributeValue("href", "").Trim()));
-                    }
-                }
+                homeTeamDiv = doc.DocumentNode.SelectSingleNode("//*[@class='team home winner']");
             }
+            if (homeTeamDiv != null && awayTeamDiv != null)
+            {
+                HtmlNode awayTeamLink = awayTeamDiv.SelectSingleNode("a");
+                HtmlNode homeTeamLink = homeTeamDiv.SelectSingleNode("a");
+                string awayTeamId = getTeamCodeFromUrl(awayTeamLink.GetAttributeValue("href", "").Trim());
+                string homeTeamId = getTeamCodeFromUrl(homeTeamLink.GetAttributeValue("href", "").Trim());
+                teamScores.Add(BoxscoreTeamKey.Away | BoxscoreTeamKey.Code, awayTeamId);
+                teamScores.Add(BoxscoreTeamKey.Home | BoxscoreTeamKey.Code, homeTeamId);
+                teamScores.Add(BoxscoreTeamKey.Away | BoxscoreTeamKey.Name, DatabaseHelper.getTeamName(awayTeamId));
+                teamScores.Add(BoxscoreTeamKey.Home | BoxscoreTeamKey.Name, DatabaseHelper.getTeamName(homeTeamId));
+            }
+
+            //HtmlNode boxscoreDiv = doc.DocumentNode.SelectSingleNode("//*[@class='boxscore']");
 
             return teamScores;
         }
@@ -234,7 +216,7 @@ namespace YahooSportsStatsScraper
         {
             BasketballGamePlayer player = new BasketballGamePlayer();
 
-            HtmlNodeCollection dataCells = statRow.SelectNodes("td");
+            HtmlNodeCollection dataCells = statRow.SelectNodes("td|th");
 
             if (dataCells == null || dataCells.Count < statColumnMap.Keys.Count)
             {
@@ -251,7 +233,7 @@ namespace YahooSportsStatsScraper
                     #region long stat switch statement
                     switch (stat)
                     {
-                        case "Name":
+                        case "Players":
                             HtmlNode linkNode = dataNode.SelectSingleNode("a");
                             player.Name = innerText;
                             if (linkNode != null)
@@ -273,6 +255,7 @@ namespace YahooSportsStatsScraper
                             break;
 
                         case "3Pt":
+                        case "3pt":
                             if (splitString.Length == 2)
                             {
                                 Int32.TryParse(splitString[0], out player.TPM);
@@ -290,6 +273,10 @@ namespace YahooSportsStatsScraper
 
                         case "Off":
                             Int32.TryParse(innerText, out player.Off);
+                            break;
+
+                        case "Def":
+                            Int32.TryParse(innerText, out player.Def);
                             break;
 
                         case "Reb":
@@ -353,13 +340,14 @@ namespace YahooSportsStatsScraper
             Dictionary<string, int> statColumnMap = getStatColumnsFromTable(table);
 
             // only bother if there are stats in the table
-            if (statColumnMap.Count != 13)
+            if (statColumnMap.Count != 14)
             {
                 Console.WriteLine(gameId);
             }
             if (statColumnMap.Count > 0)
             {
-                HtmlNode totalRow = table.SelectSingleNode("tfoot/tr[@class='total']");
+                HtmlNode totalCell = table.SelectSingleNode("//*[@class='totals']");
+                HtmlNode totalRow = totalCell.ParentNode;
                 BasketballGamePlayer player = getPlayerFromStatRow(totalRow, statColumnMap);
                 totalStat.Copy(player);
                 totalStat.Gid = gameId;
@@ -402,19 +390,28 @@ namespace YahooSportsStatsScraper
             return players;
         }
 
-        private static Dictionary<BoxscoreTeamKey, HtmlNode> getAwayScoreTable(HtmlDocument doc)
+        /// <summary>
+        /// Retrieves the table nodes containing the player stats for the game
+        /// </summary>
+        /// <param name="doc"></param>
+        /// <returns></returns>
+        private static Dictionary<BoxscoreTeamKey, HtmlNode> getScoreTables(HtmlDocument doc)
         {
             Dictionary<BoxscoreTeamKey, HtmlNode> scoreTables = new Dictionary<BoxscoreTeamKey, HtmlNode>();
-            HtmlNodeCollection scoreTable = doc.DocumentNode.SelectNodes("/html/body/div[@id='doc']/div[@id='bd']/div[@id='yui-main']/div/div[@id='ysp-reg-box-box_score']/div[@id='ysp-reg-box-game_details-boxscore']/div[@id='ysp-reg-box-game_details-game_stats']/div[@class='bd']");
+            HtmlNodeCollection scoreTable = doc.DocumentNode.SelectNodes("//*[@summary='PLAYERS']");
 
             if (scoreTable != null && scoreTable.Count == 2)
             {
-                scoreTables.Add(BoxscoreTeamKey.Away, scoreTable[0].SelectSingleNode("table"));
-                scoreTables.Add(BoxscoreTeamKey.Home, scoreTable[1].SelectSingleNode("table"));
+                scoreTables.Add(BoxscoreTeamKey.Away, scoreTable[0]);
+                scoreTables.Add(BoxscoreTeamKey.Home, scoreTable[1]);
             }
             else if (scoreTable != null)
             {
                 Console.WriteLine("{0} tables exist, which is really weird", scoreTable.Count);
+            }
+            else
+            {
+                Console.WriteLine("Could not find player boxscore data for game");
             }
 
             return scoreTables;
@@ -571,7 +568,7 @@ namespace YahooSportsStatsScraper
                 HtmlDocument doc = new HtmlDocument();
                 doc.Load(file.FullName);
                 Dictionary<BoxscoreTeamKey, string> teamInfo = getTeamsPlaying(doc);
-                Dictionary<BoxscoreTeamKey, HtmlNode> scoreTables = getAwayScoreTable(doc);
+                Dictionary<BoxscoreTeamKey, HtmlNode> scoreTables = getScoreTables(doc);
                 if (scoreTables.Count == 0 || teamInfo.Count == 0)
                 {
                     filesWithBadData++;
@@ -607,7 +604,7 @@ namespace YahooSportsStatsScraper
 					        {
 						        MySqlCommand cmd = new MySqlCommand(sb.ToString(), Program.connection);
 						        int playersFound = cmd.ExecuteNonQuery();
-						        Console.WriteLine("Loaded stats for {0} players!", playersFound);
+						        //Console.WriteLine("Loaded stats for {0} players!", playersFound);
 					        }
 				        }
 				        catch (Exception e)
@@ -633,7 +630,7 @@ namespace YahooSportsStatsScraper
                         {
                             MySqlCommand cmd = new MySqlCommand(sb.ToString(), Program.connection);
                             int playersFound = cmd.ExecuteNonQuery();
-                            Console.WriteLine("Loaded stats for {0} totals!", playersFound);
+                            //Console.WriteLine("Loaded stats for {0} totals!", playersFound);
                         }
                     }
                     catch (Exception e)
@@ -650,7 +647,7 @@ namespace YahooSportsStatsScraper
                         {
                             MySqlCommand cmd = new MySqlCommand(sb.ToString(), Program.connection);
                             int gamesUpdated = cmd.ExecuteNonQuery();
-                            Console.WriteLine("Updated location and attendance for for {0} game!", gamesUpdated);
+                            //Console.WriteLine("Updated location and attendance for for {0} game!", gamesUpdated);
                         }
                     }
                     catch (Exception e)

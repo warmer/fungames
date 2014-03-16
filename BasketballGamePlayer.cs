@@ -22,6 +22,7 @@ namespace YahooSportsStatsScraper
         public int FTM = -1;
         public int FTA = -1;
         public int Off = -1;
+        public int Def = -1;
         public int Reb = -1;
         public int Ast = -1;
         public int TO = -1;

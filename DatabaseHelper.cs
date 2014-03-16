@@ -232,6 +232,11 @@ namespace YahooSportsStatsScraper
         }
         #endregion
 
+        /// <summary>
+        /// Gets the Yahoo! ID of the team from a given team's name
+        /// </summary>
+        /// <param name="teamName"></param>
+        /// <returns></returns>
         public static string getTeamId(string teamName)
         {
             string teamId = "";
@@ -249,6 +254,32 @@ namespace YahooSportsStatsScraper
                 }
             }
             return teamId;
+        }
+
+        /// <summary>
+        /// Gets the team name from a given team's ID
+        /// </summary>
+        /// <param name="teamId"></param>
+        /// <returns></returns>
+        public static string getTeamName(string teamId)
+        {
+            string teamName = "";
+
+            Program.connection = DatabaseHelper.OpenDatabaseConnection();
+            string query = String.Format("select team from tblteams where yahooID=\"{0}\";", teamId);
+            MySqlCommandBuilder cmdBuilder = new MySqlCommandBuilder();
+            using (MySqlCommand cmd = new MySqlCommand(query, Program.connection))
+            {
+                using (MySqlDataReader dr = cmd.ExecuteReader())
+                {
+                    while (dr.Read())
+                    {
+                        teamName = dr.GetString(0);
+                    }
+                }
+            }
+
+            return teamName;
         }
 
         public static Dictionary<string, string> getGamesWithoutStats()

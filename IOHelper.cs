@@ -55,9 +55,7 @@ namespace YahooSportsStatsScraper
         /// <returns></returns>
         public static string GetWebPageAsString(string URI)
         {
-            string PageContent = "";
             // the connection object
-            HttpWebRequest MyWebRequest = (HttpWebRequest)HttpWebRequest.Create(URI);
             //if (!String.IsNullOrEmpty(proxy))
             //{
             //    WebProxy myProxy = new WebProxy();
@@ -76,23 +74,28 @@ namespace YahooSportsStatsScraper
 
             //}
 
-            // specifiy header values
-            MyWebRequest.UserAgent = ".NET Framework/2.0 Yahoo! Sports Statistics Addict";
-            MyWebRequest.Referer = "http://rivals.yahoo.com/ncaa/basketball";
 
             bool retreivedPage = false;
+            string content = "";
             while (!retreivedPage)
             {
                 try
                 {
+                    HttpWebRequest webRequest = (HttpWebRequest)HttpWebRequest.Create(URI);
+                    // specifiy header values
+                    webRequest.UserAgent = "Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/33.0.1750.146 Safari/537.36";
+                    webRequest.Accept = "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,*/*;q=0.8";
+                    webRequest.AutomaticDecompression = DecompressionMethods.GZip;
+                    webRequest.CookieContainer = new CookieContainer(10);
+                    //webRequest.Referer = "http://rivals.yahoo.com/ncaa/basketball";
                     // request a response
-                    using (WebResponse MyResponse = MyWebRequest.GetResponse())
+                    using (WebResponse response = webRequest.GetResponse())
                     {
-                        using (Stream MyWebStream = MyResponse.GetResponseStream())
+                        using (Stream stream = response.GetResponseStream())
                         {
-                            using (StreamReader MyReader = new StreamReader(MyWebStream))
+                            using (StreamReader reader = new StreamReader(stream))
                             {
-                                PageContent = MyReader.ReadToEnd();
+                                content = reader.ReadToEnd();
                                 retreivedPage = true;
                             }
                         }
@@ -103,17 +106,24 @@ namespace YahooSportsStatsScraper
                     Console.WriteLine(e.Message);
                     if (e.Message.Contains("999"))
                     {
-                        File.AppendAllText(Program.logfileName, "sleeping for 61.46 minutes: " + e.Message + " at " + URI);
+                        File.AppendAllText(Program.logfileName, "sleeping for 61.46 minutes: " + e.Message + " at " + URI + "\n");
                         Thread.Sleep(TimeSpan.FromMinutes(61.46));
+                    }
+                    else if (e.Message.Contains("404"))
+                    {
+                        Console.WriteLine(e.Message + "; Skipping and going to the next team.");
+                        File.AppendAllText(Program.logfileName, "Could not find the page; " + e.Message + " at " + URI + "\n");
+                        content = null;
+                        retreivedPage = true;
                     }
                     else
                     {
-                        File.AppendAllText(Program.logfileName, "sleeping for 1.46 minutes: " + e.Message + " at " + URI);
+                        File.AppendAllText(Program.logfileName, "sleeping for 1.46 minutes: " + e.Message + " at " + URI + "\n");
                         Thread.Sleep(TimeSpan.FromMinutes(1.46));
                     }
                 }
             }
-            return PageContent;
+            return content;
         }
         #endregion
     }

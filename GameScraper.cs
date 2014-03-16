@@ -12,7 +12,7 @@ namespace YahooSportsStatsScraper
 {
     class GameScraper : Scraper
     {
-        private const string YAHOO_TEAMS_URL = "http://rivals.yahoo.com/ncaa/basketball/teams/";
+        private const string YAHOO_TEAMS_URL = "http://sports.yahoo.com/ncaab/teams/";
 
         private const string TEAM_FILE_EXT = ".html";
         private const string SCORE_REGEX = "^[WL] (\\d+)-(\\d+)";
@@ -238,7 +238,7 @@ namespace YahooSportsStatsScraper
             {
                 DateTime start = DateTime.UtcNow;
                 Console.WriteLine("Reading team {0}", team);
-                cacheFile(YAHOO_TEAMS_URL + team, team + TEAM_FILE_EXT);
+                cacheFile(YAHOO_TEAMS_URL + team + "/schedule/", team + TEAM_FILE_EXT);
 
                 TimeSpan elapsed = DateTime.UtcNow - start;
                 if (elapsed.TotalSeconds < ScrapeDelay)

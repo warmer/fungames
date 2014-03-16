@@ -24,8 +24,11 @@ namespace YahooSportsStatsScraper
         public void cacheFile(string url, string cacheKey)
         {
             string page = IOHelper.GetWebPageAsString(url);
-            string fullCacheDirectory = Path.Combine(CacheDirectory, CacheSubDirectory);
-            IOHelper.saveFileWithBackup(fullCacheDirectory, cacheKey, page);
+            if (page != null)
+            {
+                string fullCacheDirectory = Path.Combine(CacheDirectory, CacheSubDirectory);
+                IOHelper.saveFileWithBackup(fullCacheDirectory, cacheKey, page);
+            }
         }
 
         /// <summary>
