@@ -282,6 +282,30 @@ namespace YahooSportsStatsScraper
             return teamName;
         }
 
+        public static List<string> gamesWithoutLocations()
+        {
+            List<string> gameList = new List<string>();
+            string query = "SELECT gameID FROM tblgames WHERE location='';";
+            using (Program.connection = DatabaseHelper.OpenDatabaseConnection())
+            {
+                using (MySqlCommandBuilder cmdBuilder = new MySqlCommandBuilder())
+                {
+                    using (MySqlCommand cmd = new MySqlCommand(query, Program.connection))
+                    {
+                        using (MySqlDataReader dr = cmd.ExecuteReader())
+                        {
+                            while (dr.Read())
+                            {
+                                gameList.Add(dr.GetString("gameID"));
+                            }
+                        }
+                    }
+                }
+            }
+
+            return gameList;
+        }
+
         public static Dictionary<string, string> getGamesWithoutStats()
         {
             Dictionary<string, string> gameUrlDict = new Dictionary<string, string>();

@@ -57,7 +57,48 @@ namespace YahooSportsStatsScraper
         
         public static string getTotalInsertQuery()
         {
-            return "INSERT IGNORE INTO tblteamgamestats (Name, yahooID, teamID, gameID, Min, FGM, FGA, TPM, TPA, FTM, FTA, Off, Reb, Ast, TRN, Stl, Blk, PF, Pts, TeamReb) VALUES ";
+            return @"INSERT INTO tblteamgamestats (
+                Name,
+                yahooID,
+                teamID,
+                gameID,
+                Min,
+                FGM,
+                FGA,
+                TPM,
+                TPA,
+                FTM,
+                FTA,
+                Off,
+                Reb,
+                Ast,
+                TRN,
+                Stl,
+                Blk,
+                PF,
+                Pts,
+                TeamReb) VALUES ";
+        }
+
+        public static string getUpdateInsertQuery()
+        {
+            return @" ON DUPLICATE KEY UPDATE
+                Min=values(Min),
+                FGM=values(FGM),
+                FGA=values(FGA),
+                TPM=values(TPM),
+                TPA=values(TPA),
+                FTM=values(FTM),
+                FTA=values(FTA),
+                Off=values(Off),
+                Reb=values(Reb),
+                Ast=values(Ast),
+                TRN=values(TRN),
+                Stl=values(Stl),
+                Blk=values(Blk),
+                PF=values(PF),
+                Pts=values(Pts),
+                TeamReb=values(TeamReb)";
         }
 
         #region string ToQuery()

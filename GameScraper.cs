@@ -33,7 +33,12 @@ namespace YahooSportsStatsScraper
 
             foreach (FileInfo cachedTeamFile in getCachedFiles("*" + TEAM_FILE_EXT))
             {
+                if (cachedTeamFile.Extension != ".html")
+                {
+                    continue;
+                }
                 string team = cachedTeamFile.Name.Substring(0, 3);
+                Console.WriteLine("Reading cached schedule for team {0}", team);
                 HtmlDocument doc = new HtmlDocument();
                 doc.Load(cachedTeamFile.FullName);
 

@@ -34,16 +34,19 @@ namespace YahooSportsStatsScraper
             // get the homepage for each team and derive the games from that
             foreach (string gameId in gameUrlDict.Keys)
             {
-
                 DateTime start = DateTime.UtcNow;
+                FileInfo cachedBoxscore = new FileInfo(Path.Combine(CacheDirectory, this.CacheSubDirectory, gameId + LOCAL_FILE_EXTENSION));
                 if (getCachedFiles(gameId + LOCAL_FILE_EXTENSION).Count() > 0)
                 {
-                    Console.WriteLine("Skipping already-cached game {0}", gameId);
+                    Console.WriteLine("Skipping download of already-cached game {0}", gameId);
+                    processBoxscore(cachedBoxscore);
                     continue;
                 }
                 Console.WriteLine("Reading stats for game {0}", gameId);
                 cacheFile(BOXSCORE_URL + gameUrlDict[gameId], gameId + LOCAL_FILE_EXTENSION);
                 pagesDownloaded++;
+
+                processBoxscore(cachedBoxscore);
 
                 TimeSpan elapsed = DateTime.UtcNow - start;
                 if (elapsed.TotalSeconds < ScrapeDelay)
@@ -53,6 +56,19 @@ namespace YahooSportsStatsScraper
             }
 
             return pagesDownloaded;
+        }
+
+        public void DeleteLocationlessGames()
+        {
+            string cacheDir = Path.Combine(CacheDirectory, this.CacheSubDirectory);
+            foreach (string gameId in DatabaseHelper.gamesWithoutLocations())
+            {
+                FileInfo gameFile = new FileInfo(Path.Combine(cacheDir, gameId + ".html"));
+                if (gameFile.Exists)
+                {
+                    gameFile.Delete();
+                }
+            }
         }
 
         #region CheckGames()
@@ -83,6 +99,71 @@ namespace YahooSportsStatsScraper
             Console.WriteLine("{0} game; {1} are valid", games.Count, games.Count(g => g.StatsAreValid));
         }
         #endregion
+
+        private static Dictionary<string, string> stateToAbbr = new Dictionary<string, string>
+        {
+            {"Alabama","AL"},
+            {"Alaska","AK"},
+            {"Arizona","AZ"},
+            {"Arkansas","AR"},
+            {"California","CA"},
+            {"Colorado","CO"},
+            {"Connecticut","CT"},
+            {"Delaware","DE"},
+            {"Florida","FL"},
+            {"Georgia","GA"},
+            {"Hawaii","HI"},
+            {"Idaho","ID"},
+            {"Illinois","IL"},
+            {"Indiana","IN"},
+            {"Iowa","IA"},
+            {"Kansas","KS"},
+            {"Kentucky","KY"},
+            {"Louisiana","LA"},
+            {"Maine","ME"},
+            {"Maryland","MD"},
+            {"Massachusetts","MA"},
+            {"Michigan","MI"},
+            {"Minnesota","MN"},
+            {"Mississippi","MS"},
+            {"Missouri","MO"},
+            {"Montana","MT"},
+            {"Nebraska","NE"},
+            {"Nevada","NV"},
+            {"New Hampshire","NH"},
+            {"New Jersey","NJ"},
+            {"New Mexico","NM"},
+            {"New York","NY"},
+            {"North Carolina","NC"},
+            {"North Dakota","ND"},
+            {"Ohio","OH"},
+            {"Oklahoma","OK"},
+            {"Oregon","OR"},
+            {"Pennsylvania","PA"},
+            {"Rhode Island","RI"},
+            {"South Carolina","SC"},
+            {"South Dakota","SD"},
+            {"Tennessee","TN"},
+            {"Texas","TX"},
+            {"Utah","UT"},
+            {"Vermont","VT"},
+            {"Virginia","VA"},
+            {"Washington","WA"},
+            {"West Virginia","WV"},
+            {"West VA","WV"},
+            {"Wisconsin","WI"},
+            {"Wyoming","WY"},
+            {"American Samoa","AS"},
+            {"District of Columbia","DC"},
+            {"Federated States of Micronesia","FM"},
+            {"Guam","GU"},
+            {"Marshall Islands","MH"},
+            {"Northern Mariana Islands","MP"},
+            {"Palau","PW"},
+            {"Puerto Rico","PR"},
+            {"Virgin Islands","VI"}
+        };
+
 
         [Flags]
         enum BoxscoreTeamKey
@@ -119,9 +200,27 @@ namespace YahooSportsStatsScraper
 
         private static string getGameLocation(HtmlDocument doc)
         {
+            string location = "";
             HtmlNode locationNode = doc.DocumentNode.SelectSingleNode("//*[@class='stadium']/abbr");
-            string stadium = locationNode.InnerText.Trim().Replace("'", "\\'");
-            string location = String.Format("{0}, {1}", stadium, locationNode.Attributes["title"].Value.Trim().Replace("'", "\\'"));
+            if (locationNode != null)
+            {
+                string stadium = locationNode.InnerText.Trim().Replace("'", "\\'");
+                string loc = locationNode.Attributes["title"].Value.Trim().Replace("'", "\\'");
+                string city = "";
+                string state = "";
+                string[] loc_parts = loc.Split(',');
+                if (loc_parts.Length > 1)
+                {
+                    state = loc_parts[loc_parts.Length - 1].Trim();
+                    city = loc_parts[loc_parts.Length - 2].Trim();
+                    foreach (KeyValuePair<string, string> abbrPair in stateToAbbr)
+                    {
+                        state = state.Replace(abbrPair.Key, abbrPair.Value);
+                    }
+                    loc = String.Format("{0}, {1}", city, state);
+                }
+                location = String.Format("{0}, {1}", stadium, loc);
+            }
             return location;
         }
 
@@ -178,6 +277,19 @@ namespace YahooSportsStatsScraper
                 teamScores.Add(BoxscoreTeamKey.Home | BoxscoreTeamKey.Code, homeTeamId);
                 teamScores.Add(BoxscoreTeamKey.Away | BoxscoreTeamKey.Name, DatabaseHelper.getTeamName(awayTeamId));
                 teamScores.Add(BoxscoreTeamKey.Home | BoxscoreTeamKey.Name, DatabaseHelper.getTeamName(homeTeamId));
+            }
+            else if (homeTeamDiv == null && awayTeamDiv == null)
+            {
+                HtmlNodeCollection collection = doc.DocumentNode.SelectNodes("//h4");
+                if (collection != null && collection.Count == 2)
+                {
+                    string visitingTeam = collection[0].InnerText;
+                    string homeTeam = collection[1].InnerText;
+                    teamScores.Add(BoxscoreTeamKey.Away | BoxscoreTeamKey.Code, DatabaseHelper.getTeamId(visitingTeam));
+                    teamScores.Add(BoxscoreTeamKey.Home | BoxscoreTeamKey.Code, DatabaseHelper.getTeamId(homeTeam));
+                    teamScores.Add(BoxscoreTeamKey.Away | BoxscoreTeamKey.Name, DatabaseHelper.getTeamName(visitingTeam));
+                    teamScores.Add(BoxscoreTeamKey.Home | BoxscoreTeamKey.Name, DatabaseHelper.getTeamName(homeTeam));
+                }
             }
 
             //HtmlNode boxscoreDiv = doc.DocumentNode.SelectSingleNode("//*[@class='boxscore']");
@@ -346,7 +458,7 @@ namespace YahooSportsStatsScraper
             }
             if (statColumnMap.Count > 0)
             {
-                HtmlNode totalCell = table.SelectSingleNode("//*[@class='totals']");
+                HtmlNode totalCell = table.SelectSingleNode("./tbody/tr/th[@class='totals']");
                 HtmlNode totalRow = totalCell.ParentNode;
                 BasketballGamePlayer player = getPlayerFromStatRow(totalRow, statColumnMap);
                 totalStat.Copy(player);
@@ -529,7 +641,7 @@ namespace YahooSportsStatsScraper
                         AND
                         oppStats.teamID = g.homeTeamYahooID";
 
-            string avgGameOppTendQuery = @"REPLACE INTO
+            string avgGameOppTendQuery1 = @"REPLACE INTO
                 tblteamgameavgopptendencies
                 (
                     teamID, Home, Min, FGM, FGA, TPM, TPA, FTM, FTA, Off, Reb, Ast, TRN, Stl, Blk, PF, PTS, TeamReb
@@ -539,7 +651,54 @@ namespace YahooSportsStatsScraper
                 FROM
                     tblteamgameopptendencies
                 GROUP BY teamID, Home;";
+
+            string avgGameOppTendQueryHome = @"REPLACE INTO
+                tblteamgameavgopptendencies
+                (
+                    teamID, Home, Min, FGM, FGA, TPM, TPA, FTM, FTA, Off, Reb, Ast, TRN, Stl, Blk, PF, PTS, TeamReb
+                )
+                SELECT 
+                    teamID, Home, avg(Min), avg(FGM), avg(FGA), avg(TPM), avg(TPA), avg(FTM), avg(FTA), avg(Off), avg(Reb), avg(Ast), avg(TRN), avg(Stl), avg(Blk), avg(PF), avg(Pts), avg(TeamReb)
+                FROM
+                    tblteamgameopptendencies
+                WHERE Home=1
+                GROUP BY teamID;";
+
+            string avgGameOppTendQueryAway = @"REPLACE INTO
+                tblteamgameavgopptendencies
+                (
+                    teamID, Home, Min, FGM, FGA, TPM, TPA, FTM, FTA, Off, Reb, Ast, TRN, Stl, Blk, PF, PTS, TeamReb
+                )
+                SELECT 
+                    oppID, Home, avg(Min), avg(FGM), avg(FGA), avg(TPM), avg(TPA), avg(FTM), avg(FTA), avg(Off), avg(Reb), avg(Ast), avg(TRN), avg(Stl), avg(Blk), avg(PF), avg(Pts), avg(TeamReb)
+                FROM
+                    tblteamgameopptendencies
+                WHERE Home=0
+                GROUP BY oppID;";
             #endregion
+
+            string avgGameOppTendQueryCombined = @"REPLACE INTO
+                tblteamgameavgopptendencies
+                    (
+                        teamID, Home, Min, FGM, FGA, TPM, TPA, FTM, FTA, Off, Reb, Ast, TRN, Stl, Blk, PF, PTS, TeamReb
+                    )
+                SELECT
+                    team, 2 as Home, avg(Min), avg(FGM), avg(FGA), avg(TPM), avg(TPA), avg(FTM), avg(FTA), avg(Off), avg(Reb), avg(Ast), avg(TRN), avg(Stl), avg(Blk), avg(PF), avg(Pts), avg(TeamReb)
+                FROM
+                    (SELECT 
+                        oppID as team, Min, FGM, FGA, TPM, TPA, FTM, FTA, Off, Reb, Ast, TRN, Stl, Blk, PF, Pts, TeamReb
+                    FROM
+                        tblteamgameopptendencies as t
+                    WHERE Home=0
+
+                UNION
+                    SELECT 
+                        teamID as team, Min, FGM, FGA, TPM, TPA, FTM, FTA, Off, Reb, Ast, TRN, Stl, Blk, PF, Pts, TeamReb
+                    FROM
+                        tblteamgameopptendencies as t
+                    WHERE Home=1
+                ) as f
+                GROUP BY team;";
 
             using (Program.connection = DatabaseHelper.OpenDatabaseConnection())
             {
@@ -552,10 +711,156 @@ namespace YahooSportsStatsScraper
                 }
 
                 (new MySqlCommand(gameOppTendencyUpdate, Program.connection)).ExecuteNonQuery();
-                (new MySqlCommand(avgGameOppTendQuery, Program.connection)).ExecuteNonQuery();
+                (new MySqlCommand(avgGameOppTendQueryHome, Program.connection)).ExecuteNonQuery();
+                (new MySqlCommand(avgGameOppTendQueryAway, Program.connection)).ExecuteNonQuery();
+                (new MySqlCommand(avgGameOppTendQueryCombined, Program.connection)).ExecuteNonQuery();
             }
 
 
+        }
+
+        private void deleteIrrelevantNodes(HtmlDocument doc, string filename)
+        {
+            foreach (HtmlNode node in doc.DocumentNode.SelectNodes("//head"))
+            {
+                node.Remove();
+            }
+            foreach (HtmlNode node in doc.DocumentNode.SelectNodes("//*[@id='yog-hd']"))
+            {
+                node.Remove();
+            }
+            foreach (HtmlNode node in doc.DocumentNode.SelectNodes("//*[@id='yog-nav']"))
+            {
+                node.Remove();
+            }
+            foreach (HtmlNode node in doc.DocumentNode.SelectNodes("//iframe"))
+            {
+                node.Remove();
+            }
+            foreach (HtmlNode node in doc.DocumentNode.SelectNodes("//script"))
+            {
+                node.Remove();
+            }
+            foreach (HtmlNode node in doc.DocumentNode.SelectNodes("//style"))
+            {
+                node.Remove();
+            }
+            foreach (HtmlNode node in doc.DocumentNode.SelectNodes("//img"))
+            {
+                node.Remove();
+            }
+            doc.Save(filename);
+        }
+
+        private bool processBoxscore(FileInfo file)
+        {
+            bool success = true;
+
+            HtmlDocument doc = new HtmlDocument();
+            doc.Load(file.FullName);
+            deleteIrrelevantNodes(doc, file.FullName);
+            Dictionary<BoxscoreTeamKey, string> teamInfo = getTeamsPlaying(doc);
+            Dictionary<BoxscoreTeamKey, HtmlNode> scoreTables = getScoreTables(doc);
+            if (scoreTables.Count == 0 || teamInfo.Count == 0)
+            {
+                // Delete boxscore downloads that do not contain team info or score tables
+                File.Delete(file.FullName);
+                success = false;
+            }
+            else
+            {
+                string gameId = file.Name.Split('.').First().Trim();
+                List<BasketballGamePlayer> homePlayers = getPlayerStatsFromTable(scoreTables[BoxscoreTeamKey.Home], gameId, teamInfo[BoxscoreTeamKey.Home | BoxscoreTeamKey.Code]);
+                List<BasketballGamePlayer> awayPlayers = getPlayerStatsFromTable(scoreTables[BoxscoreTeamKey.Away], gameId, teamInfo[BoxscoreTeamKey.Away | BoxscoreTeamKey.Code]);
+                TeamGameStat homeTotal = getTotalStatsFromTable(scoreTables[BoxscoreTeamKey.Home], gameId, teamInfo[BoxscoreTeamKey.Home | BoxscoreTeamKey.Code]);
+                TeamGameStat awayTotal = getTotalStatsFromTable(scoreTables[BoxscoreTeamKey.Away], gameId, teamInfo[BoxscoreTeamKey.Away | BoxscoreTeamKey.Code]);
+                IEnumerable<BasketballGamePlayer> allPlayers = homePlayers.Concat(awayPlayers);
+
+                String gameLocation = getGameLocation(doc);
+                int attendance = getGameAttendance(doc);
+
+                StringBuilder sb = new StringBuilder();
+                // only perform an insert if there are players to insert
+                if (allPlayers.Count() > 0)
+                {
+                    // get the first part of the insert
+                    sb.Append(BasketballGamePlayer.getInsertQuery());
+                    foreach (BasketballGamePlayer aPlayer in allPlayers)
+                    {
+                        sb.Append(aPlayer.ToQuery());
+                        sb.Append(',');
+                    }
+                    sb.Remove(sb.Length - 1, 1);
+				    sb.Append(";");
+				    try
+				    {
+					    using (Program.connection = DatabaseHelper.OpenDatabaseConnection())
+					    {
+						    MySqlCommand cmd = new MySqlCommand(sb.ToString(), Program.connection);
+						    int playersFound = cmd.ExecuteNonQuery();
+						    //Console.WriteLine("Loaded stats for {0} players!", playersFound);
+					    }
+				    }
+				    catch (Exception e)
+				    {
+					    Console.WriteLine(e.Message);
+				    }
+			    }
+                else
+                {
+                    Console.WriteLine("No players found in the boxscore for game " + gameId);
+                }
+                // Now, write the totals to the DB
+                sb = new StringBuilder();
+                // create the insert query
+                sb.Append(TeamGameStat.getTotalInsertQuery());
+                sb.Append(homeTotal.ToQuery());
+                sb.Append(',');
+                sb.Append(awayTotal.ToQuery());
+                sb.Append(TeamGameStat.getUpdateInsertQuery());
+                sb.Append(";");
+                try
+                {
+                    using (Program.connection = DatabaseHelper.OpenDatabaseConnection())
+                    {
+                        MySqlCommand cmd = new MySqlCommand(sb.ToString(), Program.connection);
+                        int playersFound = cmd.ExecuteNonQuery();
+                        //Console.WriteLine("Loaded stats for {0} totals!", playersFound);
+                    }
+                }
+                catch (Exception e)
+                {
+                    success = false;
+                    Console.WriteLine(e.Message);
+                }
+
+                // update the game entry in the database to add attendance and location information
+                sb.Clear();
+                sb.AppendFormat(
+                    "UPDATE tblgames SET attendance={0}, location='{1}', visitingTeamYahooID='{2}', homeTeamYahooID='{3}', homeScore='{4}', visitingScore='{5}' WHERE gameID={6};",
+                    attendance,
+                    gameLocation,
+                    teamInfo[BoxscoreTeamKey.Away | BoxscoreTeamKey.Code],
+                    teamInfo[BoxscoreTeamKey.Home | BoxscoreTeamKey.Code],
+                    homeTotal.Pts,
+                    awayTotal.Pts,
+                    gameId);
+                try
+                {
+                    using (Program.connection = DatabaseHelper.OpenDatabaseConnection())
+                    {
+                        MySqlCommand cmd = new MySqlCommand(sb.ToString(), Program.connection);
+                        int gamesUpdated = cmd.ExecuteNonQuery();
+                        //Console.WriteLine("Updated location and attendance for for {0} game!", gamesUpdated);
+                    }
+                }
+                catch (Exception e)
+                {
+                    success = false;
+                    Console.WriteLine(e.Message);
+                }
+            }
+            return success;
         }
 
         public override int processLocalData()
@@ -565,95 +870,9 @@ namespace YahooSportsStatsScraper
             foreach (FileInfo file in getCachedFiles("*" + LOCAL_FILE_EXTENSION))
             {
                 totalFiles++;
-                HtmlDocument doc = new HtmlDocument();
-                doc.Load(file.FullName);
-                Dictionary<BoxscoreTeamKey, string> teamInfo = getTeamsPlaying(doc);
-                Dictionary<BoxscoreTeamKey, HtmlNode> scoreTables = getScoreTables(doc);
-                if (scoreTables.Count == 0 || teamInfo.Count == 0)
+                if (!processBoxscore(file))
                 {
                     filesWithBadData++;
-                }
-                else
-                {
-                    string gameId = file.Name.Split('.').First().Trim();
-                    List<BasketballGamePlayer> homePlayers = getPlayerStatsFromTable(scoreTables[BoxscoreTeamKey.Home], gameId, teamInfo[BoxscoreTeamKey.Home | BoxscoreTeamKey.Code]);
-                    List<BasketballGamePlayer> awayPlayers = getPlayerStatsFromTable(scoreTables[BoxscoreTeamKey.Away], gameId, teamInfo[BoxscoreTeamKey.Away | BoxscoreTeamKey.Code]);
-                    TeamGameStat homeTotal = getTotalStatsFromTable(scoreTables[BoxscoreTeamKey.Home], gameId, teamInfo[BoxscoreTeamKey.Home | BoxscoreTeamKey.Code]);
-                    TeamGameStat awayTotal = getTotalStatsFromTable(scoreTables[BoxscoreTeamKey.Away], gameId, teamInfo[BoxscoreTeamKey.Away | BoxscoreTeamKey.Code]);
-                    IEnumerable<BasketballGamePlayer> allPlayers = homePlayers.Concat(awayPlayers);
-
-                    String gameLocation = getGameLocation(doc);
-                    int attendance = getGameAttendance(doc);
-
-                    StringBuilder sb = new StringBuilder();
-                    // only perform an insert if there are players to insert
-                    if (allPlayers.Count() > 0)
-                    {
-                        // get the first part of the insert
-                        sb.Append(BasketballGamePlayer.getInsertQuery());
-                        foreach (BasketballGamePlayer aPlayer in allPlayers)
-                        {
-                            sb.Append(aPlayer.ToQuery());
-                            sb.Append(',');
-                        }
-                        sb.Remove(sb.Length - 1, 1);
-				        sb.Append(";");
-				        try
-				        {
-					        using (Program.connection = DatabaseHelper.OpenDatabaseConnection())
-					        {
-						        MySqlCommand cmd = new MySqlCommand(sb.ToString(), Program.connection);
-						        int playersFound = cmd.ExecuteNonQuery();
-						        //Console.WriteLine("Loaded stats for {0} players!", playersFound);
-					        }
-				        }
-				        catch (Exception e)
-				        {
-					        Console.WriteLine(e.Message);
-				        }
-			        }
-                    else
-                    {
-                        Console.WriteLine("No players found in the boxscore for game " + gameId);
-                    }
-                    // Now, write the totals to the DB
-                    sb = new StringBuilder();
-                    // create the insert query
-                    sb.Append(TeamGameStat.getTotalInsertQuery());
-                    sb.Append(homeTotal.ToQuery());
-                    sb.Append(',');
-                    sb.Append(awayTotal.ToQuery());
-                    sb.Append(";");
-                    try
-                    {
-                        using (Program.connection = DatabaseHelper.OpenDatabaseConnection())
-                        {
-                            MySqlCommand cmd = new MySqlCommand(sb.ToString(), Program.connection);
-                            int playersFound = cmd.ExecuteNonQuery();
-                            //Console.WriteLine("Loaded stats for {0} totals!", playersFound);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.Message);
-                    }
-
-                    // update the game entry in the database to add attendance and location information
-                    sb.Clear();
-                    sb.AppendFormat("UPDATE tblgames SET attendance={0}, location='{1}' WHERE gameID={2};", attendance, gameLocation, gameId);
-                    try
-                    {
-                        using (Program.connection = DatabaseHelper.OpenDatabaseConnection())
-                        {
-                            MySqlCommand cmd = new MySqlCommand(sb.ToString(), Program.connection);
-                            int gamesUpdated = cmd.ExecuteNonQuery();
-                            //Console.WriteLine("Updated location and attendance for for {0} game!", gamesUpdated);
-                        }
-                    }
-                    catch (Exception e)
-                    {
-                        Console.WriteLine(e.Message);
-                    }
                 }
                 Console.Write("{0}/{1} have bad data\r", filesWithBadData, totalFiles);
                 if (totalFiles % 100 == 0)

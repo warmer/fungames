@@ -177,9 +177,13 @@ namespace YahooSportsStatsScraper
                 scraper.EndGame = options.EndGame;
                 if (!options.LocalOnly)
                 {
+                    //scraper.DeleteLocationlessGames();
                     scraper.scrape();
                 }
-                scraper.processLocalData();
+                else
+                {
+                    scraper.processLocalData();
+                }
             }
             if(options.CheckGames)
             {
