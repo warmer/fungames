@@ -241,6 +241,10 @@ namespace YahooSportsStatsScraper
             // get the homepage for each team and derive the games from that
             foreach (string team in teamIDs)
             {
+                if (getCachedFiles(team + TEAM_FILE_EXT).Length > 0)
+                {
+                    continue;
+                }
                 DateTime start = DateTime.UtcNow;
                 Console.WriteLine("Reading team {0}", team);
                 cacheFile(YAHOO_TEAMS_URL + team + "/schedule/", team + TEAM_FILE_EXT);
