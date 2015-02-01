@@ -50,14 +50,15 @@ module PushfourAI
         blacklist = []
         loop do
           game_list = Pushfour.game_list(@id) - blacklist
-          puts "Finding moves for #{game_list}"
+          puts "Finding moves for #{game_list}" unless game_list == []
           game_list.each do |game_id|
             next if blacklist.include? game_id
+            s = Time.now
             game = Pushfour.game_info(game_id, @id)
             move, score = find_move(game)
             if move
               Pushfour.send_website_move(game, move, player_id: @id, echo_params: false)
-              puts "#{game_id} should move #{move} (#{score})"
+              puts "#{game_id} should move #{move} (#{score}; took #{Time.now - s}s)"
             else
               blacklist << game_id
               puts "Blacklisting #{game_id} - no apparent moves available"
