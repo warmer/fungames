@@ -1,4 +1,4 @@
-game=1234&player=1000&side=t&channel=1
-game=1234&player=1000&side=b&channel=2
-game=1234&player=1000&side=l&channel=3
-game=1234&player=1000&side=r&channel=4
+game=1234&player=1000&side=t&channel=0
+game=1234&player=1000&side=b&channel=1
+game=1234&player=1000&side=l&channel=2
+game=1234&player=1000&side=r&channel=3

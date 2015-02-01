@@ -133,11 +133,12 @@ module Pushfour
   end
 
   class Game
-    attr_accessor :board, :turn
+    attr_accessor :board, :turn, :id
 
     def initialize(opts = {})
       @board = opts[:board]
       @turn = opts[:turn]
+      @id = opts[:id]
     end
 
     # this returns a new board with the move that was made
@@ -165,10 +166,10 @@ module Pushfour
 
   def self.game_info(game_id, player)
     res = get "#{SERVER_URL}/gameinfo.php?gameid=#{game_id.to_i}&playerid=#{player.to_i}"
-    parse_game_string(res)
+    parse_game_string(res, game_id)
   end
 
-  def self.parse_game_string(str)
+  def self.parse_game_string(str, id = nil)
     info = str.split(',')
     open_char = info[0]
     board = info[1]
@@ -180,19 +181,56 @@ module Pushfour
     player_num = chars.index(player_color) + 1
 
     board = Board.new(x: x, y: y, board_string: board, open_char: open_char, player_chars: chars)
-    Game.new(board: board, turn: player_num)
+    Game.new(board: board, turn: player_num, id: id)
   end
 
-  def self.send_move(game, player, side, channel, opts = {})
+  def self.send_website_move(game, move, opts = {})
+    player_id = opts[:player_id]
+    block = game.board.xy[move[1]][move[0]]
+
+    side = nil
+    channel = nil
+    if block & MOVABLE_FROM_LEFT > 0
+      side = :left
+      # TODO: website doesn't start at 0; change the website
+      channel = move[1]
+
+    elsif block & MOVABLE_FROM_RIGHT > 0
+      side = :right
+      # TODO: website doesn't start at 0; change the website
+      channel = move[1]
+
+    elsif block & MOVABLE_FROM_TOP > 0
+      side = :top
+      # TODO: website doesn't start at 0; change the website
+      channel = move[0]
+
+    elsif block & MOVABLE_FROM_BOTTOM > 0
+      side = :bottom
+      # TODO: website doesn't start at 0; change the website
+      channel = move[0]
+
+    else
+      raise 'Cannot find the channel for the given move'
+    end
+
+    send_move(game.id, player_id, side, channel, opts)
+  end
+
+  def self.send_move(game_id, player, side, channel, opts = {})
     side = {left: 'l', right: 'r', top: 't', bottom: 'b'}[side]
     params = {
-      'game' => game,
+      'game' => game_id,
       'player' => player,
       'side' => side,
-      'channel' => channel + 1
+      'channel' => channel
     }
     param_str = params.to_a.map {|kv| kv.join('=')}.join('&')
 
-    puts param_str if opts[:echo_params]
+    if opts[:echo_params]
+      puts param_str
+    else
+      res = get "#{SERVER_URL}/manager.php?#{param_str}"
+    end
   end
 end

@@ -1,7 +1,7 @@
 require_relative 'common.rb'
 
 module PushfourAI
-  class Run
+  class PieceRun
     attr_reader :dir, :first, :last, :length
 
     def initialize(x, y, dir)
@@ -36,12 +36,38 @@ module PushfourAI
     BACK_DIAG = (1 << 3)
 
     WIN = 999999999
+    THRESHOLD = WIN / 10000
     LOSS = -WIN
 
     def initialize(id, opts = {})
       @id = id
       @poll_delay = opts[:poll_delay] || 5
-      @search_depth = opts[:search_depth] || 2
+      @search_depth = opts[:search_depth] || 3
+    end
+
+    def run
+      thr = Thread.new do
+        blacklist = []
+        loop do
+          game_list = Pushfour.game_list(@id) - blacklist
+          puts "Finding moves for #{game_list}"
+          game_list.each do |game_id|
+            next if blacklist.include? game_id
+            game = Pushfour.game_info(game_id, @id)
+            move, score = find_move(game)
+            if move
+              Pushfour.send_website_move(game, move, player_id: @id, echo_params: false)
+              puts "#{game_id} should move #{move} (#{score})"
+            else
+              blacklist << game_id
+              puts "Blacklisting #{game_id} - no apparent moves available"
+            end
+          end
+
+          sleep @poll_delay
+        end
+      end
+      thr.join
     end
 
     def minimax(board, player, maxiplayer, depth_left)
@@ -53,7 +79,7 @@ module PushfourAI
         board.movable_blocks.each do |move|
           moved = board.move(move[0], move[1], player)
           mscore = score(moved, player)
-          return WIN if mscore == WIN
+          return mscore if mscore > THRESHOLD
           turn = moved.players[player] || moved.players[0]
           score = minimax(moved, turn, false, depth_left - 1)
           best = [best, score].max
@@ -66,7 +92,7 @@ module PushfourAI
         board.movable_blocks.each do |move|
           moved = board.move(move[0], move[1], player)
           mscore = score(moved, player)
-          return LOSS if mscore == WIN
+          return -mscore if mscore > THRESHOLD
           turn = moved.players[player] || moved.players[0]
           score = minimax(moved, turn, true, depth_left - 1)
           best = [best, score].min
@@ -80,22 +106,32 @@ module PushfourAI
       player = game.turn
       board = game.board
 
-      move_scores = {}
+      move_outcomes = {}
 
       board.movable_blocks.each do |move|
         moved = board.move(move[0], move[1], player)
-        turn = moved.players[player] || moved.players[0]
-        move_scores[move] = minimax(moved, turn, false, @search_depth - 1)
+        score = score(moved, player)
+        if score > THRESHOLD
+          move_outcomes = {move => {score: score, board: moved} }
+          break
+        end
+        move_outcomes[move] = {score: score, board: moved}
+      end
+
+      move_outcomes.each do |move, outcome|
+        turn = outcome[:board].players[player] || outcome[:board].players[0]
+        move_outcomes[move][:score] = minimax(outcome[:board], turn, false, @search_depth - 1)
       end
 
       best_move = nil
       best_score = nil
-      move_scores.each do |move, score|
-        if !best_score || score > best_score
+      move_outcomes.each do |move, outcome|
+        if !best_score || outcome[:score] > best_score
           best_move = move
-          best_score = score
+          best_score = outcome[:score]
         end
       end
+
       [best_move, best_score]
     end
 
@@ -107,22 +143,22 @@ module PushfourAI
         row.each_with_index do |block, x|
           if (block & Pushfour::PLAYER_MASK) == player
             # horizontal
-            run = runs[HORIZ].delete([x-1, y]) || Run.new(x, y, HORIZ)
+            run = runs[HORIZ].delete([x-1, y]) || PieceRun.new(x, y, HORIZ)
             run.add(x, y)
             runs[HORIZ] << run
 
             # vertical
-            run = runs[VERT].delete([x, y-1]) || Run.new(x, y, VERT)
+            run = runs[VERT].delete([x, y-1]) || PieceRun.new(x, y, VERT)
             run.add(x, y)
             runs[VERT] << run
 
             # backslash diag
-            run = runs[FWD_DIAG].delete([x+1, y-1]) || Run.new(x, y, FWD_DIAG)
+            run = runs[FWD_DIAG].delete([x+1, y-1]) || PieceRun.new(x, y, FWD_DIAG)
             run.add(x, y)
             runs[FWD_DIAG] << run
 
             # forwardslash diag
-            run = runs[BACK_DIAG].delete([x-1, y-1]) || Run.new(x, y, BACK_DIAG)
+            run = runs[BACK_DIAG].delete([x-1, y-1]) || PieceRun.new(x, y, BACK_DIAG)
             run.add(x, y)
             runs[BACK_DIAG] << run
           end

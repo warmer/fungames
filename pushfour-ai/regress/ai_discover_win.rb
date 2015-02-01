@@ -3,12 +3,12 @@
 require_relative '../common.rb'
 require_relative '../ai.rb'
 
-game_string = '+,bbrbb##rrbrbrr+#bbrrrbbrrbrrbrr++brrrbr#brbbbbrbr+++#rbrrr++brbb+bb+br+rrrbrbbbrb,9,9,2,rb,b'
+game_string = '+,+#++++brr#+rb+#++rb+,4,5,2,rb,b'
 puts 'Game string:'
 puts game_string
 puts
 
-ai = PushfourAI::AI.new(1000)
+ai = PushfourAI::AI.new(1000, search_depth: 3)
 game = Pushfour.parse_game_string(game_string)
 
 game.board.players.each do |player|
