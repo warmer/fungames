@@ -35,8 +35,8 @@ module PushfourAI
     FWD_DIAG = (1 << 2)
     BACK_DIAG = (1 << 3)
 
-    WIN = 999999999
-    THRESHOLD = WIN / 10000
+    WIN = 999999999999
+    THRESHOLD = WIN / 1000
     LOSS = -WIN
 
     def initialize(id, opts = {})
@@ -72,34 +72,22 @@ module PushfourAI
     end
 
     def minimax(board, player, maxiplayer, depth_left)
-      if maxiplayer
-        return score(board, player) if depth_left == 0
-
-        best = LOSS
-
-        board.movable_blocks.each do |move|
-          moved = board.move(move[0], move[1], player)
-          mscore = score(moved, player)
-          return mscore if mscore > THRESHOLD
-          turn = moved.players[player] || moved.players[0]
-          score = minimax(moved, turn, false, depth_left - 1)
-          best = [best, score].max
-        end
-      else
-        return -score(board, player) if depth_left == 0
-
-        best = WIN
-
-        board.movable_blocks.each do |move|
-          moved = board.move(move[0], move[1], player)
-          mscore = score(moved, player)
-          return -mscore if mscore > THRESHOLD
-          turn = moved.players[player] || moved.players[0]
-          score = minimax(moved, turn, true, depth_left - 1)
-          best = [best, score].min
-        end
+      s = score(board, maxiplayer)
+      if depth_left == 0 or s > THRESHOLD or s < -THRESHOLD
+        return s
       end
 
+      next_turn = board.players[player] || board.players[0]
+      best = (player == maxiplayer ? LOSS : WIN)
+      bmove = nil
+
+      board.movable_blocks.each do |move|
+        moved = board.move(move[0], move[1], player)
+        tscore = score(board, maxiplayer)
+        score = minimax(moved, next_turn, maxiplayer, depth_left - 1)
+        best = (player == maxiplayer ? [best, score].max : [best, score].min)
+        bmove = move if best == score
+      end
       best
     end
 
@@ -119,9 +107,17 @@ module PushfourAI
         move_outcomes[move] = {score: score, board: moved}
       end
 
-      move_outcomes.each do |move, outcome|
-        turn = outcome[:board].players[player] || outcome[:board].players[0]
-        move_outcomes[move][:score] = minimax(outcome[:board], turn, false, @search_depth - 1)
+      if @search_depth > 1
+        threads = []
+        move_outcomes.each do |move, outcome|
+          t = Thread.new do
+            turn = outcome[:board].players[player] || outcome[:board].players[0]
+            move_outcomes[move][:score] = minimax(outcome[:board], turn, player, @search_depth - 1)
+          end
+t.join
+          threads << t
+        end
+        threads.each {|t| t.join}
       end
 
       best_move = nil
@@ -137,46 +133,101 @@ module PushfourAI
     end
 
     def score(board, player)
-      runs = {HORIZ => [], VERT => [], FWD_DIAG => [], BACK_DIAG => [] }
+      runs = Hash.new {|hash, key| hash[key] = {HORIZ => [], VERT => [], FWD_DIAG => [], BACK_DIAG => [] } }
 
-      # TODO: score only one player at a time!
       board.xy.each_with_index do |row, y|
         row.each_with_index do |block, x|
-          if (block & Pushfour::PLAYER_MASK) == player
+          if (p = block & Pushfour::PLAYER_MASK) > 0
             # horizontal
-            run = runs[HORIZ].delete([x-1, y]) || PieceRun.new(x, y, HORIZ)
+            run = runs[p][HORIZ].delete([x-1, y]) || PieceRun.new(x, y, HORIZ)
             run.add(x, y)
-            runs[HORIZ] << run
+            runs[p][HORIZ] << run
 
             # vertical
-            run = runs[VERT].delete([x, y-1]) || PieceRun.new(x, y, VERT)
+            run = runs[p][VERT].delete([x, y-1]) || PieceRun.new(x, y, VERT)
             run.add(x, y)
-            runs[VERT] << run
+            runs[p][VERT] << run
 
             # backslash diag
-            run = runs[FWD_DIAG].delete([x+1, y-1]) || PieceRun.new(x, y, FWD_DIAG)
+            run = runs[p][FWD_DIAG].delete([x+1, y-1]) || PieceRun.new(x, y, FWD_DIAG)
             run.add(x, y)
-            runs[FWD_DIAG] << run
+            runs[p][FWD_DIAG] << run
 
             # forwardslash diag
-            run = runs[BACK_DIAG].delete([x-1, y-1]) || PieceRun.new(x, y, BACK_DIAG)
+            run = runs[p][BACK_DIAG].delete([x-1, y-1]) || PieceRun.new(x, y, BACK_DIAG)
             run.add(x, y)
-            runs[BACK_DIAG] << run
+            runs[p][BACK_DIAG] << run
           end
         end
       end
 
-      score = 0
+      player_score = 0
+      opp_score = 0
 
-      runs.each do |dir, dir_runs|
-        dir_runs.each do |run|
-          return WIN if run.length >= 4
-          run_score = 10 ** run.length
-          score += run_score
+      runs.each do |p, pruns|
+        pruns.each do |dir, dir_runs|
+          dir_runs.each do |run|
+            if run.length >= 4
+              return WIN if player == p
+              return LOSS
+            end
+            base_score = 0
+
+            before = nil
+            after = nil
+            one_up, one_down, one_left, one_right = [nil, nil, nil, nil]
+            case dir
+              when HORIZ
+                one_left = run.first[0] - 1 unless run.first[0] - 1 < 0
+                one_right = run.last[0] + 1 unless run.last[0] + 1 == board.x
+                before = board.xy[run.first[1]][one_left] if one_left
+                after = board.xy[run.last[1]][one_right] if one_right
+              when VERT
+                one_up = run.first[1] - 1 unless run.first[1] - 1 < 0
+                one_down = run.last[1] + 1 unless run.last[1] + 1 == board.y
+                before = board.xy[one_up] && board.xy[one_up][run.first[0]] if one_up
+                after = board.xy[one_down] && board.xy[one_down][run.last[0]] if one_down
+              when FWD_DIAG
+                one_left = run.last[0] - 1 unless run.last[0] - 1 < 0
+                one_right = run.first[0] + 1 unless run.first[0] + 1 == board.x
+                one_up = run.first[1] - 1 unless run.first[1] - 1 < 0
+                one_down = run.last[1] + 1 unless run.last[1] + 1 == board.y
+                before = board.xy[one_up] && board.xy[one_up][one_right] if one_up and one_right
+                after = board.xy[one_down] && board.xy[one_down][one_left] if one_down and one_left
+              when BACK_DIAG
+                one_left = run.first[0] - 1 unless run.first[0] - 1 < 0
+                one_right = run.last[0] + 1 unless run.last[0] + 1 == board.x
+                one_up = run.first[1] - 1 unless run.first[1] - 1 < 0
+                one_down = run.last[1] + 1 unless run.last[1] + 1 == board.y
+                before = board.xy[one_up] && board.xy[one_up][one_left] if one_up and one_left
+                after = board.xy[one_down] && board.xy[one_down][one_right] if one_down and one_right
+            end
+
+            if before.to_i & Pushfour::MOVABLE_MASK > 0
+              base_score += 16
+            elsif before.to_i & Pushfour::OPEN_MASK > 0
+              base_score += 2
+            end
+
+            if after.to_i & Pushfour::MOVABLE_MASK > 0
+              other_end_bonus = (base_score / 4)
+              base_score += other_end_bonus*32 + 16
+            elsif after.to_i & Pushfour::OPEN_MASK > 0
+              other_end_bonus = (base_score / 2)
+              base_score += other_end_bonus + 2
+            end
+
+            run_score = (base_score) ** run.length
+            if player == p
+              player_score += run_score
+            else
+              opp_score += run_score
+            end
+          end
         end
       end
 
-      score
+      player_score - opp_score
     end
   end
 end

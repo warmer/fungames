@@ -1,8 +1,17 @@
 require 'net/http'
 
 def get(url)
+  tries ||= 5
   uri = URI(url)
-  Net::HTTP.get(uri)
+  res = Net::HTTP.get(uri)
+rescue Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError,
+       Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError => e
+  unless (tries -= 1).zero?
+    sleep 5 * (5 - retries)
+    retry
+  end
+else
+  res
 end
 
 module Pushfour

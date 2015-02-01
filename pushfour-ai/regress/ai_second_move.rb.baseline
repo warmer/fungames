@@ -1,7 +1,7 @@
 Game string:
 +,#++++++++++++++++++++r#++++++++++++++++#++++++++++++++++++++#+++,8,8,2,rb,b
 
-Score for player 1: 40
-Score for player 2: 0
-Move: [0, 1]
-Score: -160
+Score for player 1: 220
+Score for player 2: -220
+Move: [5, 3]
+Score: 25050

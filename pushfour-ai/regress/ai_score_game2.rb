@@ -4,8 +4,7 @@ require_relative '../common.rb'
 require_relative '../ai.rb'
 
 game_strings = [
-#  '+,+#++++++r#++b+#++rb+,4,5,2,rb,r',
-  '+,++++++++b+++++r+++++r#+#++r++b+++++#,6,6,2,rb,b',
+  '+,++r+r+bb#bb+rb+rb#brbrr+brrr#++rbb++,6,6,2,rb,b'
 ]
 
 game_strings.each do |game_string|
@@ -20,7 +19,8 @@ game_strings.each do |game_string|
     puts "  #{row}"
   end
 
-  3.times do |depth|
+#  3.times do |depth|
+  [ 2].each do |depth|
     depth += 1
     puts "# searching with depth #{depth} #"
 

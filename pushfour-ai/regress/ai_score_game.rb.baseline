@@ -1,7 +1,25 @@
+========================================
 Game string:
-+,+#++++++r#++b+#++rb+,4,5,2,rb,r
++,++++++++b+++++r+++++r#+#++r++b+++++#,6,6,2,rb,b
 
-Score for player 1: 80
-Score for player 2: 160
-Move: [1, 1]
-Score: -280
+  [4032, 3968, 1824, 1792, 3968, 1808]
+  [2816, 2832, 2, 1600, 3584, 1536]
+  [2816, 2832, 1, 1632, 3584, 1568]
+  [2816, 2832, 1, 4, 2560, 4]
+  [2816, 2832, 1, 2176, 2560, 2]
+  [2848, 2848, 2432, 2304, 2864, 4]
+# searching with depth 1 #
+Score for player 1: 4596
+Score for player 2: -4596
+Move: [3, 1]
+Score: 21332
+# searching with depth 2 #
+Score for player 1: 4596
+Score for player 2: -4596
+Move: [2, 5]
+Score: -51500
+# searching with depth 3 #
+Score for player 1: 4596
+Score for player 2: -4596
+Move: [2, 5]
+Score: -25462
