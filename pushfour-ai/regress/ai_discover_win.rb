@@ -8,11 +8,13 @@ puts 'Game string:'
 puts game_string
 puts
 
-ai = PushfourAI::AI.new(1000, search_depth: 3)
+ai = PushfourAI::AI.new(1000, search_depth: 3, debug: false)
 game = Pushfour.parse_game_string(game_string)
 
+Pushfour.print_board(game)
+
 game.board.players.each do |player|
-  score = ai.score(game.board, player)
+  score = ai.score(game.board, player, game.turn)
   puts "Score for player #{player}: #{score}"
 end
 

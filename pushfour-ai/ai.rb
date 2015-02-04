@@ -36,13 +36,37 @@ module PushfourAI
     BACK_DIAG = (1 << 3)
 
     WIN = 999999999999
-    THRESHOLD = WIN / 1000
     LOSS = -WIN
+    THRESHOLD = WIN / 100
+
+    RUN_SCORE = [
+      0,
+      1,
+      8,
+      512,
+      32768,
+      262144,
+      2097152,
+      16777216
+    ]
+
+    @debug = false
+    @info = true
 
     def initialize(id, opts = {})
       @id = id
+      @debug = opts[:debug]
+      @info = true
       @poll_delay = opts[:poll_delay] || 5
       @search_depth = opts[:search_depth] || 3
+    end
+
+    def debug(line = nil)
+      puts line if @debug
+    end
+
+    def info(line = nil)
+      puts line if @info
     end
 
     def run
@@ -50,7 +74,7 @@ module PushfourAI
         blacklist = []
         loop do
           game_list = Pushfour.game_list(@id) - blacklist
-          puts "Finding moves for #{game_list}" unless game_list == []
+          info "Finding moves for #{game_list}" unless game_list == []
           game_list.each do |game_id|
             next if blacklist.include? game_id
             s = Time.now
@@ -58,10 +82,10 @@ module PushfourAI
             move, score = find_move(game)
             if move
               Pushfour.send_website_move(game, move, player_id: @id, echo_params: false)
-              puts "#{game_id} should move #{move} (#{score}; took #{Time.now - s}s)"
+              info "#{game_id} should move #{move} (#{score}; took #{Time.now - s}s)"
             else
               blacklist << game_id
-              puts "Blacklisting #{game_id} - no apparent moves available"
+              info "Blacklisting #{game_id} - no apparent moves available"
             end
           end
 
@@ -71,35 +95,15 @@ module PushfourAI
       thr.join
     end
 
-    def minimax(board, player, maxiplayer, depth_left)
-      s = score(board, maxiplayer)
-      if depth_left == 0 or s > THRESHOLD or s < -THRESHOLD
-        return s
-      end
-
-      next_turn = board.players[player] || board.players[0]
-      best = (player == maxiplayer ? LOSS : WIN)
-      bmove = nil
-
-      board.movable_blocks.each do |move|
-        moved = board.move(move[0], move[1], player)
-        tscore = score(board, maxiplayer)
-        score = minimax(moved, next_turn, maxiplayer, depth_left - 1)
-        best = (player == maxiplayer ? [best, score].max : [best, score].min)
-        bmove = move if best == score
-      end
-      best
-    end
-
     def find_move(game)
-      player = game.turn
+      play_as = game.turn
       board = game.board
 
       move_outcomes = {}
 
       board.movable_blocks.each do |move|
-        moved = board.move(move[0], move[1], player)
-        score = score(moved, player)
+        moved = board.move(move[0], move[1], play_as)
+        score = score(moved, play_as, board.players[play_as] || board.players[0])
         if score > THRESHOLD
           move_outcomes = {move => {score: score, board: moved} }
           break
@@ -111,9 +115,14 @@ module PushfourAI
         threads = []
         move_outcomes.each do |move, outcome|
           t = Thread.new do
-            turn = outcome[:board].players[player] || outcome[:board].players[0]
-            move_outcomes[move][:score] = minimax(outcome[:board], turn, player, @search_depth - 1)
+            turn = outcome[:board].players[play_as] || outcome[:board].players[0]
+            debug "##### FIND SCORE FOR #{move} (play_as: #{play_as}; turn now #{turn})"
+            move_outcomes[move][:score] = minimax(outcome[:board], turn, play_as, @search_depth - 1)
+            debug "##### FINAL SCORE: #{move_outcomes[move][:score]}"
+            debug "=" * 50
+            debug
           end
+# TODO: don't join
 t.join
           threads << t
         end
@@ -132,7 +141,37 @@ t.join
       [best_move, best_score]
     end
 
-    def score(board, player)
+    def minimax(board, current_turn, maxiplayer, depth_left)
+      next_turn = board.players[current_turn] || board.players[0]
+      s = score(board, maxiplayer, current_turn)
+      if depth_left == 0
+        debug "    ##### POPPING UP - score #{s} for #{maxiplayer} (current_turn is #{current_turn})"
+        return s
+      elsif s > THRESHOLD or s < -THRESHOLD
+        debug "    ##### POPPING UP - score #{s} for #{maxiplayer} (current_turn is #{current_turn})"
+        return s
+      end
+
+      find_max = current_turn == maxiplayer
+      best = (find_max ? LOSS : WIN)
+      bmove = nil
+
+      debug "  ##### Find the #{find_max ? 'best' : 'worst'}"
+      board.movable_blocks.each do |move|
+        debug "  ##### Simulate #{move} made by by #{current_turn} (score for #{maxiplayer})"
+        moved = board.move(move[0], move[1], current_turn)
+        score = minimax(moved, next_turn, maxiplayer, depth_left - 1)
+        best = (find_max ? [best, score].max : [best, score].min)
+        if best == score
+          bmove = move
+          debug "    *** NEW #{find_max ? 'best' : 'worst'} move by #{current_turn} found: #{bmove} (#{best})"
+        end
+      end
+      debug "  ##### #{find_max ? 'best' : 'worst'} move by #{current_turn}: #{bmove} @ #{best} (#{maxiplayer})"
+      best
+    end
+
+    def score(board, player, current_turn)
       runs = Hash.new {|hash, key| hash[key] = {HORIZ => [], VERT => [], FWD_DIAG => [], BACK_DIAG => [] } }
 
       board.xy.each_with_index do |row, y|
@@ -148,12 +187,12 @@ t.join
             run.add(x, y)
             runs[p][VERT] << run
 
-            # backslash diag
+            # forwardslash diag
             run = runs[p][FWD_DIAG].delete([x+1, y-1]) || PieceRun.new(x, y, FWD_DIAG)
             run.add(x, y)
             runs[p][FWD_DIAG] << run
 
-            # forwardslash diag
+            # backslash diag
             run = runs[p][BACK_DIAG].delete([x-1, y-1]) || PieceRun.new(x, y, BACK_DIAG)
             run.add(x, y)
             runs[p][BACK_DIAG] << run
@@ -165,17 +204,16 @@ t.join
       opp_score = 0
 
       runs.each do |p, pruns|
+        next_move_bonus = (p == current_turn ? 2 : 1)
         pruns.each do |dir, dir_runs|
           dir_runs.each do |run|
-            if run.length >= 4
-              return WIN if player == p
-              return LOSS
-            end
-            base_score = 0
-
             before = nil
             after = nil
+            open_ends = 0
+            movable_ends = 0
+
             one_up, one_down, one_left, one_right = [nil, nil, nil, nil]
+
             case dir
               when HORIZ
                 one_left = run.first[0] - 1 unless run.first[0] - 1 < 0
@@ -204,20 +242,19 @@ t.join
             end
 
             if before.to_i & Pushfour::MOVABLE_MASK > 0
-              base_score += 16
+              movable_ends += 1
             elsif before.to_i & Pushfour::OPEN_MASK > 0
-              base_score += 2
+              open_ends += 1
             end
 
             if after.to_i & Pushfour::MOVABLE_MASK > 0
-              other_end_bonus = (base_score / 4)
-              base_score += other_end_bonus*32 + 16
+              movable_ends += 1
             elsif after.to_i & Pushfour::OPEN_MASK > 0
-              other_end_bonus = (base_score / 2)
-              base_score += other_end_bonus + 2
+              open_ends += 1
             end
 
-            run_score = (base_score) ** run.length
+            base_score = (4 * next_move_bonus * movable_ends**2 + open_ends**2)
+            run_score = base_score * RUN_SCORE[run.length]
             if player == p
               player_score += run_score
             else

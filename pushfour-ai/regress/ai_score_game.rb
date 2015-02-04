@@ -16,9 +16,7 @@ game_strings.each do |game_string|
 
   game = Pushfour.parse_game_string(game_string)
 
-  game.board.xy.each do |row|
-    puts "  #{row}"
-  end
+  Pushfour.print_board(game)
 
   3.times do |depth|
     depth += 1
@@ -27,7 +25,7 @@ game_strings.each do |game_string|
     ai = PushfourAI::AI.new(1000, search_depth: depth)
 
     game.board.players.each do |player|
-      score = ai.score(game.board, player)
+      score = ai.score(game.board, player, game.turn)
       puts "Score for player #{player}: #{score}"
     end
 

@@ -19,10 +19,7 @@ game_strings.each do |game_string|
   puts "  game.board.x: #{game.board.x}"
   puts "  game.board.y: #{game.board.y}"
   puts "  board players: #{game.board.players}"
-  game.board.xy.each do |row|
-    puts "    #{row}"
-  end
-  puts "game.board.open_blocks #{game.board.open_blocks}"
+  Pushfour.print_board(game)
   puts "game.board.movable_blocks #{game.board.movable_blocks}"
   puts
 end

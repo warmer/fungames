@@ -12,7 +12,7 @@ ai = PushfourAI::AI.new(1000, search_depth: 3)
 game = Pushfour.parse_game_string(game_string)
 
 game.board.players.each do |player|
-  score = ai.score(game.board, player)
+  score = ai.score(game.board, player, game.turn)
   puts "Score for player #{player}: #{score}"
 end
 

@@ -1,0 +1,154 @@
+Game string:
++,++++++++++++,6,2,2,rb,r
+===== BEFORE MOVING =====
+From the parsed game string:
+Game player turn: 1
+Computed board:
+  game.board.xy array:
+  game.board.x: 2
+  game.board.y: 6
+  board players: [1, 2]
+     fc0      f90 
+     f40      f10 
+     f40      f10 
+     f40      f10 
+     f40      f10 
+     f60      f30 
+game.board.movable_blocks [[0, 0], [0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5]]
+
+Move to [0, 1]
+===== AFTER MOVING =====
+From the parsed game string:
+Game player turn: 2
+Computed board:
+  game.board.xy array:
+  game.board.x: 2
+  game.board.y: 6
+  board players: [1, 2]
+     760      f90 
+ 1111001      e40 
+     dc0      f10 
+     d40      f10 
+     d40      f10 
+     d40      f30 
+game.board.movable_blocks [[0, 0], [0, 2], [0, 3], [0, 4], [0, 5], [1, 0], [1, 1], [1, 2], [1, 3], [1, 4], [1, 5]]
+
+Move to [1, 4]
+===== AFTER MOVING =====
+From the parsed game string:
+Game player turn: 1
+Computed board:
+  game.board.xy array:
+  game.board.x: 2
+  game.board.y: 6
+  board players: [1, 2]
+     760      710 
+ 1111001      640 
+     dc0      710 
+     d40      730 
+     910  1111002 
+     d40      d90 
+game.board.movable_blocks [[0, 0], [0, 2], [0, 3], [0, 4], [0, 5], [1, 0], [1, 1], [1, 2], [1, 3], [1, 5]]
+
+Move to [0, 2]
+===== AFTER MOVING =====
+From the parsed game string:
+Game player turn: 2
+Computed board:
+  game.board.xy array:
+  game.board.x: 2
+  game.board.y: 6
+  board players: [1, 2]
+     760      710 
+ 1121001      640 
+ 1121001      640 
+     dc0      730 
+     910  1111002 
+     d40      d90 
+game.board.movable_blocks [[0, 0], [0, 3], [0, 4], [0, 5], [1, 0], [1, 1], [1, 2], [1, 3], [1, 5]]
+
+Move to [1, 3]
+===== AFTER MOVING =====
+From the parsed game string:
+Game player turn: 1
+Computed board:
+  game.board.xy array:
+  game.board.x: 2
+  game.board.y: 6
+  board players: [1, 2]
+     760      710 
+ 1121001      640 
+ 1121001      660 
+     990  1121002 
+     910  1121002 
+     d40      d90 
+game.board.movable_blocks [[0, 0], [0, 3], [0, 4], [0, 5], [1, 0], [1, 1], [1, 2], [1, 5]]
+
+Move to [0, 3]
+===== AFTER MOVING =====
+From the parsed game string:
+Game player turn: 2
+Computed board:
+  game.board.xy array:
+  game.board.x: 2
+  game.board.y: 6
+  board players: [1, 2]
+     760      710 
+ 1131001      640 
+ 1131001      660 
+ 1131001  1121002 
+     990  1121002 
+     d40      d90 
+game.board.movable_blocks [[0, 0], [0, 4], [0, 5], [1, 0], [1, 1], [1, 2], [1, 5]]
+
+Move to [1, 2]
+===== AFTER MOVING =====
+From the parsed game string:
+Game player turn: 1
+Computed board:
+  game.board.xy array:
+  game.board.x: 2
+  game.board.y: 6
+  board players: [1, 2]
+     760      710 
+ 1131001      660 
+ 1131001  1131002 
+ 1131001  1131002 
+     990  1131002 
+     d40      d90 
+game.board.movable_blocks [[0, 0], [0, 4], [0, 5], [1, 0], [1, 1], [1, 5]]
+
+Move to [0, 4]
+===== AFTER MOVING =====
+From the parsed game string:
+Game player turn: 2
+Computed board:
+  game.board.xy array:
+  game.board.x: 2
+  game.board.y: 6
+  board players: [1, 2]
+     760      710 
+ 1141001      660 
+ 1141001  1131002 
+ 1141001  1131002 
+ 1141001  1131002 
+     dc0      d90 
+game.board.movable_blocks [[0, 0], [0, 5], [1, 0], [1, 1], [1, 5]]
+
+Move to [1, 1]
+===== AFTER MOVING =====
+From the parsed game string:
+Game player turn: 1
+Computed board:
+  game.board.xy array:
+  game.board.x: 2
+  game.board.y: 6
+  board players: [1, 2]
+     760      730 
+ 1141001  1141002 
+ 1141001  1141002 
+ 1141001  1141002 
+ 1141001  1141002 
+     dc0      d90 
+game.board.movable_blocks [[0, 0], [0, 5], [1, 0], [1, 5]]
+

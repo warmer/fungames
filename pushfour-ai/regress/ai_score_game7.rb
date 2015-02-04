@@ -4,8 +4,10 @@ require_relative '../common.rb'
 require_relative '../ai.rb'
 
 game_strings = [
-  '+,++r+r+bb#bb+rb+rb#brbrr+brrr#++rbb++,6,6,2,rb,b'
+'+,++#++++++rr+++++++++++++++b#+++++++#+++++++#+++++,7,7,2,rb,b'
 ]
+
+depth = (ARGV[0] || 3).to_i
 
 game_strings.each do |game_string|
   puts '=' * 40
@@ -18,17 +20,17 @@ game_strings.each do |game_string|
   Pushfour.print_board(game)
 
 #  3.times do |depth|
-  [ 2].each do |depth|
-    depth += 1
+  [depth].each do |depth|
     puts "# searching with depth #{depth} #"
 
-    ai = PushfourAI::AI.new(1000, search_depth: depth)
+    ai = PushfourAI::AI.new(1000, search_depth: depth, debug: true)
 
     game.board.players.each do |player|
       score = ai.score(game.board, player, game.turn)
       puts "Score for player #{player}: #{score}"
     end
 
+puts 'Moving to [5,4] is the WRONG move!'
     move, score = ai.find_move(game)
     puts "Move: #{move}"
     puts "Score: #{score}"
