@@ -23,14 +23,13 @@ game_strings.each do |game_string|
   [depth].each do |depth|
     puts "# searching with depth #{depth} #"
 
-    ai = PushfourAI::AI.new(1000, search_depth: depth, debug: true)
+    ai = PushfourAI::AI.new(1000, search_depth: depth)
 
     game.board.players.each do |player|
       score = ai.score(game.board, player, game.turn)
       puts "Score for player #{player}: #{score}"
     end
 
-puts 'Moving to [5,4] is the WRONG move!'
     move, score = ai.find_move(game)
     puts "Move: #{move}"
     puts "Score: #{score}"

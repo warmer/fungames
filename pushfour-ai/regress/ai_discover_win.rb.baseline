@@ -1,0 +1,12 @@
+Game string:
++,+#++++brr#+rb+#++rb+,4,5,2,rb,b
+
+     b90        4      660      620      620 
+     b10  3111002  1212001  1112001        4 
+     b10  2211001  3111002        0        4 
+     b20      990  2111001  3111002      cc0 
+Score for player 1: -16252
+Score for player 2: 16252
+Found win: going with [0, 0]
+Move: [0, 0]
+Score: 999999999999

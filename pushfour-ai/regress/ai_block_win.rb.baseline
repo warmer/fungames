@@ -1,0 +1,12 @@
+Game string:
++,+#++++brr#+rb+#++rb+,4,5,2,rb,r
+
+Before move:
+     b90        4      660      620      620 
+     b10  3111002  1212001  1112001        4 
+     b10  2211001  3111002        0        4 
+     b20      990  2111001  3111002      cc0 
+Score for player 1: -1380
+Score for player 2: 1380
+Move: [0, 0]
+Score: 44

@@ -1,0 +1,29 @@
+Game string:
++,+rrr+bbb,2,4,2,rb,r
+===== BEFORE MOVING =====
+From the parsed game string:
+Game player turn: 1
+Computed board:
+  game.board.xy array:
+  game.board.x: 4
+  game.board.y: 2
+  board players: [1, 2]
+     b90  1113001  1113001  1113001 
+     b30  1113002  1113002  1113002 
+game.board.movable_blocks [[0, 0], [0, 1]]
+game.board.game_over 0
+
+Move to [0, 0]
+===== AFTER MOVING =====
+From the parsed game string:
+Game player turn: 2
+Computed board:
+  game.board.xy array:
+  game.board.x: 4
+  game.board.y: 2
+  board players: [1, 2]
+ 1114001  1114001  1114001  1114001 
+     990  1113002  1113002  1113002 
+game.board.movable_blocks [[0, 1]]
+game.board.game_over 1
+

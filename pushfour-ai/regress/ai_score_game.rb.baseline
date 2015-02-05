@@ -1,0 +1,25 @@
+========================================
+Game string:
++,++++++++b+++++r+++++r#+#++r++b+++++#,6,6,2,rb,b
+
+     fc0      f80      720      700      f80      710 
+     b00      b10  1111002      640      e00      600 
+     b00      b10  1131001      660      e00      620 
+     b00      b10  1131001        4      a00        4 
+     b00      b10  1131001      880      a00  1111002 
+     b20      b20      980      900      b30        4 
+# searching with depth 1 #
+Score for player 1: 2054
+Score for player 2: -2054
+Move: [2, 5]
+Score: -133
+# searching with depth 2 #
+Score for player 1: 2054
+Score for player 2: -2054
+Move: [2, 5]
+Score: -253
+# searching with depth 3 #
+Score for player 1: 2054
+Score for player 2: -2054
+Move: [2, 5]
+Score: -697
