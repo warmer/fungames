@@ -23,7 +23,7 @@ module PushfourAI
         return last == other
       end
       return false if dir != other.dir
-      return last i== other.last
+      return last == other.last
     end
   end
 
@@ -103,11 +103,11 @@ module PushfourAI
 
       board.movable_blocks.each do |move|
         moved = board.move(move[0], move[1], play_as)
-        score = score(moved, play_as, board.players[play_as] || board.players[0])
-        if score > THRESHOLD
-          move_outcomes = {move => {score: score, board: moved} }
-          break
+        if moved.game_over > 0
+          info "Found win: going with #{move}"
+          return [move, WIN]
         end
+        score = score(moved, play_as, board.players[play_as] || board.players[0])
         move_outcomes[move] = {score: score, board: moved}
       end
 
@@ -115,15 +115,27 @@ module PushfourAI
         threads = []
         move_outcomes.each do |move, outcome|
           t = Thread.new do
-            turn = outcome[:board].players[play_as] || outcome[:board].players[0]
-            debug "##### FIND SCORE FOR #{move} (play_as: #{play_as}; turn now #{turn})"
-            move_outcomes[move][:score] = minimax(outcome[:board], turn, play_as, @search_depth - 1)
-            debug "##### FINAL SCORE: #{move_outcomes[move][:score]}"
+            read, write = IO.pipe
+            pid = fork do
+              read.close
+
+              turn = outcome[:board].players[play_as] || outcome[:board].players[0]
+              score = minimax(outcome[:board], turn, play_as, @search_depth - 1)
+
+              Marshal.dump(score, write)
+              exit!(0)
+            end
+
+            write.close
+            result = read.read
+            Process.wait(pid)
+            raise "Finding score failed" if result.empty?
+            move_outcomes[move][:score] = Marshal.load(result)
+            debug "##### FINAL SCORE: #{move_outcomes[move][:score]} for #{move}"
             debug "=" * 50
             debug
           end
-# TODO: don't join
-t.join
+          t.join if @debug
           threads << t
         end
         threads.each {|t| t.join}
@@ -143,11 +155,8 @@ t.join
 
     def minimax(board, current_turn, maxiplayer, depth_left)
       next_turn = board.players[current_turn] || board.players[0]
-      s = score(board, maxiplayer, current_turn)
       if depth_left == 0
-        debug "    ##### POPPING UP - score #{s} for #{maxiplayer} (current_turn is #{current_turn})"
-        return s
-      elsif s > THRESHOLD or s < -THRESHOLD
+        s = score(board, maxiplayer, current_turn)
         debug "    ##### POPPING UP - score #{s} for #{maxiplayer} (current_turn is #{current_turn})"
         return s
       end
@@ -157,9 +166,12 @@ t.join
       bmove = nil
 
       debug "  ##### Find the #{find_max ? 'best' : 'worst'}"
+      return 0 if board.movable_blocks.size == 0
       board.movable_blocks.each do |move|
         debug "  ##### Simulate #{move} made by by #{current_turn} (score for #{maxiplayer})"
         moved = board.move(move[0], move[1], current_turn)
+        return WIN if moved.game_over == maxiplayer
+        return LOSS if moved.game_over > 0
         score = minimax(moved, next_turn, maxiplayer, depth_left - 1)
         best = (find_max ? [best, score].max : [best, score].min)
         if best == score
@@ -172,6 +184,8 @@ t.join
     end
 
     def score(board, player, current_turn)
+      return WIN if board.game_over == player
+      return LOSS if board.game_over > 0
       runs = Hash.new {|hash, key| hash[key] = {HORIZ => [], VERT => [], FWD_DIAG => [], BACK_DIAG => [] } }
 
       board.xy.each_with_index do |row, y|
@@ -253,7 +267,7 @@ t.join
               open_ends += 1
             end
 
-            base_score = (4 * next_move_bonus * movable_ends**2 + open_ends**2)
+            base_score = 4 * (next_move_bonus**run.length) * (movable_ends**2) + (open_ends**2)
             run_score = base_score * RUN_SCORE[run.length]
             if player == p
               player_score += run_score

@@ -48,9 +48,10 @@ module Pushfour
   RUN_BS = (1 << 24)
   RUN_BS_MASK = (0xf << 24)
   RUN_MASK = (RUN_HORIZ | RUN_VERT | RUN_FS | RUN_BS)
+  GAME_OVER_MASK = (RUN_HORIZ * 4 | RUN_VERT * 4 | RUN_FS * 4 | RUN_BS * 4)
 
   class Board
-    attr_accessor :x, :y, :xy, :movable_blocks, :move_depth, :players
+    attr_accessor :x, :y, :xy, :movable_blocks, :move_depth, :players, :game_over
 
     def initialize(opts = {})
       @game_over = false
@@ -59,6 +60,7 @@ module Pushfour
       @y = opts[:y]
       @xy = opts[:xy]
       @players = opts[:players]
+      @game_over = opts[:game_over]
       board_string = opts[:board_string]
       player_chars = opts[:player_chars]
       open_char = opts[:open_char]
@@ -77,6 +79,7 @@ module Pushfour
 
       # start building the board as arrays of ints, rather than a string
       if board_string
+        # add pieces, blocks and run lengths for each player piece
         build_xy_from_string(board_string, @x, @y, open_char, player_chars)
         @movable_blocks = []
         @x.times do |xpos|
@@ -92,7 +95,7 @@ module Pushfour
           end
         end
 
-        # find open moves
+        # find open moves and set openness, movability bits
         x.times do |i|
           y.times do |j|
             # from which sides could the next move land?
@@ -158,6 +161,7 @@ module Pushfour
         end
       end
 
+      @game_over = 0
       runs.each do |player, dir_runs|
         dir_runs.each do |dir, run_list|
           run_list.each do |run|
@@ -174,6 +178,7 @@ module Pushfour
     def move(x, y, player)
       raise "[#{x},#{y}] is not a valid move" unless movable_blocks.include?([x, y])
 
+      game_over = @game_over
       prev_piece = @xy[y][x]
       # TODO: make movable_blocks a bit mask (using y integers)
       # then bits could be bit and set quite easily
@@ -187,6 +192,8 @@ module Pushfour
         new_xy[idx] = row.dup
       end
       new_xy[y][x] = player | RUN_MASK
+
+      # TODO: find game over condition
 
       # add to runs
       one_up = (y > 0 ? y - 1 : nil)
@@ -310,7 +317,8 @@ module Pushfour
         new_xy[y][x] += RUN_FS * aft_depth
       end
 
-
+      game_over = new_xy[y][x] & GAME_OVER_MASK
+      game_over = new_xy[y][x] & PLAYER_MASK if game_over > 0
 
       # pieces to the left - no longer movable from the right
       if prev_piece & OPEN_TO_RIGHT > 0
@@ -372,7 +380,7 @@ module Pushfour
         end
       end
 
-      Board.new(xy: new_xy, x: @x, y: @y, players: @players, movable_blocks: mb)
+      Board.new(xy: new_xy, x: @x, y: @y, players: @players, movable_blocks: mb, game_over: game_over)
     end
 
     def block_depth(move_depth, x, y)
