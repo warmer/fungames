@@ -16,10 +16,12 @@ Score: -133
 # searching with depth 2 #
 Score for player 1: 2054
 Score for player 2: -2054
+Looking 1 deep through 17 moves
 Move: [2, 5]
 Score: -253
 # searching with depth 3 #
 Score for player 1: 2054
 Score for player 2: -2054
+Looking 2 deep through 17 moves
 Move: [2, 5]
 Score: -697

@@ -11,5 +11,6 @@ Game string:
 # searching with depth 3 #
 Score for player 1: -584
 Score for player 2: 584
+Looking 3 deep through 9 moves
 Move: [3, 0]
-Score: -12
+Score: 364

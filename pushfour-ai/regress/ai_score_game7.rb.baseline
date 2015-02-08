@@ -12,5 +12,6 @@ Game string:
 # searching with depth 3 #
 Score for player 1: 128
 Score for player 2: -128
+Looking 2 deep through 18 moves
 Move: [4, 1]
 Score: -395

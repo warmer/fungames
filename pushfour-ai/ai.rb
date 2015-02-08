@@ -57,6 +57,7 @@ module PushfourAI
       @id = id
       @debug = opts[:debug]
       @info = true
+      @dynamic_depth = opts[:dynamic_depth]
       @poll_delay = opts[:poll_delay] || 5
       @search_depth = opts[:search_depth] || 3
     end
@@ -112,6 +113,18 @@ module PushfourAI
       end
 
       if @search_depth > 1
+        depth = @search_depth - 1
+        case board.movable_blocks.count
+          when 1..3
+            depth += 4
+          when 4..5
+            depth += 3
+          when 6..7
+            depth += 2
+          when 8..9
+            depth += 1
+        end
+        info "Looking #{depth} deep through #{board.movable_blocks.count} moves"
         threads = []
         move_outcomes.each do |move, outcome|
           t = Thread.new do
@@ -120,7 +133,7 @@ module PushfourAI
               read.close
 
               turn = outcome[:board].players[play_as] || outcome[:board].players[0]
-              score = minimax(outcome[:board], turn, play_as, @search_depth - 1)
+              score = minimax(outcome[:board], turn, play_as, depth)
 
               Marshal.dump(score, write)
               exit!(0)
