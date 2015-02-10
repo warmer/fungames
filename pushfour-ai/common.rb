@@ -328,6 +328,7 @@ module Pushfour
           # pieces to the left of the new piece are no longer open to the right
           new_xy[y][x - offset - 1] ^= OPEN_TO_RIGHT
           new_xy[y][x - offset - 1] &= MOVABLE_FROM_RIGHT_CLEAR
+          mb.delete([x - offset - 1, y]) if new_xy[y][x - offset - 1] & MOVABLE_MASK == 0
         end
         if x + 1 < @x
           # this will always be movable if it was previously open from this direction
@@ -344,6 +345,7 @@ module Pushfour
           # pieces to the right of the new piece are no longer open to the left
           new_xy[y][x + offset + 1] ^= OPEN_TO_LEFT
           new_xy[y][x + offset + 1] &= MOVABLE_FROM_LEFT_CLEAR
+          mb.delete([x + offset + 1, y]) if new_xy[y][x + offset + 1] & MOVABLE_MASK == 0
         end
         if x > 0
           # this will always be movable if it was previously open from this direction
@@ -359,6 +361,7 @@ module Pushfour
           break if new_xy[y - offset - 1][x] & PIECE_MASK > 0
           new_xy[y - offset - 1][x] ^= OPEN_TO_BOTTOM
           new_xy[y - offset - 1][x] &= MOVABLE_FROM_BOTTOM_CLEAR
+          mb.delete([x, y - offset - 1]) if new_xy[y - offset - 1][x] & MOVABLE_MASK == 0
         end
         if y + 1 < @y
           new_xy[y + 1][x] |= MOVABLE_FROM_BOTTOM
@@ -373,6 +376,7 @@ module Pushfour
           break if new_xy[y + offset + 1][x] & PIECE_MASK > 0
           new_xy[y + offset + 1][x] ^= OPEN_TO_TOP
           new_xy[y + offset + 1][x] &= MOVABLE_FROM_TOP_CLEAR
+          mb.delete([x, y + offset + 1]) if new_xy[y + offset + 1][x] & MOVABLE_MASK == 0
         end
         if y > 0
           new_xy[y - 1][x] |= MOVABLE_FROM_TOP
@@ -439,7 +443,7 @@ module Pushfour
     if obj.is_a?(Game)
       xy = obj.board.xy
     elsif obj.is_a?(Board)
-      xy = gb.xy
+      xy = obj.xy
     elsif obj.is_a?(Array)
       xy = obj
     else

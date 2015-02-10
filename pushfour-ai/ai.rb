@@ -96,7 +96,7 @@ module PushfourAI
       thr.join
     end
 
-    def find_move(game)
+    def find_move(game, force_move = nil)
       play_as = game.turn
       board = game.board
 
@@ -110,6 +110,13 @@ module PushfourAI
         end
         score = score(moved, play_as, board.players[play_as] || board.players[0])
         move_outcomes[move] = {score: score, board: moved}
+      end
+
+      if force_move
+        info "Ignoring all except for #{force_move}"
+        debug move_outcomes.keys.inspect
+        move_outcomes.reject!{|k, v| k != force_move }
+        debug move_outcomes.keys.inspect
       end
 
       if @search_depth > 1

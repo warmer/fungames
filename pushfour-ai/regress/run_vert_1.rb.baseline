@@ -48,7 +48,7 @@ Computed board:
      910  1111002 
      d40      d90 
      d40      d10 
-game.board.movable_blocks [[0, 1], [0, 2], [0, 3], [0, 4], [0, 5], [1, 0], [1, 1], [1, 2], [1, 4], [1, 5]]
+game.board.movable_blocks [[0, 1], [0, 2], [0, 4], [0, 5], [1, 0], [1, 1], [1, 2], [1, 4], [1, 5], [0, 3]]
 
 Move to [0, 1]
 ===== AFTER MOVING =====
@@ -65,7 +65,7 @@ Computed board:
      910  1111002 
      d40      d90 
      d40      d10 
-game.board.movable_blocks [[0, 2], [0, 3], [0, 4], [0, 5], [1, 0], [1, 1], [1, 2], [1, 4], [1, 5]]
+game.board.movable_blocks [[0, 2], [0, 4], [0, 5], [1, 0], [1, 1], [1, 2], [1, 4], [1, 5], [0, 3]]
 
 Move to [1, 2]
 ===== AFTER MOVING =====
@@ -82,7 +82,7 @@ Computed board:
      910  1121002 
      d40      d90 
      d40      d10 
-game.board.movable_blocks [[0, 2], [0, 3], [0, 4], [0, 5], [1, 0], [1, 1], [1, 4], [1, 5]]
+game.board.movable_blocks [[0, 2], [0, 4], [0, 5], [1, 0], [1, 1], [1, 4], [1, 5], [0, 3]]
 
 Move to [0, 2]
 ===== AFTER MOVING =====
@@ -99,7 +99,7 @@ Computed board:
      990  1121002 
      d40      d90 
      d40      d10 
-game.board.movable_blocks [[0, 3], [0, 4], [0, 5], [1, 0], [1, 1], [1, 4], [1, 5]]
+game.board.movable_blocks [[0, 4], [0, 5], [1, 0], [1, 1], [1, 4], [1, 5], [0, 3]]
 
 Move to [1, 1]
 ===== AFTER MOVING =====
@@ -116,7 +116,7 @@ Computed board:
      990  1131002 
      d40      d90 
      d40      d10 
-game.board.movable_blocks [[0, 3], [0, 4], [0, 5], [1, 0], [1, 4], [1, 5]]
+game.board.movable_blocks [[0, 4], [0, 5], [1, 0], [1, 4], [1, 5], [0, 3]]
 
 Move to [0, 3]
 ===== AFTER MOVING =====
