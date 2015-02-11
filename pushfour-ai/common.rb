@@ -4,8 +4,9 @@ def get(url)
   tries ||= 5
   uri = URI(url)
   res = Net::HTTP.get(uri)
-rescue Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError,
+rescue Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Errno::ECONNREFUSED,
        Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError => e
+  puts "Encountered an error: #{e}"
   unless (tries -= 1).zero?
     sleep 5 * (5 - tries)
     retry
@@ -17,6 +18,8 @@ end
 module Pushfour
   SERVER_URL = 'http://pushfour.net'
 
+  INT_MASK = 0xffffffffffffffff
+
   PLAYER_0 = (1 << 0)
   PLAYER_1 = (1 << 1)
   PLAYER_MASK = (PLAYER_0 | PLAYER_1)
@@ -24,13 +27,13 @@ module Pushfour
   PIECE_MASK = 0x0f
 
   MOVABLE_FROM_LEFT = (1 << 4)
-  MOVABLE_FROM_LEFT_CLEAR = 0xffffffff ^ (1 << 4)
+  MOVABLE_FROM_LEFT_CLEAR = INT_MASK ^ MOVABLE_FROM_LEFT
   MOVABLE_FROM_TOP = (1 << 5)
-  MOVABLE_FROM_TOP_CLEAR = 0xffffffff ^ (1 << 5)
+  MOVABLE_FROM_TOP_CLEAR = INT_MASK ^ MOVABLE_FROM_TOP
   MOVABLE_FROM_RIGHT = (1 << 6)
-  MOVABLE_FROM_RIGHT_CLEAR = 0xffffffff ^ (1 << 6)
+  MOVABLE_FROM_RIGHT_CLEAR = INT_MASK ^ MOVABLE_FROM_RIGHT
   MOVABLE_FROM_BOTTOM = (1 << 7)
-  MOVABLE_FROM_BOTTOM_CLEAR = 0xffffffff ^ (1 << 7)
+  MOVABLE_FROM_BOTTOM_CLEAR = INT_MASK ^ MOVABLE_FROM_BOTTOM
   MOVABLE_MASK = (MOVABLE_FROM_LEFT | MOVABLE_FROM_TOP | MOVABLE_FROM_RIGHT | MOVABLE_FROM_BOTTOM)
 
   OPEN_TO_LEFT = (1 << 8)
@@ -470,12 +473,16 @@ module Pushfour
 
   def self.game_list(player)
     res = get "#{SERVER_URL}/getgames.php?playerid=#{player.to_i}"
-    res.split(',').map {|id| id.to_i}
+    games = res.split(',').map {|id| id.to_i}
+    games.delete(0)
+    games
   end
 
   def self.game_info(game_id, player)
     res = get "#{SERVER_URL}/gameinfo.php?gameid=#{game_id.to_i}&playerid=#{player.to_i}"
-    parse_game_string(res, game_id)
+    if res
+      parse_game_string(res, game_id)
+    end
   end
 
   def self.parse_game_string(str, id = nil)
