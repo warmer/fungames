@@ -1,0 +1,27 @@
+<div class="panel panel-default">
+  <div class="panel-heading">
+    <h3 class="panel-title">
+      Login
+    </h3></div>
+  <div class="panel-body" id="edit-panel">
+    <form method="post" action="<%= url['login'] %>" class="form-horizontal">
+        <div class="form-group">
+          <label for="name" class="col-sm-2 control-label">Name</label>
+          <div class="col-sm-3">
+            <input type="text" class="form-control" rows="1"
+              aria-label="Name" name="name" id="name" value="<%= '' %>" />
+          </div>
+          <label for="password" class="col-sm-2 control-label">Password</label>
+          <div class="col-sm-3">
+            <input type="password" class="form-control" rows="1"
+              aria-label="Password" name="password" id="password" value="<%= '' %>" />
+          </div>
+
+          <div class="col-sm-2">
+            <button type="submit" class="btn btn-success btn-block" name="submit">Login</button>
+          </div>
+        </div>
+    </form>
+  </div>
+</div>
+
