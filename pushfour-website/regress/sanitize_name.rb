@@ -1,6 +1,6 @@
 #!/usr/bin/env ruby
 
-require_relative '../common.rb'
+require_relative '../lib/common.rb'
 
 include Pushfour::Common
 

@@ -96,6 +96,7 @@
     </div>
   </div>
 
+  <div class="container">
   <% if defined?(messages) and messages.is_a?(Array) and messages.length > 0 %>
     <% messages.each do |msg| %>
       <div class="alert alert-<%= msg['level'] %>" role="alert"><%= msg['body'] %></div>
@@ -103,6 +104,8 @@
   <% end %>
 
   <%= yield %>
+
+  </div>
 
   </body>
 </html>

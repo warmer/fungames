@@ -1,27 +1,81 @@
 require 'sqlite3'
-require 'digest/md5'
+require_relative 'common.rb'
 
 module Pushfour
-  module Common
-    PROJ_ROOT = File.dirname(__FILE__)
-    DB_FILE = File.join(PROJ_ROOT, 'db/p4web.db')
+  module Database
+    extend self
+
+    DB_FILE = File.expand_path(File.join(Pushfour::Common::PROJ_ROOT, '../db/p4web.db'))
 
     PLAYER_TABLE = 'Players'
     GAME_TABLE = 'Games'
     BOARD_TABLE = 'Boards'
     MOVE_TABLE = 'Moves'
 
-    def md5sum(str)
-      Digest::MD5.hexdigest(str)
+    def db_file(new_path = nil)
+      @@database_path ||= DB_FILE
+      @@database_path = new_path if new_path
+      @@database_path
     end
 
-    def sanitized_name(name)
-      # a-zA-Z0-9_-
-      name.gsub(/[^a-zA-Z0-9_-]/, '') if name
-    end
+    def create(opts = {})
+      silent = opts[:silent]
+      db_location ||= db_file
+      exception = nil
 
-    def db_file
-      DB_FILE
+      puts "Writing database file at #{db_location}" unless silent
+
+      begin
+        db = SQLite3::Database.open db_location
+
+        db.execute <<-SQL
+          CREATE TABLE IF NOT EXISTS #{PLAYER_TABLE}(
+            Id INTEGER PRIMARY KEY,
+            PassHash VARCHAR(32),
+            Created INTEGER DEFAULT CURRENT_TIMESTAMP,
+            LastLogin INTEGER DEFAULT CURRENT_TIMESTAMP,
+            Name VARCHAR(255));
+        SQL
+
+        db.execute <<-SQL
+          CREATE TABLE IF NOT EXISTS #{GAME_TABLE}(
+            Id INTEGER PRIMARY KEY,
+            Created INTEGER DEFAULT CURRENT_TIMESTAMP,
+            Player1 INTEGER,
+            Player2 INTEGER,
+            Status INTEGER,
+            Turn INTEGER,
+            Board INTEGER,
+            Name VARCHAR(255));
+        SQL
+
+        db.execute <<-SQL
+          CREATE TABLE IF NOT EXISTS #{BOARD_TABLE}(
+            Id INTEGER PRIMARY KEY,
+            Width INTEGER,
+            Height INTEGER,
+            Created INTEGER DEFAULT CURRENT_TIMESTAMP,
+            BoardString VARCHAR(255));
+        SQL
+
+        db.execute <<-SQL
+          CREATE TABLE IF NOT EXISTS #{MOVE_TABLE}(
+            Id INTEGER PRIMARY KEY,
+            MoveNumber INTEGER,
+            Player INTEGER,
+            XLocation INTEGER,
+            YLocation INTEGER,
+            MoveDate INTEGER DEFAULT CURRENT_TIMESTAMP);
+        SQL
+      rescue SQLite3::Exception => e
+        puts 'SQLite Exception'
+        puts e
+        exception = e
+      ensure
+        db.close if db
+      end
+
+      raise exception if exception
     end
 
     def execute_query(query)
@@ -49,7 +103,6 @@ module Pushfour
       raise 'columns not an array' unless columns.is_a? Array
       raise 'values not an array' unless values.is_a? Array
       raise 'column count not equal to value count' unless columns.size == values.size
-
     end
 
     def update(table, columns, values, id)
@@ -119,7 +172,6 @@ module Pushfour
 
       result
     end
-
-
   end
 end
+

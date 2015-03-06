@@ -10,7 +10,6 @@ switches = opts.select { |x| x[0] == '-' }.join.split('')
 switches.delete('-')
 
 baseline = switches.delete('b')
-verbose = switches.delete('v')
 failed = updated = matched = 0
 
 unless switches.empty?
@@ -26,7 +25,7 @@ scenarios.each do |s|
 end
 
 scenarios.sort.each do |s|
-  b = s + ".baseline"
+  b = s + '.baseline'
   name = File.absolute_path(s).split('regress/')[1]
   print (name + ':' + ' ' * 50)[0, 50]
   unless baseline or File.file?(b)
@@ -47,7 +46,7 @@ scenarios.sort.each do |s|
     elsif s_out.downcase.include?('fatal')
       puts '[ ERROR ]'
       puts s_out
-      puts "-- STDERR --"
+      puts '-- STDERR --'
       puts s_err
       failed += 1
     else
@@ -62,14 +61,12 @@ scenarios.sort.each do |s|
     else
       puts '[ MISMATCH ]'
       failed += 1
-      if verbose
-        File.write('/tmp/sedition_baseline.tmp', s_out)
-        puts `diff #{b} /tmp/sedition_baseline.tmp`
+      File.write('/tmp/baseline_out.tmp', s_out)
+      puts `diff #{b} /tmp/baseline_out.tmp`
 
-        if !s_err.strip.empty? and verbose
-          puts "-- STDERR --"
-          puts s_err
-        end
+      if !s_err.strip.empty?
+        puts '-- STDERR --'
+        puts s_err
       end
     end
   end

@@ -3,7 +3,8 @@ require 'json'
 require 'pp'
 require 'sqlite3'
 
-require_relative 'common.rb'
+require_relative 'lib/common.rb'
+require_relative 'lib/registration.rb'
 
 PATH_ROOT = '/'
 
@@ -16,10 +17,13 @@ URL = {
   'games' => PATH_ROOT + 'games',
   'game' => PATH_ROOT + 'game/:id',
   'login' => PATH_ROOT + 'login',
+  'index' => PATH_ROOT,
 }
 
 class PushfourWebsite < Sinatra::Base
   include Pushfour::Common
+
+  use Rack::Session::Pool, :expire_after => 2592000
 
   def locals(overrides = {})
     locals = {
@@ -30,11 +34,6 @@ class PushfourWebsite < Sinatra::Base
     locals.merge(overrides)
   end
 
-
-  get PATH_ROOT do
-    'Hello, world!'
-  end
-
   get URL['players'] do
 
     erb :expenses, :locals => agg_locals(page_vars) do
@@ -43,22 +42,29 @@ class PushfourWebsite < Sinatra::Base
   end
 
   post URL['register'] do
-    raw_name = params['name']
-    raw_password = params['password']
-    raw_password2 = params['password2']
-
+    raw_params = filter(:name, :password, :password2)
+    results = Pushfour::Registration.register(raw_params)
     results = form_actions.register(raw_name, raw_password, raw_password2)
 
     erb :register, :locals => locals(results)
   end
 
   get URL['register'] do
-
     erb :register, :locals => locals
   end
 
   get URL['login'] do
+    puts '######'
+    puts session[:something]
+    puts '######'
+
+    session[:something] = 'a' * 1024
 
     erb :login, :locals => locals
+  end
+
+  get URL['index'] do
+
+    erb :index, :locals => locals
   end
 end

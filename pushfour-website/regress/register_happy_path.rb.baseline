@@ -1,0 +1,9 @@
+Executing:         SELECT name from Players WHERE name='foo';
+[]
+Prepared: insert into Players ('name','passhash') values (?,?);
+Inserting: ["foo", "cdeb68b68f311608163d0d2f451ac96a"]
+Insert result: 1
+1
+{:errors=>[], :name=>"foo"}
+Executing:     SELECT name,passhash,id FROM Players
+[["foo", "cdeb68b68f311608163d0d2f451ac96a", 1]]
