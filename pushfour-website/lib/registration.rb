@@ -11,7 +11,7 @@ module Pushfour
       res = Pushfour::Database.execute_query <<-HERE
         SELECT name from #{Pushfour::Database::PLAYER_TABLE} WHERE name='#{name}';
       HERE
-      puts res.inspect
+      res.size > 0
     end
 
     def self.register(params)

@@ -78,13 +78,14 @@ module Pushfour
       raise exception if exception
     end
 
-    def execute_query(query)
+    def execute_query(query, opts = {})
+      verbose = opts[:verbose]
       result = nil
 
       begin
         db = SQLite3::Database.open db_file
 
-        puts "Executing: #{query}"
+        puts "Executing: #{query}" if verbose
         result = db.execute query
       rescue SQLite3::Exception => e
         puts 'SQLite Exception'
@@ -105,7 +106,8 @@ module Pushfour
       raise 'column count not equal to value count' unless columns.size == values.size
     end
 
-    def update(table, columns, values, id)
+    def update(table, columns, values, id, opts = {})
+      verbose = opts[:verbose]
       result = nil
 
       validate(columns, values)
@@ -116,7 +118,7 @@ module Pushfour
         db = SQLite3::Database.open db_file
 
         prep = "update #{table} set #{cols} where Id=#{id};"
-        puts "Prepared: #{prep}"
+        puts "Prepared: #{prep}" if verbose
 
         statement = db.prepare prep
         statement.execute(values)
@@ -139,7 +141,8 @@ module Pushfour
       result
     end
 
-    def insert(table, columns, values)
+    def insert(table, columns, values, opts = {})
+      verbose = opts[:verbose]
       result = nil
 
       validate(columns, values)
@@ -151,15 +154,15 @@ module Pushfour
         db = SQLite3::Database.open db_file
 
         prep = "insert into #{table} (#{cols}) values (#{val_args});"
-        puts "Prepared: #{prep}"
+        puts "Prepared: #{prep}" if verbose
 
         ins = db.prepare prep
 
-        puts "Inserting: #{values}"
+        puts "Inserting: #{values}" if verbose
         ins.execute(values)
         ins.close
         result = db.last_insert_row_id
-        puts "Insert result: #{result}"
+        puts "Insert result: #{result}" if verbose
       rescue SQLite3::Exception => e
         puts 'SQLite Exception'
         puts e
