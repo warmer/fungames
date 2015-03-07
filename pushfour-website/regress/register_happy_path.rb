@@ -6,9 +6,9 @@ require_relative '../lib/registration.rb'
 
 Harness.run_test(mock_db: true) do
   reg_result = Pushfour::Registration.register(
-    'name' => 'foo',
-    'password' => 'test',
-    'password2' => 'test')
+    name: 'foo',
+    password: 'test',
+    password2: 'test')
 
   puts reg_result.inspect
 

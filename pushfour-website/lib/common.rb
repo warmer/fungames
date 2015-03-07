@@ -10,8 +10,9 @@ module Pushfour
     end
 
     def sanitized_name(name)
+      name ||= ''
       # a-zA-Z0-9_-
-      name.gsub(/[^a-zA-Z0-9_-]/, '') if name
+      name.gsub(/[^a-zA-Z0-9_-]/, '')
     end
 
     def filter(params, keys = [])

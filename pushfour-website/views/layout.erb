@@ -4,6 +4,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name='csrf-token' content='<%= session[:csrf] %>'>
     <title><%= defined?(title) ? title : 'Pushfour' %></title>
 
     <link rel="stylesheet" href="/css/bootstrap.min.css" />
@@ -19,6 +20,16 @@
     <script src="/js/bootstrap-editable.js"></script>
 
     <script>
+      $(function() {
+        // attribution: http://lecklider.com/2014/08/csrf-prevention-in-sinatra.html
+        $('form').on('submit', function(event) {
+          $('<input>').attr({
+            type: 'hidden',
+            name: 'csrf_token',
+            value: '<%= session[:csrf] %>'
+          }).appendTo($(this));
+        });
+      });
     </script>
 
 
@@ -100,6 +111,12 @@
   <% if defined?(messages) and messages.is_a?(Array) and messages.length > 0 %>
     <% messages.each do |msg| %>
       <div class="alert alert-<%= msg['level'] %>" role="alert"><%= msg['body'] %></div>
+    <% end %>
+  <% end %>
+
+  <% if defined?(errors) and errors.is_a?(Array) and errors.length > 0 %>
+    <% errors.each do |msg| %>
+      <div class="alert alert-danger" role="alert"><%= msg %></div>
     <% end %>
   <% end %>
 

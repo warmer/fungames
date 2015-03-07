@@ -19,5 +19,5 @@ names = [
 ]
 
 names.each do |name|
-  puts "#{name} sanitizes to #{sanitized_name(name)}"
+  puts "#{name.inspect} sanitizes to #{sanitized_name(name).inspect}"
 end

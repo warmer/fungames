@@ -1,56 +1,56 @@
 ============================================================
-Test case: {"name"=>"bob1", "password"=>"pass1", "password2"=>"pass2"}
+Test case: {:name=>"bob1", :password=>"pass1", :password2=>"pass2"}
 {:errors=>["Passwords must match"], :name=>"bob1"}
 []
 
 ============================================================
-Test case: {"name"=>"bob2", "password"=>"pass1", "password2"=>nil}
+Test case: {:name=>"bob2", :password=>"pass1", :password2=>nil}
 {:errors=>["Passwords must match"], :name=>"bob2"}
 []
 
 ============================================================
-Test case: {"name"=>"bob3", "password"=>nil, "password2"=>"pass2"}
+Test case: {:name=>"bob3", :password=>nil, :password2=>"pass2"}
 {:errors=>["Must enter a password", "Passwords must match"], :name=>"bob3"}
 []
 
 ============================================================
-Test case: {"name"=>"", "password"=>"pass1", "password2"=>"pass1"}
+Test case: {:name=>"", :password=>"pass1", :password2=>"pass1"}
 {:errors=>["Name cannot be empty"], :name=>""}
 []
 
 ============================================================
-Test case: {"name"=>nil, "password"=>"pass1", "password2"=>"pass1"}
-{:errors=>["Name cannot be empty"], :name=>nil}
+Test case: {:name=>nil, :password=>"pass1", :password2=>"pass1"}
+{:errors=>["User name may only contain letters, numbers, underscores, and dashes.", "Name cannot be empty"], :name=>""}
 []
 
 ============================================================
-Test case: {"name"=>"bob4", "password"=>nil, "password2"=>nil}
+Test case: {:name=>"bob4", :password=>nil, :password2=>nil}
 {:errors=>["Must enter a password"], :name=>"bob4"}
 []
 
 ============================================================
-Test case: {"name"=>"bob(5)", "password"=>"pass1", "password2"=>"pass1"}
-{:errors=>["Name contained illegal characters"], :name=>"bob5"}
+Test case: {:name=>"bob(5)", :password=>"pass1", :password2=>"pass1"}
+{:errors=>["User name may only contain letters, numbers, underscores, and dashes."], :name=>"bob5"}
 []
 
 ============================================================
-Test case: {"name"=>"bob 6", "password"=>"pass1", "password2"=>"pass1"}
-{:errors=>["Name contained illegal characters"], :name=>"bob6"}
+Test case: {:name=>"bob 6", :password=>"pass1", :password2=>"pass1"}
+{:errors=>["User name may only contain letters, numbers, underscores, and dashes."], :name=>"bob6"}
 []
 
 ============================================================
-Test case: {"name"=>"bob7\\u0092", "password"=>"pass1", "password2"=>"pass1"}
-{:errors=>["Name contained illegal characters"], :name=>"bob7u0092"}
+Test case: {:name=>"bob7\\u0092", :password=>"pass1", :password2=>"pass1"}
+{:errors=>["User name may only contain letters, numbers, underscores, and dashes."], :name=>"bob7u0092"}
 []
 
 ============================================================
-Test case: {"name"=>"bob8", "password"=>"pass1", "password2"=>"pass1"}
+Test case: {:name=>"bob8", :password=>"pass1", :password2=>"pass1"}
 1
 {:errors=>[], :name=>"bob8"}
 [["bob8", "ae1a3b6c428c729d7c3eaea2be50756d", 1]]
 
 ============================================================
-Test case: {"name"=>"bob8", "password"=>"pass2", "password2"=>"pass2"}
+Test case: {:name=>"bob8", :password=>"pass2", :password2=>"pass2"}
 {:errors=>["Name 'bob8' is in use"], :name=>"bob8"}
 [["bob8", "ae1a3b6c428c729d7c3eaea2be50756d", 1]]
 

@@ -4,30 +4,29 @@ require_relative 'common.rb'
 require_relative 'database.rb'
 
 module Pushfour
-  class Registration
+  class Login
     extend Pushfour::Common
 
-    ILLEGAL_CHARS_ERROR = <<-HERE
-      User name may only contain letters, numbers, underscores, and dashes.
-    HERE
-
-    def self.name_in_use?(name)
-      res = Pushfour::Database.execute_query <<-HERE
-        SELECT name from #{Pushfour::Database::PLAYER_TABLE} WHERE name='#{name}';
-      HERE
-      res.size > 0
-    end
-
-    def self.register(params)
-      raw_name = params[:name]
-      password = params[:password]
-      password2 = params[:password2]
-
-      name = sanitized_name(raw_name)
-
+    def self.login(params)
       errors = []
 
-      errors << ILLEGAL_CHARS_ERROR.strip if name != raw_name
+      raw_name = params['name']
+      password = params['password']
+
+      name = sanitized_name(raw_name)
+      if name.size > 0 and name == raw_name
+        pw_hash = md5sum(name + password)
+        res = Pushfour::Database.execute_query <<-HERE
+          SELECT name from #{Pushfour::Database::PLAYER_TABLE}
+          WHERE name='#{name}' AND passhash='#{pw_hash}';
+        HERE
+        res.size > 0
+      elsif name.size > 0
+        errors << 'Name contained illegal characters'
+      else
+        errors << 'Please enter your login name'
+      end
+
       errors << 'Name cannot be empty' unless name and name.size > 0
       errors << 'Must enter a password' unless password
       errors << 'Passwords must match' unless password == password2
