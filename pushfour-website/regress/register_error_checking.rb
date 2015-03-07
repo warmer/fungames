@@ -14,7 +14,8 @@ tcs = [
   {name: 'bob(5)', password: 'pass1', password2: 'pass1'},
   {name: 'bob 6', password: 'pass1', password2: 'pass1'},
   {name: 'bob7\u0092', password: 'pass1', password2: 'pass1'},
-  {name: 'bob8', password: 'pass1', password2: 'pass1'},
+  {name: '8bob8', password: 'pass1', password2: 'pass1'},
+  {name: '8bob8', password: 'pass2', password2: 'pass2'},
   {name: 'bob8', password: 'pass2', password2: 'pass2'},
 ]
 

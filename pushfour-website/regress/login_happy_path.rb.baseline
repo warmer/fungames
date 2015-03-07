@@ -1,2 +1,2 @@
-{:errors=>[], :name=>"foo"}
 [["foo", "cdeb68b68f311608163d0d2f451ac96a", 1]]
+{:errors=>[], :name=>"foo", :id=>1}

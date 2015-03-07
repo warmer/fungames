@@ -1,0 +1,21 @@
+  <h3>
+    Registered Pushfour players
+  </h3>
+  <table class="table table-striped">
+    <thead>
+      <tr>
+        <td>User name</td>
+        <td>Games played</td>
+      </tr>
+    </thead>
+    <tbody>
+      <% if defined?(players) %>
+        <% players.each do |player| %>
+          <tr>
+            <td><a href="<%= url(:player, id: player[:id])%>"><%= player[:name] %></td>
+            <td></td>
+          </tr>
+        <% end %>
+      <% end %>
+    </tbody>
+  </table>

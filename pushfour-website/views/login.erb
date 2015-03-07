@@ -2,10 +2,10 @@
       Log in to your Pushfour account
     </h3>
     <div>
-      If you don't have an account yet, please <a href="<%= url['register'] %>">register</a>!
+      If you don't have an account yet, please <a href="<%= url(:register) %>">register</a>!
     </div>
     <br />
-    <form method="post" action="<%= url['login'] %>">
+    <form method="post" action="<%= url(:login) %>">
       <div class="form-group">
         <label for="name" class="control-label">User Name</label>
         <input type="text" class="form-control" rows="1"

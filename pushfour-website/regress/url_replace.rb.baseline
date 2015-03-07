@@ -1,0 +1,59 @@
+URL sources:
+{:a=>"/a", :b=>"/b/:id", :c=>"/c/:id/:name"}
+
+========================================
+Page: a; opts: nil
+Resolves to: /a
+
+opts was nil - calling without opts argument
+Page: a
+Resolves to: /a
+
+========================================
+Page: a; opts: {:id=>1}
+Resolves to: /a
+
+========================================
+Page: a; opts: {:id=>"1"}
+Resolves to: /a
+
+========================================
+Page: b; opts: nil
+Resolves to: /b/:id
+
+opts was nil - calling without opts argument
+Page: b
+Resolves to: /b/:id
+
+========================================
+Page: b; opts: {:id=>1}
+Resolves to: /b/1
+
+========================================
+Page: b; opts: {:id=>"1"}
+Resolves to: /b/1
+
+========================================
+Page: c; opts: nil
+Resolves to: /c/:id/:name
+
+opts was nil - calling without opts argument
+Page: c
+Resolves to: /c/:id/:name
+
+========================================
+Page: c; opts: {:id=>1}
+Resolves to: /c/1/:name
+
+========================================
+Page: c; opts: {:id=>1, :name=>"bill"}
+Resolves to: /c/1/bill
+
+========================================
+Page: c; opts: {:id=>1, :name=>"bill", :foo=>"bar"}
+Resolves to: /c/1/bill
+
+========================================
+Page: c; opts: {:id=>"1", :name=>"bill", :foo=>"bar"}
+Resolves to: /c/1/bill
+

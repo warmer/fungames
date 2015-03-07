@@ -10,39 +10,33 @@ module Pushfour
     def self.login(params)
       errors = []
 
-      raw_name = params['name']
-      password = params['password']
+      raw_name = params[:name]
+      password = params[:password]
+      id = nil
 
       name = sanitized_name(raw_name)
-      if name.size > 0 and name == raw_name
-        pw_hash = md5sum(name + password)
-        res = Pushfour::Database.execute_query <<-HERE
-          SELECT name from #{Pushfour::Database::PLAYER_TABLE}
-          WHERE name='#{name}' AND passhash='#{pw_hash}';
-        HERE
-        res.size > 0
-      elsif name.size > 0
-        errors << 'Name contained illegal characters'
+      if password and password.size > 0
+        if name.size > 0 and name == raw_name
+          pw_hash = md5sum(name + password)
+          res = Pushfour::Database.execute_query <<-HERE
+            SELECT id from #{Pushfour::Database::PLAYER_TABLE}
+            WHERE name LIKE '#{name}' AND passhash LIKE '#{pw_hash}';
+          HERE
+          if res.size > 0
+            id = res[0][0]
+          else
+            errors << 'Could not not find a user with the given credentials'
+          end
+        elsif name.size > 0
+          errors << 'Name contained illegal characters'
+        else
+          errors << 'Please provide provide ame'
+        end
       else
-        errors << 'Please enter your login name'
+        errors << 'Must enter a password'
       end
 
-      errors << 'Name cannot be empty' unless name and name.size > 0
-      errors << 'Must enter a password' unless password
-      errors << 'Passwords must match' unless password == password2
-
-      errors << "Name '#{name}' is in use" if name and name_in_use?(name)
-
-      unless errors.size > 0
-        res = Pushfour::Database.insert(
-          Pushfour::Database::PLAYER_TABLE,
-          ['name', 'passhash'],
-          [name, md5sum(name + password)]
-        )
-        puts res
-      end
-
-      {errors: errors, name: name}
+      {errors: errors, name: name, id: id}
     end
 
   end

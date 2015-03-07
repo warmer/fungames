@@ -6,19 +6,22 @@ require 'sqlite3'
 require_relative 'lib/common.rb'
 require_relative 'lib/registration.rb'
 require_relative 'lib/login.rb'
+require_relative 'lib/players.rb'
 
 PATH_ROOT = '/'
 
 URL = {
-  'tournaments' => PATH_ROOT + 'tournaments',
-  'tournament' => PATH_ROOT + 'tournament/:id',
-  'register' => PATH_ROOT + 'register',
-  'players' => PATH_ROOT + 'players',
-  'player' => PATH_ROOT + 'player/:id',
-  'games' => PATH_ROOT + 'games',
-  'game' => PATH_ROOT + 'game/:id',
-  'login' => PATH_ROOT + 'login',
-  'index' => PATH_ROOT,
+  tournaments: PATH_ROOT + 'tournaments',
+  tournament: PATH_ROOT + 'tournament/:id',
+  register: PATH_ROOT + 'register',
+  profile: PATH_ROOT + 'profile',
+  players: PATH_ROOT + 'players',
+  player: PATH_ROOT + 'player/:id',
+  stats: PATH_ROOT + 'stats',
+  games: PATH_ROOT + 'games',
+  game: PATH_ROOT + 'game/:id',
+  login: PATH_ROOT + 'login',
+  index: PATH_ROOT,
 }
 
 class PushfourWebsite < Sinatra::Base
@@ -54,52 +57,54 @@ class PushfourWebsite < Sinatra::Base
 
   def locals(overrides = {})
     locals = {
-      # TODO: sinatra might have a mechanism for creating route-aware URLs...
-      'url' => URL,
     }
 
     locals.merge(overrides)
   end
 
-  get URL['players'] do
-
-    erb :expenses, :locals => agg_locals(page_vars) do
-      erb :expense_table, :locals => agg_locals(page_vars)
-    end
+  def url(page, opts = {})
+    url_replace(URL, page, opts)
   end
 
-  post URL['register'] do
+  get URL[:players] do
+    raw_params = filter(params, [:limit, :start])
+    results = Pushfour::Players.player_list(raw_params)
+
+    erb :players, :locals => locals(results)
+  end
+
+  post URL[:register] do
     raw_params = filter(params, [:name, :password, :password2])
-    puts raw_params.inspect
     results = Pushfour::Registration.register(raw_params)
     if results[:errors].size == 0
-      redirect to(URL['login'])
+      redirect to(URL[:login])
     else
       erb :register, :locals => locals(results)
     end
   end
 
-  get URL['register'] do
+  get URL[:register] do
     erb :register, :locals => locals
   end
 
-  post URL['login'] do
+  post URL[:login] do
     raw_params = filter(params, [:name, :password])
-    puts raw_params.inspect
     results = Pushfour::Login.login(raw_params)
     if results[:errors].size == 0
-      redirect to(URL['index'])
+      session[:user_id] = results[:id]
+      session[:login_name] = results[:name]
+      redirect to(URL[:index])
     else
       erb :login, :locals => locals(results)
     end
   end
 
-  get URL['login'] do
+  get URL[:login] do
 
     erb :login, :locals => locals
   end
 
-  get URL['index'] do
+  get URL[:index] do
 
     erb :index, :locals => locals
   end

@@ -15,6 +15,18 @@ module Pushfour
       name.gsub(/[^a-zA-Z0-9_-]/, '')
     end
 
+    def url_replace(map, key, opts = {})
+      u = map[key]
+
+      if opts
+        opts.each do |sym, val|
+          u = u.gsub(/\/:#{sym.to_s}($|[^a-z0-9_])/, "/#{val.to_s}\\1")
+        end
+      end
+
+      u
+    end
+
     def filter(params, keys = [])
       res = {}
 

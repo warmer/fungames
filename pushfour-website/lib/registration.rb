@@ -40,7 +40,6 @@ module Pushfour
           ['name', 'passhash'],
           [name, md5sum(name + password)]
         )
-        puts res
       end
 
       {errors: errors, name: name}
