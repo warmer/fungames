@@ -1,0 +1,139 @@
+    <h3>
+      Create a game of Pushfour
+    </h3>
+    <br />
+    <form method="post" action="<%= url(:make_game) %>" class="form-horizontal">
+
+      <div class="form-group has-success">
+        <label for="height" class="col-sm-2 control-label">Board Height (4-15)</label>
+        <div class="col-sm-2">
+          <input name="height" id="height" type="number" min="4" max="15" value="7" class="form-control" />
+        </div>
+        <p class="col-sm-4 text-warning" id="height-help">
+        </p>
+      </div>
+
+      <div class="form-group has-success">
+        <label for="width" class="col-sm-2 control-label">Board Width (4-15)</label>
+        <div class="col-sm-2">
+          <input name="width" id="width" type="number" min="4" max="15" value="7" class="form-control" />
+        </div>
+        <p class="col-sm-4 text-warning" id="width-help">
+        </p>
+      </div>
+
+      <div class="form-group has-success">
+        <label for="obstacles" class="col-sm-2 control-label"># of Obstacles</label>
+        <div class="col-sm-2">
+          <input name="obstacles" id="obstacles" type="number" min="0" max="56" value="4" class="form-control" />
+        </div>
+        <p class="col-sm-4 text-warning" id="obstacles-help">
+        </p>
+      </div>
+
+      <script>
+        function add_error(sel, error) {
+          $(sel).parent().removeClass("has-success");
+          $(sel).parent().addClass("has-error");
+          $(sel + "-help").text(error);
+        }
+        function clear_error(sel) {
+          $(sel).parent().removeClass("has-error");
+          $(sel).parent().addClass("has-success");
+          $(sel + "-help").text("");
+        }
+
+        function validate() {
+          var height = null;
+          var width = null;
+          var obstacles = null;
+
+          var hsel = "#height";
+          var wsel = "#width";
+          var osel = "#obstacles";
+
+          height = $(hsel).val();
+          width = $(wsel).val();
+          obstacles = $(osel).val();
+
+          if(isNaN(height) || !height) {
+            add_error(hsel, 'Height must be a number between 4 and 15, inclusive');
+          }
+          else {
+            clear_error(hsel);
+          }
+
+          if(isNaN(width) || !width) {
+            add_error(wsel, 'Width must be a number between 4 and 15, inclusive');
+          }
+          else {
+            clear_error(wsel);
+          }
+
+          if(isNaN(obstacles) || !obstacles) {
+            add_error(osel, 'Obstacle count must be a number');
+          }
+          else {
+            clear_error(osel);
+          }
+        }
+
+        $(".form-control").change( validate );
+      </script>
+
+      <% if session[:user_id] and session[:login_name] %>
+        <div class="form-group">
+          <label for="opponent" class="col-sm-2 control-label">Opponent</label>
+            <div class="col-sm-2">
+            <select name="opponent" id="opponent" class="form-control">
+              <% players.each do |player| %>
+                <option value="<%= player[:id] %>"><%= player[:name] %></option>
+              <% end %>
+            </select>
+          </div>
+        </div>
+
+        <div class="form-group">
+          <label class="col-sm-2 control-label">Who starts first?</label>
+          <div class="col-sm-4">
+            <label class="radio-inline">
+              <input type="radio" name="first_move" id="self_first_move" value="0" checked>
+                You (<%= session[:login_name] %>)
+              </input>
+            </label>
+
+            <label class="radio-inline">
+              <input type="radio" name="first_move" value="1">
+                Opponent <span id="opp_first_move"></span>
+              </input>
+            </label>
+          </div>
+        </div>
+        <input type="hidden" name="creator" id="game_creator" value="<%= session[:user_id] %>" />
+
+        <script>
+          $("#opponent").change( function() {
+            var id = $("#opponent").val();
+            var name = $("#opponent option[value='"+id+"']").text();
+            $("#opp_first_move").text("(" + name + ")");
+          });
+        </script>
+      <% else %> <%# player is not signed in - only allow temp games %>
+        <p>
+          You are not signed in, but that's ok. We'll create a game that you can play
+          with a friend by sending them a link.
+        </p>
+        <p>
+          If you're prefer to play against someone specific, please
+          <a href="<%= url(:register) %>">register</a> or <a href="<%= url(:login) %>">sign in</a>.
+        </p>
+      <% end %>
+
+
+      <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+          <button type="submit" class="btn" name="submit">Play Game</button>
+        </div>
+      </div>
+    </form>
+

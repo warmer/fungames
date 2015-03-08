@@ -27,6 +27,9 @@ tcs = [
   {start: 1, limit: -1},
   {start: '-1', limit: '5'},
   {start: '1', limit: '-1'},
+  {start: 1, limit: 5, exclude: 2},
+  {start: 1, limit: 5, exclude: '2'},
+  {start: 1, limit: 5, exclude: 6},
 ]
 
 Harness.run_test(mock_db: true) do

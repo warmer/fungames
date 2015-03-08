@@ -58,6 +58,21 @@ Test case:
 Results returned:
 {:errors=>[], :players=>[{:id=>1, :name=>"foo01"}, {:id=>2, :name=>"foo02"}, {:id=>3, :name=>"foo03"}, {:id=>4, :name=>"foo04"}, {:id=>5, :name=>"foo05"}, {:id=>6, :name=>"foo06"}, {:id=>7, :name=>"foo07"}, {:id=>8, :name=>"foo08"}, {:id=>9, :name=>"foo09"}, {:id=>10, :name=>"foo10"}, {:id=>11, :name=>"foo11"}, {:id=>12, :name=>"foo12"}, {:id=>13, :name=>"foo13"}, {:id=>14, :name=>"foo14"}, {:id=>15, :name=>"foo15"}, {:id=>16, :name=>"foo16"}, {:id=>17, :name=>"foo17"}, {:id=>18, :name=>"foo18"}, {:id=>19, :name=>"foo19"}, {:id=>20, :name=>"foo20"}, {:id=>21, :name=>"foo21"}, {:id=>22, :name=>"foo22"}, {:id=>23, :name=>"foo23"}, {:id=>24, :name=>"foo24"}, {:id=>25, :name=>"foo25"}], :limit=>25, :start=>1}
 
+Test case:
+{:start=>1, :limit=>5, :exclude=>2}
+Results returned:
+{:errors=>[], :players=>[{:id=>1, :name=>"foo01"}, {:id=>3, :name=>"foo03"}, {:id=>4, :name=>"foo04"}, {:id=>5, :name=>"foo05"}, {:id=>6, :name=>"foo06"}], :limit=>5, :start=>1}
+
+Test case:
+{:start=>1, :limit=>5, :exclude=>"2"}
+Results returned:
+{:errors=>[], :players=>[{:id=>1, :name=>"foo01"}, {:id=>3, :name=>"foo03"}, {:id=>4, :name=>"foo04"}, {:id=>5, :name=>"foo05"}, {:id=>6, :name=>"foo06"}], :limit=>5, :start=>1}
+
+Test case:
+{:start=>1, :limit=>5, :exclude=>6}
+Results returned:
+{:errors=>[], :players=>[{:id=>1, :name=>"foo01"}, {:id=>2, :name=>"foo02"}, {:id=>3, :name=>"foo03"}, {:id=>4, :name=>"foo04"}, {:id=>5, :name=>"foo05"}], :limit=>5, :start=>1}
+
 Final state of the player table:
 ==================== PLAYER TABLE ====================
 [["foo01", "4cea6ab4241113103f86bc441bcfe8a1", 1], ["foo02", "7116713a94d9410b75014d0db0056d7f", 2], ["foo03", "09c6175aae4ac8eeab0d0e1ba5305533", 3], ["foo04", "5e2c1f1f311ace1710db5cb922764dcb", 4], ["foo05", "e1cb969ea6d025203eb58f7c83e9212f", 5], ["foo06", "af3ac5b6b8f2ce0d96eda636a8260631", 6], ["foo07", "61854fd7627688179c9ed364fa11c182", 7], ["foo08", "ea2eead87431c6bb0fa664f3e09f468d", 8], ["foo09", "c44412ca8538664a67ea2d4e91b3c9b7", 9], ["foo10", "41e29b3da5aad036224ec4254ccbed34", 10], ["foo11", "dab94d9c815ee65dda5e7b6f319a6856", 11], ["foo12", "3aecc05b9bc5e28c5e0897325293a1b3", 12], ["foo13", "02ab5cc1a1b00aea8ab2f78606dac353", 13], ["foo14", "1f1c507fbcf8678d4b6b5dab3d7f1337", 14], ["foo15", "69ba3c00abab1b5bb009dbd13d905f11", 15], ["foo16", "974c45d1eabb90a508e948a8894eb030", 16], ["foo17", "b25f6c48196444c6def215c1e713f877", 17], ["foo18", "d8863ae886093d00f8e564207942c303", 18], ["foo19", "9039708ccb19f1932e42aa6bd337cc82", 19], ["foo20", "c8379ac828d1a4b8d77a187261aaaa91", 20], ["foo21", "4220c0147a159b2e042a0e1da65a704a", 21], ["foo22", "9004632dde17a7aad1a2564b06d2a91d", 22], ["foo23", "6caa8489b02054522ab074d6d0eadaf1", 23], ["foo24", "8c852d1f6f51a41692aade5c92f34a6f", 24], ["foo25", "7a982056f8c5d26d366d35c19c9a209d", 25], ["foo26", "495e5e28accef1c37260b9ba3e02e962", 26], ["foo27", "f87c760ee9579446c2a05a9e021ff53d", 27], ["foo28", "f1fb8059c20222c41359f809ecee9ac8", 28], ["foo29", "781ba50ce04638aa23e9417686b341a8", 29], ["foo30", "38be2d4a821a4970b883fdc513095689", 30]]

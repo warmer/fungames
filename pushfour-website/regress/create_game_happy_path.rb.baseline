@@ -1,0 +1,64 @@
+[["user1", "7ddd4e549b62bfeb0fe27bdcc66988d8", 1], ["user2", "6896ae1b8d65b86b3ac0ca60f23307f0", 2]]
+============================================================
+Test case: {:height=>7, :width=>7, :obstacles=>4}
+Result of game creation:
+{:errors=>[], :notes=>[], :board_string=>"++++++++++++++++++++++++++#++++++#++++++++++++##+"}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>4, :width=>4, :obstacles=>0}
+Result of game creation:
+{:errors=>[], :notes=>[], :board_string=>"++++++++++++++++"}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>15, :width=>15, :obstacles=>57}
+Result of game creation:
+{:errors=>[], :notes=>["Obstacle count reduced to 56"], :board_string=>"++++#+++#++#+++++#++#++++++#++#+++++#+##++++++++#+++##++++#+#+#+#++++++++++#+++++++++##+++++#++++#++++#++++++#+#+##++++++++#++++++++#++#++###++++##++++++++##+##+##+++++#+++#++++#+++##++++++++++++#+#++++++++#++++##+#+####+#+++"}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>4, :width=>15, :obstacles=>10}
+Result of game creation:
+{:errors=>[], :notes=>[], :board_string=>"#++++++++++#+++#+++++++++#++++++#+++++++##++++++++++++++###+"}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>15, :width=>4, :obstacles=>10}
+Result of game creation:
+{:errors=>[], :notes=>[], :board_string=>"#++++++++++#+++#+++++++++#++++++#+++++++##++++++++++++++###+"}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>4, :width=>4, :obstacles=>1, :creator=>1, :opponent=>2, :first_move=>0, :user_id=>1}
+Result of game creation:
+{:errors=>[], :notes=>[], :board_string=>"+++++++++++++++#"}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>4, :width=>4, :obstacles=>1, :creator=>2, :opponent=>1, :first_move=>1, :user_id=>2}
+Result of game creation:
+{:errors=>[], :notes=>[], :board_string=>"+++++++++++++++#"}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+

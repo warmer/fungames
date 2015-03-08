@@ -15,6 +15,11 @@ module Pushfour
       name.gsub(/[^a-zA-Z0-9_-]/, '')
     end
 
+    def val_if_int(raw)
+      parsed = raw.to_i
+      (raw.to_s == parsed.to_s ? parsed : nil)
+    end
+
     def url_replace(map, key, opts = {})
       u = map[key]
 

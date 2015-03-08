@@ -1,0 +1,25 @@
+.navbar-default {
+  background-color: #ffae00;
+  border-color: #e7e7e7;
+  background-image: none;
+}
+.navbar-default .navbar-brand {
+  color: #0066af;
+}
+.navbar-static-top {
+  border-bottom: 1px solid black;
+}
+.navbar-default .navbar-nav>li>a {
+  color: #0066af;
+}
+.navbar-brand {
+  padding: 5px;
+  height: 2em;
+}
+.navbar-nav>li>a {
+  padding-top: 5px;
+  padding-bottom: 5px
+}
+.navbar {
+  min-height: 0px;
+}

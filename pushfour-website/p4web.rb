@@ -13,6 +13,7 @@ PATH_ROOT = '/'
 URL = {
   tournaments: PATH_ROOT + 'tournaments',
   tournament: PATH_ROOT + 'tournament/:id',
+  make_game: PATH_ROOT + 'new_game',
   register: PATH_ROOT + 'register',
   profile: PATH_ROOT + 'profile',
   players: PATH_ROOT + 'players',
@@ -20,6 +21,7 @@ URL = {
   stats: PATH_ROOT + 'stats',
   games: PATH_ROOT + 'games',
   game: PATH_ROOT + 'game/:id',
+  logout: PATH_ROOT + 'logout',
   login: PATH_ROOT + 'login',
   index: PATH_ROOT,
 }
@@ -70,7 +72,7 @@ class PushfourWebsite < Sinatra::Base
     raw_params = filter(params, [:limit, :start])
     results = Pushfour::Players.player_list(raw_params)
 
-    erb :players, :locals => locals(results)
+    erb :players, locals: locals(results)
   end
 
   post URL[:register] do
@@ -79,12 +81,12 @@ class PushfourWebsite < Sinatra::Base
     if results[:errors].size == 0
       redirect to(URL[:login])
     else
-      erb :register, :locals => locals(results)
+      erb :register, locals: locals(results)
     end
   end
 
   get URL[:register] do
-    erb :register, :locals => locals
+    erb :register, locals: locals
   end
 
   post URL[:login] do
@@ -95,17 +97,42 @@ class PushfourWebsite < Sinatra::Base
       session[:login_name] = results[:name]
       redirect to(URL[:index])
     else
-      erb :login, :locals => locals(results)
+      erb :login, locals: locals(results)
+    end
+  end
+
+  get URL[:logout] do
+    session[:user_id] = nil
+    session[:login_name] = nil
+    redirect to(URL[:index])
+  end
+
+  get URL[:make_game] do
+    results = Pushfour::Players.player_list(exclude: session[:user_id])
+
+    erb :create_game, locals: locals(results)
+  end
+
+  post URL[:make_game] do
+    raw_params = filter(params, [:height, :width, :obstacles, :creator, :opponent, :first_move])
+    raw_params = raw_params.merge(user_id: session[:user_id])
+
+    results = Pushfour::CreateGame.create_game(raw_params)
+
+    if results[:errors].size == 0
+      results.inspect.to_s
+    else
+      erb :create_game, locals: locals(results)
     end
   end
 
   get URL[:login] do
 
-    erb :login, :locals => locals
+    erb :login, locals: locals
   end
 
   get URL[:index] do
 
-    erb :index, :locals => locals
+    erb :index, locals: locals
   end
 end
