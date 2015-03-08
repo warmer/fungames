@@ -4,7 +4,8 @@ def get(url)
   tries ||= 5
   uri = URI(url)
   res = Net::HTTP.get(uri)
-rescue Timeout::Error, Errno::EINVAL, Errno::ECONNRESET, EOFError, Errno::ECONNREFUSED,
+rescue Timeout::Error, SocketError,
+       Errno::EINVAL, Errno::ECONNRESET, EOFError, Errno::ECONNREFUSED,
        Net::HTTPBadResponse, Net::HTTPHeaderSyntaxError, Net::ProtocolError => e
   puts "Encountered an error: #{e}"
   unless (tries -= 1).zero?
