@@ -60,6 +60,7 @@ module PushfourAI
       @dynamic_depth = opts[:dynamic_depth]
       @poll_delay = opts[:poll_delay] || 5
       @search_depth = opts[:search_depth] || 3
+      @permaban_file = opts[:permaban_file]
     end
 
     def debug(line = nil)
@@ -102,6 +103,9 @@ module PushfourAI
 
       move_outcomes = {}
 
+      pre_best_move = nil
+      pre_best_score = nil
+
       board.movable_blocks.each do |move|
         moved = board.move(move[0], move[1], play_as)
         if moved.game_over > 0
@@ -110,6 +114,11 @@ module PushfourAI
         end
         score = score(moved, play_as, board.players[play_as] || board.players[0])
         move_outcomes[move] = {score: score, board: moved}
+
+        if !pre_best_score || score > pre_best_score
+          pre_best_move = move
+          pre_best_score = score
+        end
       end
 
       if force_move
@@ -123,12 +132,14 @@ module PushfourAI
         depth = @search_depth - 1
         case board.movable_blocks.count
           when 1..3
-            depth += 4
+            depth += 5
           when 4..5
-            depth += 3
+            depth += 4
           when 6..7
-            depth += 2
+            depth += 3
           when 8..9
+            depth += 2
+          when 10..11
             depth += 1
         end
         info "Looking #{depth} deep through #{board.movable_blocks.count} moves"
@@ -161,6 +172,8 @@ module PushfourAI
         threads.each {|t| t.join}
       end
 
+      pre_best_move
+
       best_move = nil
       best_score = nil
       move_outcomes.each do |move, outcome|
@@ -169,6 +182,8 @@ module PushfourAI
           best_score = outcome[:score]
         end
       end
+
+      best_move = pre_best_move if best_score == LOSS
 
       [best_move, best_score]
     end
@@ -201,6 +216,15 @@ module PushfourAI
       end
       debug "  ##### #{find_max ? 'best' : 'worst'} move by #{current_turn}: #{bmove} @ #{best} (#{maxiplayer})"
       best
+    end
+
+    def permaban(game_id)
+      if @permaban_file
+        File.open(@permaban_file, 'a+') do |f|
+          f.write(game_id.to_s)
+          f.write("\n")
+        end
+      end
     end
 
     def score(board, player, current_turn)
