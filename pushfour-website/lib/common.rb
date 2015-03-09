@@ -5,6 +5,17 @@ module Pushfour
   module Common
     PROJ_ROOT = File.dirname(__FILE__)
 
+    GAME_STATUS = {
+      normal: 0,
+      stalemate: 1,
+      ended: 2,
+      abandoned: 3,
+    }
+
+    def status_id_for(sym)
+      GAME_STATUS[sym]
+    end
+
     def md5sum(str)
       Digest::MD5.hexdigest(str)
     end

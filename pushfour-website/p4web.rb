@@ -5,6 +5,7 @@ require 'sqlite3'
 
 require_relative 'lib/common.rb'
 require_relative 'lib/registration.rb'
+require_relative 'lib/create_game.rb'
 require_relative 'lib/login.rb'
 require_relative 'lib/players.rb'
 
@@ -117,13 +118,21 @@ class PushfourWebsite < Sinatra::Base
     raw_params = filter(params, [:height, :width, :obstacles, :creator, :opponent, :first_move])
     raw_params = raw_params.merge(user_id: session[:user_id])
 
-    results = Pushfour::CreateGame.create_game(raw_params)
+    results = Pushfour::WebGame.create_game(raw_params)
 
     if results[:errors].size == 0
-      results.inspect.to_s
+      puts results.inspect.to_s
+      redirect to(url(:game, {id: results[:game]}))
     else
       erb :create_game, locals: locals(results)
     end
+  end
+
+  get URL[:game] do |id|
+    opts = {game_id: id, user_id: session[:user_id]}
+    results = Pushfour::WebGame.load_game(opts)
+
+    erb :game, locals: locals(results)
   end
 
   get URL[:login] do

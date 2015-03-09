@@ -45,8 +45,7 @@ module Pushfour
             Player2 INTEGER,
             Status INTEGER,
             Turn INTEGER,
-            Board INTEGER,
-            Name VARCHAR(255));
+            Board INTEGER)
         SQL
 
         db.execute <<-SQL
@@ -61,6 +60,7 @@ module Pushfour
         db.execute <<-SQL
           CREATE TABLE IF NOT EXISTS #{MOVE_TABLE}(
             Id INTEGER PRIMARY KEY,
+            Game INTEGER,
             MoveNumber INTEGER,
             Player INTEGER,
             XLocation INTEGER,
@@ -147,7 +147,7 @@ module Pushfour
 
       validate(columns, values)
 
-      cols = columns.map {|c| "'#{c}'"}.join(',')
+      cols = columns.map {|c| "'#{c.to_s}'"}.join(',')
       val_args = (['?'] * columns.size).join(',')
 
       begin

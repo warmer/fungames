@@ -23,3 +23,10 @@
 .navbar {
   min-height: 0px;
 }
+.spacer {
+  height: 28px;
+  width: 28px;
+}
+.block {
+  border: 1px solid black;
+}
