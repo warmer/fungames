@@ -4,7 +4,7 @@ def get(url)
   tries ||= 5
   uri = URI(url)
   res = Net::HTTP.get(uri)
-rescue Timeout::Error, EOFError,
+rescue Timeout::Error, EOFError, SocketError,
         Errno::EINVAL, Errno::ECONNRESET, Errno::ECONNREFUSED,
         Errno::ETIMEDOUT, Errno::EHOSTUNREACH, Net::HTTPBadResponse,
         Net::HTTPHeaderSyntaxError, Net::ProtocolError => e

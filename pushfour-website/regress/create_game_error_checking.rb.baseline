@@ -1,0 +1,127 @@
+[["user1", "7ddd4e549b62bfeb0fe27bdcc66988d8", 1], ["user2", "6896ae1b8d65b86b3ac0ca60f23307f0", 2]]
+============================================================
+Test case: {:height=>7, :width=>7, :obstacles=>-1}
+Result of game creation:
+{:errors=>["There must be a positive number of obstacles"], :notes=>[], :board=>nil, :game=>nil}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>3, :width=>4, :obstacles=>0}
+Result of game creation:
+{:errors=>["Board height must be between 4 and 15"], :notes=>[], :board=>nil, :game=>nil}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>4, :width=>3, :obstacles=>0}
+Result of game creation:
+{:errors=>["Board width must be between 4 and 15"], :notes=>[], :board=>nil, :game=>nil}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>4, :width=>16, :obstacles=>0}
+Result of game creation:
+{:errors=>["Board width must be between 4 and 15"], :notes=>[], :board=>nil, :game=>nil}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>16, :width=>4, :obstacles=>0}
+Result of game creation:
+{:errors=>["Board height must be between 4 and 15"], :notes=>[], :board=>nil, :game=>nil}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>1, :first_move=>0, :user_id=>1}
+Result of game creation:
+{:errors=>["Opponent cannot be self"], :notes=>[], :board=>nil, :game=>nil}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>4, :width=>4, :obstacles=>0, :creator=>3, :opponent=>2, :first_move=>0, :user_id=>3}
+Result of game creation:
+{:errors=>["Could not find creating user"], :notes=>[], :board=>nil, :game=>nil}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>3, :first_move=>0, :user_id=>1}
+Result of game creation:
+{:errors=>["Could not find opponent"], :notes=>[], :board=>nil, :game=>nil}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>nil, :first_move=>0, :user_id=>1}
+Result of game creation:
+{:errors=>["Opponent not specified", "Could not find opponent"], :notes=>[], :board=>nil, :game=>nil}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>2, :first_move=>nil, :user_id=>1}
+Result of game creation:
+{:errors=>["Must specify which opponent has the first move", "First move out of bounds"], :notes=>[], :board=>nil, :game=>nil}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>2, :first_move=>-1, :user_id=>1}
+Result of game creation:
+{:errors=>["First move out of bounds"], :notes=>[], :board=>nil, :game=>nil}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>2, :first_move=>2, :user_id=>1}
+Result of game creation:
+{:errors=>["First move out of bounds"], :notes=>[], :board=>nil, :game=>nil}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>2, :first_move=>0, :user_id=>2}
+Result of game creation:
+{:errors=>["Signed in user does not match creator", "Opponent cannot be self"], :notes=>[], :board=>nil, :game=>nil}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
+============================================================
+Test case: {:height=>4, :width=>4, :obstacles=>0, :creator=>nil, :opponent=>2, :first_move=>0, :user_id=>1}
+Result of game creation:
+{:errors=>["Unexpected game creation parameters provided"], :notes=>[], :board=>nil, :game=>nil}
+Game table after running test case:
+[]
+Board table after running test case:
+[]
+
