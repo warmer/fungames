@@ -1,15 +1,36 @@
+<% if defined?(game) and game and game[:game_detail] and game[:game_detail][:xy] %>
   <div id="game_board">
     <table>
       <tbody>
-        <!-- top entry -- >
+        <!-- top entry -->
         <tr>
-          <td class="board_corner"><img src="trans.gif" class="spacer" /></td>
-          <td class="board_corner"><img src="trans.gif" class="spacer" /></td>
+          <td class="board_corner"><img src="/img/trans.gif" class="spacer" /></td>
+          <% board[:width].times do |col| %>
+            <td class="topmove" id="t-<%= col %>"><img src="/img/trans.gif" class="spacer" /></td>
+          <% end %>
+          <td class="board_corner"><img src="/img/trans.gif" class="spacer" /></td>
         </tr>
+        <% game[:game_detail][:xy].each_with_index do |row_pieces, row| %>
+          <tr>
+            <td class="leftmove" id="l-<%= row %>"><img src="/img/trans.gif" class="spacer" /></td>
+          <% row_pieces.each_with_index do |block, col| %>
+            <% piece = block & 0x07 %>
+            <% color = ['#fff', '#f00', '#00f', '#0f0', '#666'][piece] %>
+            <td class="block" id="<%= col %>-<%= row %>" style="background-color: <%= color %>">
+              <img src="/img/trans.gif" class="spacer" />
+            </td>
+          <% end %>
+            <td class="rightmove" id="r-<%= row %>"><img src="/img/trans.gif" class="spacer" /></td>
+          </tr>
+        <% end %>
         <tr>
-          <td class="board_corner"><img src="trans.gif" class="spacer" /></td>
-          <td class="board_corner"><img src="trans.gif" class="spacer" /></td>
+          <td class="board_corner"><img src="/img/trans.gif" class="spacer" /></td>
+          <% board[:width].times do |col| %>
+            <td class="botmove" id="b-<%= col %>"><img src="/img/trans.gif" class="spacer" /></td>
+          <% end %>
+          <td class="board_corner"><img src="/img/trans.gif" class="spacer" /></td>
         </tr>
       </tbody>
     </table>
   </div>
+<% end %>
