@@ -1,7 +1,7 @@
 require 'net/http'
 
 def get(url)
-  tries ||= 5
+  tries ||= 10
   uri = URI(url)
   res = Net::HTTP.get(uri)
 rescue Timeout::Error, EOFError, SocketError,
@@ -10,7 +10,7 @@ rescue Timeout::Error, EOFError, SocketError,
         Net::HTTPHeaderSyntaxError, Net::ProtocolError => e
   puts "Encountered an error: #{e}"
   unless (tries -= 1).zero?
-    sleep 5 * (5 - tries)
+    sleep 5 * (10 - tries)
     retry
   end
 else
@@ -475,6 +475,7 @@ module Pushfour
 
   def self.game_list(player)
     res = get "#{SERVER_URL}/getgames.php?playerid=#{player.to_i}"
+    games = '0' unless res
     games = res.split(',').map {|id| id.to_i}
     games.delete(0)
     games

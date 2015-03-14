@@ -1,15 +1,58 @@
+<% if defined?(game) and game and game[:game_detail] and game[:game_detail][:xy] %>
+  <% puts game %>
+  <% piece_classes = ['free', 'p1', 'p2', 'p3', 'obs'] %>
+  <script>
+    var turn = <%= game[:turn] %>;
+    var player = <%= session[:user_id] || 0 %>
+
+    function glow(item, color) {
+      $( item ).css('background-color', color);
+    }
+    function glow_down(col) {
+    }
+  </script>
+
   <div id="game_board">
-    <table>
+    <table class="table_game_board">
       <tbody>
-        <!-- top entry -- >
+        <!-- top entry -->
         <tr>
-          <td class="board_corner"><img src="trans.gif" class="spacer" /></td>
-          <td class="board_corner"><img src="trans.gif" class="spacer" /></td>
+          <td class="board_corner board_block"></td>
+          <% board[:width].times do |col| %>
+            <td class="topmove board_block" id="t-<%= col %>"></td>
+            <script>
+              $( '#t-<%= col %>' ).mouseenter(function() {
+                glow(this, '#999');
+              });
+              $( '#t-<%= col %>' ).mouseleave(function() {
+                glow(this, '#fff');
+              });
+            </script>
+          <% end %>
+          <td class="board_corner board_block"></td>
         </tr>
+        <% game[:game_detail][:xy].each_with_index do |row_pieces, row| %>
+          <tr>
+            <td class="leftmove board_block" id="l-<%= row %>"></td>
+          <% row_pieces.each_with_index do |block, col| %>
+            <% piece = block & 0x07 %>
+            <% css_cls = piece_classes[piece] %>
+            <% blk_id = "#{col}-#{row}" %>
+            <td class="block board_block <%= css_cls %>" id="<%= blk_id %>"></td>
+          <% end %>
+            <td class="rightmove board_block" id="r-<%= row %>"></td>
+            <script>
+            </script>
+          </tr>
+        <% end %>
         <tr>
-          <td class="board_corner"><img src="trans.gif" class="spacer" /></td>
-          <td class="board_corner"><img src="trans.gif" class="spacer" /></td>
+          <td class="board_corner board_block"></td>
+          <% board[:width].times do |col| %>
+            <td class="botmove board_block" id="b-<%= col %>"></td>
+          <% end %>
+          <td class="board_corner board_block"></td>
         </tr>
       </tbody>
     </table>
   </div>
+<% end %>
