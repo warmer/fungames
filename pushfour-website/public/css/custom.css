@@ -24,9 +24,30 @@
   min-height: 0px;
 }
 .spacer {
-  height: 28px;
-  width: 28px;
+}
+.board_block {
+  height: 32px;
+  width: 32px;
 }
 .block {
   border: 1px solid black;
+}
+.free {
+  background-color: #fff;
+}
+.p1 {
+  background-color: #f00;
+}
+.p2 {
+  background-color: #00f;
+}
+.p3 {
+  background-color: #0f0;
+}
+.obs {
+  background-color: #666;
+}
+.table_game_board {
+  border-spacing: 2px;
+  border-collapse: separate;
 }
