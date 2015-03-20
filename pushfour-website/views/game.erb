@@ -1,5 +1,5 @@
 <% if defined?(game) and game and game[:game_detail] and game[:game_detail][:xy] %>
-  <% puts game %>
+  <% puts "### game: #{game}" %>
   <% piece_classes = ['free', 'p1', 'p2', 'p3', 'obs'] %>
   <script>
     var turn = <%= game[:turn] %>;
@@ -8,7 +8,18 @@
     function glow(item, color) {
       $( item ).css('background-color', color);
     }
-    function glow_down(col) {
+
+    function glow_vert(col, first, last, color) {
+      while(first <= last) {
+        glow($( '#' + col + '-' + first ), color);
+        first++;
+      }
+    }
+    function glow_horiz(row, first, last, color) {
+      while(first <= last) {
+        glow($( '#' + first + '-' + row ), color);
+        first++;
+      }
     }
   </script>
 
@@ -22,10 +33,14 @@
             <td class="topmove board_block" id="t-<%= col %>"></td>
             <script>
               $( '#t-<%= col %>' ).mouseenter(function() {
+                var depth = <%= game[:game_detail][:move_depth][:top][col] %>;
                 glow(this, '#999');
+                glow_vert(<%= col %>, 0, depth, '#999');
               });
               $( '#t-<%= col %>' ).mouseleave(function() {
+                var depth = <%= game[:game_detail][:move_depth][:top][col] %>;
                 glow(this, '#fff');
+                glow_vert(<%= col %>, 0, depth, '#fff');
               });
             </script>
           <% end %>
@@ -34,6 +49,18 @@
         <% game[:game_detail][:xy].each_with_index do |row_pieces, row| %>
           <tr>
             <td class="leftmove board_block" id="l-<%= row %>"></td>
+            <script>
+              $( '#l-<%= row %>' ).mouseenter(function() {
+                var depth = <%= game[:game_detail][:move_depth][:left][row] %>;
+                glow(this, '#999');
+                glow_horiz(<%= row %>, 0, depth, '#999');
+              });
+              $( '#l-<%= row %>' ).mouseleave(function() {
+                var depth = <%= game[:game_detail][:move_depth][:left][row] %>;
+                glow(this, '#fff');
+                glow_horiz(<%= row %>, 0, depth, '#fff');
+              });
+            </script>
           <% row_pieces.each_with_index do |block, col| %>
             <% piece = block & 0x07 %>
             <% css_cls = piece_classes[piece] %>
@@ -42,6 +69,16 @@
           <% end %>
             <td class="rightmove board_block" id="r-<%= row %>"></td>
             <script>
+              $( '#r-<%= row %>' ).mouseenter(function() {
+                var depth = <%= game[:game_detail][:move_depth][:right][row] %>;
+                glow(this, '#999');
+                glow_horiz(<%= row %>, depth, <%= board[:height] %>, '#999');
+              });
+              $( '#r-<%= row %>' ).mouseleave(function() {
+                var depth = <%= game[:game_detail][:move_depth][:right][row] %>;
+                glow(this, '#fff');
+                glow_horiz(<%= row %>, depth, <%= board[:height] %>, '#fff');
+              });
             </script>
           </tr>
         <% end %>
@@ -49,6 +86,18 @@
           <td class="board_corner board_block"></td>
           <% board[:width].times do |col| %>
             <td class="botmove board_block" id="b-<%= col %>"></td>
+            <script>
+              $( '#b-<%= col %>' ).mouseenter(function() {
+                var depth = <%= game[:game_detail][:move_depth][:bottom][col] %>;
+                glow(this, '#999');
+                glow_vert(<%= col %>, depth, <%= board[:width] %>, '#999');
+              });
+              $( '#b-<%= col %>' ).mouseleave(function() {
+                var depth = <%= game[:game_detail][:move_depth][:bottom][col] %>;
+                glow(this, '#fff');
+                glow_vert(<%= col %>, depth, <%= board[:width] %>, '#fff');
+              });
+            </script>
           <% end %>
           <td class="board_corner board_block"></td>
         </tr>
