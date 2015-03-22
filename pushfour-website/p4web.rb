@@ -19,6 +19,7 @@ URL = {
   profile: PATH_ROOT + 'profile',
   players: PATH_ROOT + 'players',
   player: PATH_ROOT + 'player/:id',
+  status: PATH_ROOT + 'game_status/:id',
   stats: PATH_ROOT + 'stats',
   games: PATH_ROOT + 'games',
   game: PATH_ROOT + 'game/:id',
@@ -120,6 +121,7 @@ class PushfourWebsite < Sinatra::Base
 
     results = Pushfour::WebGame.create_game(raw_params)
 
+
     if results[:errors].size == 0
       puts results.inspect.to_s
       redirect to(url(:game, {id: results[:game]}))
@@ -133,6 +135,10 @@ class PushfourWebsite < Sinatra::Base
     results = Pushfour::WebGame.load_game(opts)
 
     erb :game, locals: locals(results)
+  end
+
+  get URL[:status] do |id|
+    opts = {game_id: id, user_id: session[:user_id]}
   end
 
   get URL[:login] do
