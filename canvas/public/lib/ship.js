@@ -3,13 +3,15 @@ function Bullet(canvas, options) {
   var canvas = canvas;
 
   var direction = options.direction;
-  var velocity = options.velocity;
+  var shipVelocity = options.shipVelocity;
   var x = options.origin.x;
   var y = options.origin.y;
   var radius = 2;
   var color = 'red';
   var expired = false;
+  var impacted = false;
   var createTime = Date.now();
+  var prevPoint = new fabric.Point(x, y);
 
   var image = new fabric.Circle({
     radius: radius,
@@ -23,26 +25,56 @@ function Bullet(canvas, options) {
   var bulletLongevity = 1000;
   var rate = 250;
 
+  shipVelocity.magnitude * Math.sin(shipVelocity.direction)
+
   var velocity = {
-    x: rate * Math.sin(direction * Math.PI / 180),
-    y: rate * Math.cos(direction * Math.PI / 180),
+    x: rate * Math.sin(to_rad(direction)) +
+        shipVelocity.magnitude * Math.sin(shipVelocity.direction),
+    y: rate * Math.cos(to_rad(direction)) +
+        shipVelocity.magnitude * Math.cos(shipVelocity.direction),
   }
 
   this.tick = function(elapsed) { gameTick(elapsed); }
   this.expired = function() { return expired; }
+  this.impacted = function() { return impacted; }
+  this.image = function() { return image; }
+  this.prevPoint = function() { return prevPoint; }
+  this.impact = function() { bulletImpact(); }
 
   function gameTick(elapsed) {
     if(Date.now() - bulletLongevity > createTime) {
       expired = true;
-      canvas.remove(image);
+      if(!impacted) {
+        canvas.remove(image);
+      }
     }
-    else {
+    else if(!impacted) {
       var posLeft = image.left + velocity.x * elapsed / 1000;
       var posTop = image.top - velocity.y * elapsed / 1000;
-      image.set({left: posLeft, top: posTop})
+      if(posLeft > canvas.getWidth()) {
+        posLeft = 0;
+      }
+      else if(posLeft < 0) {
+        posLeft = canvas.getWidth();
+      }
+      if(posTop > canvas.getHeight()) {
+        posTop = 0;
+      }
+      else if(posTop < 0) {
+        posTop = canvas.getHeight();
+      }
+
+      prevPoint = image.getCenterPoint();
+
+      image.set({left: posLeft, top: posTop});
+      image.setCoords();
     }
   }
 
+  function bulletImpact() {
+    impacted = true;
+    canvas.remove(image);
+  }
 }
 
 function Ship(canvas) {
@@ -63,8 +95,9 @@ function Ship(canvas) {
   // movement
   var turning = 0;
   var thrusting = false;
-  var thrustAmount = 3;
-  var rotationRate = 15;
+  var thrustAmount = 5;
+  var rotationRate = 10;
+  var dragRate = 1;
 
   var image = new fabric.Polygon(
     [new fabric.Point(10, 0), new fabric.Point(20, 30), new fabric.Point(10, 25), new fabric.Point(0, 30)],
@@ -79,6 +112,8 @@ function Ship(canvas) {
   this.keypress = function(action) { keypressAction(action) }
   this.keyup = function(action) { keyupAction(action) }
   this.tick = function(elapsed) { gameTick(elapsed) }
+  this.bullets = function() { return bullets; }
+  this.image = function() { return image; }
 
 
   // =====================================================
@@ -122,6 +157,8 @@ function Ship(canvas) {
         firing = false;
         break;
       case 'left':
+        turning = 0;
+        break;
       case 'right':
         turning = 0;
         break;
@@ -143,7 +180,7 @@ function Ship(canvas) {
       changePosition(elapsed);
 
       // add drag
-      velocity.magnitude -= 1;
+      velocity.magnitude -= dragRate;
       if(velocity.magnitude < 0) { velocity.magnitude = 0; }
     }
 
@@ -171,26 +208,32 @@ function Ship(canvas) {
   function changePosition(elapsed) {
     var posLeft = image.left + velocity.magnitude * Math.sin(velocity.direction) * elapsed / 1000;
     var posTop = image.top - velocity.magnitude * Math.cos(velocity.direction) * elapsed / 1000;
-    image.set({left: posLeft, top: posTop})
+    if(posLeft > canvas.getWidth()) {
+      posLeft = 0;
+    }
+    else if(posLeft < 0) {
+      posLeft = canvas.getWidth();
+    }
+    if(posTop > canvas.getHeight()) {
+      posTop = 0;
+    }
+    else if(posTop < 0) {
+      posTop = canvas.getHeight();
+    }
+
+    image.set({left: posLeft, top: posTop});
+    image.setCoords();
   }
 
   // adds thrust to the ship
   function addThrust() {
-    var addX = thrustAmount * Math.sin(image.angle * Math.PI / 180);
-    var addY = thrustAmount * Math.cos(image.angle * Math.PI / 180);
+    var addX = thrustAmount * Math.sin(to_rad(image.angle));
+    var addY = thrustAmount * Math.cos(to_rad(image.angle));
     var xVel = velocity.magnitude * Math.sin(velocity.direction) + addX;
     var yVel = velocity.magnitude * Math.cos(velocity.direction) + addY;
 
     velocity.magnitude = Math.sqrt(Math.pow(xVel, 2) + Math.pow(yVel, 2));
-    if(xVel >= 0 && yVel >= 0) {
-      velocity.direction = (Math.PI / 2) - Math.atan2(yVel, xVel) + Math.PI;
-    }
-    console.log({
-//      addX: addX, addY: addY,
-//      xVel: xVel, yVel: yVel,
-      velocityMag: velocity.magnitude,
-      velocityDir: velocity.direction
-    });
+    velocity.direction = direction_of_vector(yVel, xVel);
   }
 
   // returns the ship's firing point
@@ -198,8 +241,8 @@ function Ship(canvas) {
     var rad = image.getHeight() / 2;
     var center = image.getCenterPoint();
     return {
-      x: center.x + rad * Math.sin(image.angle * Math.PI / 180),
-      y: center.y - rad * Math.cos(image.angle * Math.PI / 180),
+      x: center.x + rad * Math.sin(to_rad(image.angle)),
+      y: center.y - rad * Math.cos(to_rad(image.angle)),
     }
   }
 
@@ -210,7 +253,7 @@ function Ship(canvas) {
       var bullet = new Bullet(canvas, {
         origin: fireOrigin(),
         direction: image.angle,
-        velocity: 0,
+        shipVelocity: velocity,
       });
       bullets.push(bullet);
       lastFired = Date.now();
