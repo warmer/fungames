@@ -10,9 +10,10 @@ var canvas = new fabric.StaticCanvas('gamespace');
 
 var game = new Game(canvas);
 
-$(document).keydown(function(e){ game.keydown(e); e.preventDefault(); });
-$(document).keypress(function(e){ game.keypress(e); e.preventDefault(); });
-$(document).keyup(function(e){ game.keyup(e); e.preventDefault(); });
+// send all key actions to the game; prevent the default action for normal keys
+$(document).keydown(function(e){ game.keydown(e); if(e.keyCode < 112) e.preventDefault(); });
+$(document).keypress(function(e){ game.keypress(e); if(e.keyCode < 112) e.preventDefault(); });
+$(document).keyup(function(e){ game.keyup(e); if(e.keyCode < 112) e.preventDefault(); });
 game.run();
 
 </script>

@@ -6,12 +6,16 @@ function Bullet(canvas, options) {
   var shipVelocity = options.shipVelocity;
   var x = options.origin.x;
   var y = options.origin.y;
-  var radius = 2;
-  var color = 'red';
+  var mass = options.mass;
+  var energy = options.energy;
+  var radius = Math.sqrt(mass);
+  var rate = energy / mass;
+  var bulletLongevity = 2000;
   var expired = false;
   var impacted = false;
   var createTime = Date.now();
   var prevPoint = new fabric.Point(x, y);
+  var color = 'red';
 
   var image = new fabric.Circle({
     radius: radius,
@@ -22,8 +26,6 @@ function Bullet(canvas, options) {
   });
   canvas.add(image);
 
-  var bulletLongevity = 1000;
-  var rate = 250;
 
   shipVelocity.magnitude * Math.sin(shipVelocity.direction)
 
@@ -44,9 +46,7 @@ function Bullet(canvas, options) {
   function gameTick(elapsed) {
     if(Date.now() - bulletLongevity > createTime) {
       expired = true;
-      if(!impacted) {
-        canvas.remove(image);
-      }
+      canvas.remove(image);
     }
     else if(!impacted) {
       var posLeft = image.left + velocity.x * elapsed / 1000;
@@ -77,17 +77,31 @@ function Bullet(canvas, options) {
   }
 }
 
-function Ship(canvas) {
+function option(opts, name, defaultValue) {
+  var val = defaultValue;
+  if(opts[name]) val = opts[name];
+  return val;
+}
+
+function Ship(canvas, opts) {
   var __ship = this;
   var canvas = canvas;
-  var x = canvas.getWidth() / 2;
-  var y = canvas.getHeight() / 2;
-  var velocity = {magnitude: 0, direction: 0};
+  if(!opts) opts = {};
+
+  // ship attributes
+  var x = opts['x'] || canvas.getWidth() / 2;
+  var y = opts['y'] || canvas.getHeight() / 2;
+  var velocity = opts['velocity'] || {magnitude: 0, direction: 0};
+  var shipMass = opts['shipMass'] || 2000;
+  var shipThrust = opts['shipThrust'] || 10000;
 
   // weapons
-  var burstRate = 15;
-  var firingRate = 5;
-  var burstUnder = 5;
+  var weaponEnergyMax = opts['weaponEnergyMax'] || 10000;
+  var weaponEnergy = opts['weaponEnergy'] || 10000;
+  var firingEnergy = opts['firingEnergy'] || 1000;
+  var regenerationRate = opts['regenerationRate'] || 3000;
+  var bulletMass = opts['bulletMass'] || 4;
+  var maxFiringRate = opts['maxFiringRate'] || 15;
   var firing = false;
   var lastFired = 0;
   var bullets = [];
@@ -95,10 +109,42 @@ function Ship(canvas) {
   // movement
   var turning = 0;
   var thrusting = false;
-  var thrustAmount = 5;
-  var rotationRate = 10;
-  var dragRate = 1;
+  var rotationRate = opts['rotationRate'] || 10;
+  var dragRate = opts['dragRate'] || 0.2;
 
+  // ship status
+  var energyBarMaxWidth = 200;
+  var energyText = new fabric.Text("ENERGY", {
+    fontFamily: "Open Sans",
+    left: 100,
+    top: 10,
+    fontSize: 16,
+    fontWeight: 'bold',
+    textBackgroundColor: 'rgb(200, 220, 255)',
+  });
+  canvas.add(energyText);
+
+  var energyBarOutline = new fabric.Rect({
+    left: 99,
+    top: 29,
+    fill: 'white',
+    width: energyBarMaxWidth + 2,
+    height: 22,
+    stroke: 'black',
+    strokeWidth: 1,
+  });
+  canvas.add(energyBarOutline);
+
+  var energyBar = new fabric.Rect({
+    left: 100,
+    top: 30,
+    fill: 'yellow',
+    width: energyBarMaxWidth,
+    height: 20,
+  });
+  canvas.add(energyBar);
+
+  // ship images
   var image = new fabric.Polygon(
     [new fabric.Point(10, 0), new fabric.Point(20, 30), new fabric.Point(10, 25), new fabric.Point(0, 30)],
     {fill: 'black', left: x, top: y, angle: 0, centeredRotation: true,}
@@ -174,6 +220,11 @@ function Ship(canvas) {
       tryToFire();
     }
 
+    if(weaponEnergy < weaponEnergyMax) {
+      weaponEnergy = Math.min(weaponEnergyMax, weaponEnergy + regenerationRate * elapsed / 1000);
+      redrawEnergy();
+    }
+
     // update position and add 'drag'
     if(velocity.magnitude > 0) {
       // change position
@@ -227,6 +278,7 @@ function Ship(canvas) {
 
   // adds thrust to the ship
   function addThrust() {
+    var thrustAmount = shipThrust / shipMass;
     var addX = thrustAmount * Math.sin(to_rad(image.angle));
     var addY = thrustAmount * Math.cos(to_rad(image.angle));
     var xVel = velocity.magnitude * Math.sin(velocity.direction) + addX;
@@ -246,17 +298,25 @@ function Ship(canvas) {
     }
   }
 
+  function redrawEnergy() {
+    energyBar.set({width: energyBarMaxWidth * weaponEnergy / weaponEnergyMax});
+  }
+
   // attemps to fire a bullet from this ship
   function tryToFire() {
-    var rate = (bullets.length < burstUnder) ? burstRate : firingRate;
-    if(Date.now() - (1000 / rate) > lastFired) {
+    var minTimeMet = Date.now() - (1000 / maxFiringRate) > lastFired;
+    if(minTimeMet && weaponEnergy >= firingEnergy) {
       var bullet = new Bullet(canvas, {
         origin: fireOrigin(),
         direction: image.angle,
         shipVelocity: velocity,
+        mass: bulletMass,
+        energy: firingEnergy,
       });
       bullets.push(bullet);
+
       lastFired = Date.now();
+      weaponEnergy -= firingEnergy;
     }
   }
 }

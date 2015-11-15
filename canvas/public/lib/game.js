@@ -50,7 +50,9 @@ function Game(canvas) {
   var started = false;
 
   // game artifacts
-  var ship = new Ship(canvas);
+  var ship = new Ship(canvas, {
+    
+  });
   var asteroids = [];
 
   // ==============================================
