@@ -150,6 +150,12 @@ function Ship(canvas, opts) {
     {fill: 'black', left: x, top: y, angle: 0, centeredRotation: true,}
   );
   canvas.add(image);
+  var thrust1 = new fabric.Polygon(
+    [ new fabric.Point(0, 5), new fabric.Point(10, 0), new fabric.Point(20, 5),
+      new fabric.Point(15, 7), new fabric.Point(10, 5), new fabric.Point(5, 7),
+    ], {fill: 'red', angle: 0, centeredRotation: true}
+  );
+  setThrustCoords();
 
   // ================================================
   // actions that may be invoked directly by the Game
@@ -173,6 +179,14 @@ function Ship(canvas, opts) {
   // private functions beyond this point
   // ===================================
 
+  function setThrustCoords() {
+    thrust1.set({ left: 27 * Math.sin(Math.PI + to_rad(image.angle)) + image.left,
+      top: 27 * Math.cos(to_rad(image.angle)) + image.top,
+      angle: image.angle,
+    });
+    thrust1.setCoords();
+  }
+
   function keydownAction(action) {
     switch(action) {
       case 'fire':
@@ -185,6 +199,7 @@ function Ship(canvas, opts) {
         turning = 1;
         break;
       case 'thrust':
+        if(!thrusting) canvas.add(thrust1);
         thrusting = true;
         break;
     }
@@ -209,6 +224,7 @@ function Ship(canvas, opts) {
         turning = 0;
         break;
       case 'thrust':
+        if(thrusting) canvas.remove(thrust1);
         thrusting = false;
         break;
     }
@@ -238,6 +254,7 @@ function Ship(canvas, opts) {
     // is the user holding down either the left or the right button?
     if(turning != 0) {
       image.setAngle(image.angle + turning * rotationRate);
+      setThrustCoords();
     }
 
     // add thrust component to the ship
@@ -274,6 +291,7 @@ function Ship(canvas, opts) {
 
     image.set({left: posLeft, top: posTop});
     image.setCoords();
+    setThrustCoords();
   }
 
   // adds thrust to the ship
