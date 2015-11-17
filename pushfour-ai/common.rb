@@ -475,7 +475,7 @@ module Pushfour
 
   def self.game_list(player)
     res = get "#{SERVER_URL}/getgames.php?playerid=#{player.to_i}"
-    games = '0' unless res
+    res = '0' unless res
     games = res.split(',').map {|id| id.to_i}
     games.delete(0)
     games
