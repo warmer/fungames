@@ -1,0 +1,19 @@
+<script src='lib/game.js'></script>
+<script src='lib/ship.js'></script>
+<script src='lib/asteroid.js'></script>
+
+<canvas id="gamespace" width="1280" height="720" style="border: 1px solid black;"></canvas>
+
+<script>
+
+var canvas = new fabric.StaticCanvas('gamespace');
+
+var game = new Game(canvas);
+
+// send all key actions to the game; prevent the default action for normal keys
+$(document).keydown(function(e){ game.keydown(e); if(e.keyCode < 112) e.preventDefault(); });
+$(document).keypress(function(e){ game.keypress(e); if(e.keyCode < 112) e.preventDefault(); });
+$(document).keyup(function(e){ game.keyup(e); if(e.keyCode < 112) e.preventDefault(); });
+game.run();
+
+</script>
