@@ -19,6 +19,14 @@ function direction_of_vector(y, x) {
   return dir;
 }
 
+// calculate the distance from 'toPt' to the line formed by
+// pt1 and pt2
+function lineDist(toPt, pt1, pt2) {
+  var num = Math.abs((pt2.y - pt1.y) * toPt.x - (pt2.x - pt1.x) * toPt.y + pt2.x * pt1.y - pt2.y * pt1.x)
+  var denom = Math.sqrt(Math.pow(pt2.y - pt1.y, 2) + Math.pow(pt2.x - pt1.x, 2))
+  return num / denom;
+}
+
 function circlesIntersect(img1, img2) {
   var distX = img1.left - img2.left;
   var distY = img1.top - img2.top;
@@ -50,9 +58,7 @@ function Game(canvas) {
   var started = false;
 
   // game artifacts
-  var ship = new Ship(canvas, {
-    
-  });
+  var ship;
   var asteroids = [];
 
   // ==============================================
@@ -64,12 +70,14 @@ function Game(canvas) {
   this.keypress = function(e) { };
   this.keyup = function(e) { };
 
-  this.run = function() {
+  this.run = function(opts) {
+    ship = new Ship(canvas, opts);
     lastUpdate = Date.now();
     interval = setInterval(gameTick, 20);
     this.keydown = function(e) { keydownEvent(e) };
     this.keypress = function(e) { keypressEvent(e) };
     this.keyup = function(e) { keyupEvent(e) };
+    startGame();
   }
 
   this.stop = function() { if(interval) { clearInterval(interval); interval = null; } }

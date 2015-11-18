@@ -92,16 +92,16 @@ function Ship(canvas, opts) {
   var x = opts['x'] || canvas.getWidth() / 2;
   var y = opts['y'] || canvas.getHeight() / 2;
   var velocity = opts['velocity'] || {magnitude: 0, direction: 0};
-  var shipMass = opts['shipMass'] || 2000;
-  var shipThrust = opts['shipThrust'] || 10000;
+  var shipMass = opts['ship_mass'] || 2000;
+  var shipThrust = opts['ship_thrust'] || 10000;
 
   // weapons
-  var weaponEnergyMax = opts['weaponEnergyMax'] || 10000;
-  var weaponEnergy = opts['weaponEnergy'] || 10000;
-  var firingEnergy = opts['firingEnergy'] || 1000;
+  var weaponEnergyMax = opts['energy_reserve'] || 10000;
+  var weaponEnergy = opts['energy_reserve'] || 10000;
+  var firingEnergy = opts['bullet_energy'] || 1000;
   var regenerationRate = opts['regenerationRate'] || 3000;
-  var bulletMass = opts['bulletMass'] || 4;
-  var maxFiringRate = opts['maxFiringRate'] || 15;
+  var bulletMass = opts['bullet_mass'] || 4;
+  var maxFiringRate = opts['firing_rate'] || 15;
   var firing = false;
   var lastFired = 0;
   var bullets = [];
