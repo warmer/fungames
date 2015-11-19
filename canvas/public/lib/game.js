@@ -28,8 +28,8 @@ function lineDist(toPt, pt1, pt2) {
 }
 
 function circlesIntersect(img1, img2) {
-  var distX = img1.left - img2.left;
-  var distY = img1.top - img2.top;
+  var distX = img1.getCenterPoint().x - img2.getCenterPoint().x;
+  var distY = img1.getCenterPoint().y - img2.getCenterPoint().y;
   var dist = Math.sqrt(Math.pow(distX, 2) + Math.pow(distY, 2));
   return dist <= (img1.radius + img2.radius);
 }
@@ -139,16 +139,28 @@ function Game(canvas) {
     }
   }
 
+  function randInt(exclusiveUpperBound) {
+    return Math.floor(Math.random() * exclusiveUpperBound);
+  }
+
   function startGame() {
     console.log("starting game");
-    var asteroid = new Asteroid(canvas, {
-      origin: {x: 500, y: 300},
-      radius: 20,
-      direction: 30,
-      velocity: 0,
-      color: 'brown',
-    });
-    asteroids.push(asteroid);
+    for(var i = 0; i < 30; i++) {
+      // create an exclusion zone of 100x100 pixels around the center point of the board
+      var x = randInt(canvas.getWidth() - 100);
+      var y = randInt(canvas.getHeight() - 100);
+      if(x > (canvas.getWidth() - 50)) x = x + 100;
+      if(y > (canvas.getWidth() - 50)) y = y + 100;
+
+      var asteroid = new Asteroid(canvas, {
+        origin: {x: x, y: y},
+        radius: randInt(10) + 10,
+        direction: randInt(360),
+        velocity: randInt(40),
+        color: 'rgb(80, ' + randInt(80) + ', ' + randInt(80) + ')',
+      });
+      asteroids.push(asteroid);
+    }
     started = true;
   }
 
@@ -156,6 +168,7 @@ function Game(canvas) {
     var updateTime = Date.now();
 
     ship.tick(updateTime - lastUpdate);
+    var destroyedAsteroids = [];
     for(var a in asteroids) {
       var ast = asteroids[a];
       var bullets = ship.bullets();
@@ -168,19 +181,20 @@ function Game(canvas) {
         if(bullet.impacted()) {
           continue;
         }
-        var currentCenter = bullet.image().getCenterPoint();
-        var prevCenter = bullet.prevPoint();
-        var bulletLine = new fabric.Line([
-          currentCenter.x,
-          currentCenter.y,
-          prevCenter.x,
-          prevCenter.y,
-        ]);
-        bulletLine.setCoords();
-        if(bulletLine.intersectsWithObject(astImg)) {
+        if(circlesIntersect(bullet.image(), ast.image())) {
+          console.log(bullet);
+          ast.impact({energy: bullet.energy(), mass: bullet.mass() });
           bullet.impact();
-          console.log("boom!");
+          console.log("BOOM!");
         }
+      }
+    }
+    var offset = 0;
+    for(var idx in asteroids) {
+      var ast = asteroids[idx];
+      if(ast.destroyed()) {
+        asteroids.splice(idx - offset, 1);
+        offset += 1;
       }
     }
 
