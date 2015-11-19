@@ -10,8 +10,7 @@
 <script>
 
 var canvas = new fabric.StaticCanvas('gamespace');
-
-var game = new Game(canvas);
+var game;
 
 var options = [
   {name: 'Energy Reserve', min: 1000, max: 20000, increment: 1000, default: 10000,
@@ -53,6 +52,10 @@ for(var idx in options) {
 }
 
 $( '#start' ).click(function() {
+  if(game) {
+    game.stop();
+  }
+  game = new Game(canvas);
   console.log('Starting game!');
   // send all key actions to the game; prevent the default action for normal keys
   $(document).keydown(function(e){ game.keydown(e); if(e.keyCode < 112) e.preventDefault(); });
@@ -73,6 +76,8 @@ $( '#start' ).click(function() {
   console.log('Cost: ' + cost);
   console.log('Mass: ' + mass);
   game.run(opts);
+
+  $( '#start' ).val('Restart!');
 });
 
 </script>

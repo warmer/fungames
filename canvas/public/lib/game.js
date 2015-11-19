@@ -80,7 +80,7 @@ function Game(canvas) {
     startGame();
   }
 
-  this.stop = function() { if(interval) { clearInterval(interval); interval = null; } }
+  this.stop = function() { canvas.clear(); if(interval) { clearInterval(interval); interval = null; } }
 
 
   // =====================================================
@@ -156,7 +156,7 @@ function Game(canvas) {
         origin: {x: x, y: y},
         radius: randInt(10) + 10,
         direction: randInt(360),
-        velocity: randInt(40),
+        velocity: Math.random() * 50,
         color: 'rgb(80, ' + randInt(80) + ', ' + randInt(80) + ')',
       });
       asteroids.push(asteroid);
