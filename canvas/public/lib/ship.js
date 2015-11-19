@@ -1,3 +1,68 @@
+function Asteroid(canvas, options) {
+  var __asteroid = this;
+  var canvas = canvas;
+
+  var direction = options.direction;
+  var rate = options.velocity;
+  var x = options.origin.x;
+  var y = options.origin.y;
+  var radius = options.radius;
+  var color = options.color;
+  var createTime = Date.now();
+  var hp = 100 * Math.pow(radius, 2.5);
+  var destroyed = false;
+
+  var image = new fabric.Circle({
+    radius: radius,
+    fill: color,
+    stroke: 'brown',
+    left: x - radius,
+    top: y - radius,
+    centeredRotation: true,
+  });
+  canvas.add(image);
+
+  var velocity = {
+    x: rate * Math.sin(to_rad(direction)),
+    y: rate * Math.cos(to_rad(direction)),
+  }
+
+  this.tick = function(elapsed) { gameTick(elapsed); }
+  this.image = function() { return image; }
+  this.impact = function(opts) { makeImpact(opts); }
+  this.destroyed = function() { return destroyed; }
+
+  function gameTick(elapsed) {
+    var posLeft = image.left + velocity.x * elapsed / 1000;
+    var posTop = image.top - velocity.y * elapsed / 1000;
+    if(posLeft > canvas.getWidth()) {
+      posLeft = 0;
+    }
+    else if(posLeft < 0) {
+      posLeft = canvas.getWidth();
+    }
+    if(posTop > canvas.getHeight()) {
+      posTop = 0;
+    }
+    else if(posTop < 0) {
+      posTop = canvas.getHeight();
+    }
+
+    image.set({left: posLeft, top: posTop});
+    image.setCoords();
+  }
+
+  function makeImpact(opts) {
+    var energy = opts['energy'];
+    var mass = opts['mass'];
+    hp = hp - (energy * mass * mass);
+    if(hp <= 0) {
+      destroyed = true;
+      canvas.remove(image);
+    }
+  }
+}
+
 function Bullet(canvas, options) {
   var __bullet = this;
   var canvas = canvas;
@@ -26,7 +91,6 @@ function Bullet(canvas, options) {
   });
   canvas.add(image);
 
-
   shipVelocity.magnitude * Math.sin(shipVelocity.direction)
 
   var velocity = {
@@ -38,6 +102,8 @@ function Bullet(canvas, options) {
 
   this.tick = function(elapsed) { gameTick(elapsed); }
   this.expired = function() { return expired; }
+  this.energy = function() { return energy; }
+  this.mass = function() { return mass; }
   this.impacted = function() { return impacted; }
   this.image = function() { return image; }
   this.prevPoint = function() { return prevPoint; }
@@ -83,6 +149,17 @@ function option(opts, name, defaultValue) {
   return val;
 }
 
+function GameObject(canvas, opts) {
+  var __obj = this;
+  var canvas = canvas;
+  opts = opts || {};
+  var x = opts['x'];
+  var y = opts['y'];
+  var velocity = opts['velocity'] || {magnitude: 0, direction: 0};
+  var mass = opts['mass'];
+
+}
+
 function Ship(canvas, opts) {
   var __ship = this;
   var canvas = canvas;
@@ -110,7 +187,8 @@ function Ship(canvas, opts) {
   var turning = 0;
   var thrusting = false;
   var rotationRate = opts['rotationRate'] || 10;
-  var dragRate = opts['dragRate'] || 0.2;
+  var dragRate = opts['inertial_negator'] || 0.2;
+  var shieldStrength = opts['shield_strength'] || 1000;
 
   // ship status
   var energyBarMaxWidth = 200;
@@ -145,6 +223,8 @@ function Ship(canvas, opts) {
   canvas.add(energyBar);
 
   // ship images
+  var shipHeight = 20;
+  var shipWidth = 21;
   var image = new fabric.Polygon(
     [new fabric.Point(10, 0), new fabric.Point(20, 30), new fabric.Point(10, 25), new fabric.Point(0, 30)],
     {fill: 'black', left: x, top: y, angle: 0, centeredRotation: true,}
@@ -155,6 +235,12 @@ function Ship(canvas, opts) {
       new fabric.Point(15, 7), new fabric.Point(10, 5), new fabric.Point(5, 7),
     ], {fill: 'red', angle: 0, centeredRotation: true}
   );
+  var shield = new fabric.Circle({
+    radius: 20,
+    left: image.getCenterPoint().x - shipWidth, top: image.getCenterPoint().y - shipHeight,
+    fill: 'white', stroke: 'blue', opacity: 0.2,
+  });
+  canvas.add(shield);
   setThrustCoords();
 
   // ================================================
@@ -185,6 +271,8 @@ function Ship(canvas, opts) {
       angle: image.angle,
     });
     thrust1.setCoords();
+    shield.set({left: image.getCenterPoint().x - shipWidth, top: image.getCenterPoint().y - shipHeight});
+    shield.setCoords();
   }
 
   function keydownAction(action) {
