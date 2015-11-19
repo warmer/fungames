@@ -77,7 +77,8 @@ function Game(canvas) {
     this.keydown = function(e) { keydownEvent(e) };
     this.keypress = function(e) { keypressEvent(e) };
     this.keyup = function(e) { keyupEvent(e) };
-    startGame();
+    var numAsteroids = opts['asteroids'] || 30;
+    startGame(numAsteroids);
   }
 
   this.stop = function() { canvas.clear(); if(interval) { clearInterval(interval); interval = null; } }
@@ -143,14 +144,27 @@ function Game(canvas) {
     return Math.floor(Math.random() * exclusiveUpperBound);
   }
 
-  function startGame() {
+  function startGame(numAsteroids) {
     console.log("starting game");
-    for(var i = 0; i < 30; i++) {
-      // create an exclusion zone of 100x100 pixels around the center point of the board
-      var x = randInt(canvas.getWidth() - 100);
-      var y = randInt(canvas.getHeight() - 100);
-      if(x > (canvas.getWidth() - 50)) x = x + 100;
-      if(y > (canvas.getWidth() - 50)) y = y + 100;
+    var protect = 75;
+    for(var i = 0; i < numAsteroids; i++) {
+      // create an exclusion zone around the center point of the board
+      var x = randInt(canvas.getWidth());
+      var y = randInt(canvas.getHeight());
+      if(Math.abs(x - canvas.getWidth() / 2) < protect && Math.abs(y - canvas.getHeight() / 2) < protect) {
+        if(y > canvas.getHeight() / 2) {
+          y += protect;
+        }
+        else {
+          y -= protect;
+        }
+        if(x > canvas.getWidth() / 2) {
+          x += protect;
+        }
+        else {
+          x -= protect;
+        }
+      }
 
       var asteroid = new Asteroid(canvas, {
         origin: {x: x, y: y},
@@ -182,10 +196,8 @@ function Game(canvas) {
           continue;
         }
         if(circlesIntersect(bullet.image(), ast.image())) {
-          console.log(bullet);
           ast.impact({energy: bullet.energy(), mass: bullet.mass() });
           bullet.impact();
-          console.log("BOOM!");
         }
       }
     }
