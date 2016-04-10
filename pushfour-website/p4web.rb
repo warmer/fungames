@@ -6,6 +6,7 @@ require 'sqlite3'
 require_relative 'lib/common.rb'
 require_relative 'lib/registration.rb'
 require_relative 'lib/create_game.rb'
+require_relative 'lib/game_status.rb'
 require_relative 'lib/login.rb'
 require_relative 'lib/players.rb'
 
@@ -77,6 +78,26 @@ class PushfourWebsite < Sinatra::Base
     erb :players, locals: locals(results)
   end
 
+  get URL[:player] do |player_id|
+    player_id = player_id.to_i
+    error = player = nil
+
+    if player_id > 0
+      player = Pushfour::Players.info_for(player_id)
+      error = 'Player not found' unless player
+    else
+      error = 'Player not found'
+    end
+
+    errors = []
+    errors << error if error
+
+    puts "Player: #{player}"
+    puts "Errors: #{errors}"
+
+    erb :player, locals: locals(player: player, errors: errors)
+  end
+
   post URL[:register] do
     raw_params = filter(params, [:name, :password, :password2])
     results = Pushfour::Registration.register(raw_params)
@@ -135,6 +156,13 @@ class PushfourWebsite < Sinatra::Base
     results = Pushfour::WebGame.load_game(opts)
 
     erb :game, locals: locals(results)
+  end
+
+  get URL[:games] do
+    raw_params = filter(params, [:start])
+    results = Pushfour::WebGame.list(raw_params)
+
+    erb :games, locals: locals(results)
   end
 
   get URL[:status] do |id|

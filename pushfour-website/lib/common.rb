@@ -6,14 +6,25 @@ module Pushfour
     PROJ_ROOT = File.dirname(__FILE__)
 
     GAME_STATUS = {
-      normal: 0,
-      stalemate: 1,
-      ended: 2,
-      abandoned: 3,
+      0 => :in_progress,
+      1 => :stalemate,
+      2 => :ended,
+      3 => :abandoned,
     }
 
     def status_id_for(sym)
-      GAME_STATUS[sym]
+      status_id = nil
+      GAME_STATUS.each do |id, status|
+        if status == sym
+          status_id = id
+          break
+        end
+      end
+      return status_id
+    end
+
+    def status_for(id)
+      GAME_STATUS[id].capitalize
     end
 
     def md5sum(str)

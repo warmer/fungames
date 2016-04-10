@@ -32,19 +32,30 @@
 .block {
   border: 1px solid black;
 }
-.free {
-  background-color: #fff;
+.glow0 {
+  background-color: #f99;
 }
-.p1 {
+.glow1 {
+  background-color: #99f;
+}
+.edge-glow0 {
   background-color: #f00;
 }
-.p2 {
+.edge-glow1 {
   background-color: #00f;
 }
-.p3 {
+.piece-0 {
+}
+.piece-1 {
+  background-color: #f00;
+}
+.piece-2 {
+  background-color: #00f;
+}
+.piece-3 {
   background-color: #0f0;
 }
-.obs {
+.piece-4 {
   background-color: #666;
 }
 .table_game_board {

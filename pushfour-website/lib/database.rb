@@ -41,6 +41,7 @@ module Pushfour
           CREATE TABLE IF NOT EXISTS #{GAME_TABLE}(
             Id INTEGER PRIMARY KEY,
             Created INTEGER DEFAULT CURRENT_TIMESTAMP,
+            Updated INTEGER DEFAULT CURRENT_TIMESTAMP,
             Player1 INTEGER,
             Player2 INTEGER,
             Status INTEGER,

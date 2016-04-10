@@ -1,107 +1,101 @@
 <% if defined?(game) and game and game[:game_detail] and game[:game_detail][:xy] %>
-  <% puts "### game: #{game}" %>
-  <% piece_classes = ['free', 'p1', 'p2', 'p3', 'obs'] %>
-  <script>
-    var turn = <%= game[:turn] %>;
-    var player = <%= session[:user_id] || 0 %>
-
-    function glow(item, color) {
-      $( item ).css('background-color', color);
-    }
-
-    function glow_vert(col, first, last, color) {
-      while(first <= last) {
-        glow($( '#' + col + '-' + first ), color);
-        first++;
-      }
-    }
-    function glow_horiz(row, first, last, color) {
-      while(first <= last) {
-        glow($( '#' + first + '-' + row ), color);
-        first++;
-      }
-    }
-  </script>
-
-  <div id="game_board">
-    <table class="table_game_board">
-      <tbody>
-        <!-- top entry -->
-        <tr>
-          <td class="board_corner board_block"></td>
-          <% board[:width].times do |col| %>
-            <td class="topmove board_block" id="t-<%= col %>"></td>
-            <script>
-              $( '#t-<%= col %>' ).mouseenter(function() {
-                var depth = <%= game[:game_detail][:move_depth][:top][col] %>;
-                glow(this, '#999');
-                glow_vert(<%= col %>, 0, depth, '#999');
-              });
-              $( '#t-<%= col %>' ).mouseleave(function() {
-                var depth = <%= game[:game_detail][:move_depth][:top][col] %>;
-                glow(this, '#fff');
-                glow_vert(<%= col %>, 0, depth, '#fff');
-              });
-            </script>
-          <% end %>
-          <td class="board_corner board_block"></td>
-        </tr>
-        <% game[:game_detail][:xy].each_with_index do |row_pieces, row| %>
-          <tr>
-            <td class="leftmove board_block" id="l-<%= row %>"></td>
-            <script>
-              $( '#l-<%= row %>' ).mouseenter(function() {
-                var depth = <%= game[:game_detail][:move_depth][:left][row] %>;
-                glow(this, '#999');
-                glow_horiz(<%= row %>, 0, depth, '#999');
-              });
-              $( '#l-<%= row %>' ).mouseleave(function() {
-                var depth = <%= game[:game_detail][:move_depth][:left][row] %>;
-                glow(this, '#fff');
-                glow_horiz(<%= row %>, 0, depth, '#fff');
-              });
-            </script>
-          <% row_pieces.each_with_index do |block, col| %>
-            <% piece = block & 0x07 %>
-            <% css_cls = piece_classes[piece] %>
-            <% blk_id = "#{col}-#{row}" %>
-            <td class="block board_block <%= css_cls %>" id="<%= blk_id %>"></td>
-          <% end %>
-            <td class="rightmove board_block" id="r-<%= row %>"></td>
-            <script>
-              $( '#r-<%= row %>' ).mouseenter(function() {
-                var depth = <%= game[:game_detail][:move_depth][:right][row] %>;
-                glow(this, '#999');
-                glow_horiz(<%= row %>, depth, <%= board[:height] %>, '#999');
-              });
-              $( '#r-<%= row %>' ).mouseleave(function() {
-                var depth = <%= game[:game_detail][:move_depth][:right][row] %>;
-                glow(this, '#fff');
-                glow_horiz(<%= row %>, depth, <%= board[:height] %>, '#fff');
-              });
-            </script>
-          </tr>
-        <% end %>
-        <tr>
-          <td class="board_corner board_block"></td>
-          <% board[:width].times do |col| %>
-            <td class="botmove board_block" id="b-<%= col %>"></td>
-            <script>
-              $( '#b-<%= col %>' ).mouseenter(function() {
-                var depth = <%= game[:game_detail][:move_depth][:bottom][col] %>;
-                glow(this, '#999');
-                glow_vert(<%= col %>, depth, <%= board[:width] %>, '#999');
-              });
-              $( '#b-<%= col %>' ).mouseleave(function() {
-                var depth = <%= game[:game_detail][:move_depth][:bottom][col] %>;
-                glow(this, '#fff');
-                glow_vert(<%= col %>, depth, <%= board[:width] %>, '#fff');
-              });
-            </script>
-          <% end %>
-          <td class="board_corner board_block"></td>
-        </tr>
-      </tbody>
+  <div>
+    <table id="game_board" class="table_game_board">
     </table>
   </div>
+  <script>
+    var turn = <%= game[:turn] %>;
+    var player = <%= session[:user_id] || 0 %>;
+    var board = <%= board.to_json %>;
+    var game = <%= game.to_json %>;
+
+    function glow(item, cls, set) { d3.select(item).classed(cls, set) }
+
+    function glowVirt(col, i, end, cls, set) {
+      while(i++ <= end) { glow('#block-' + col + '-' + (i-1), cls, set) }
+    }
+    function glowHoriz(row, i, end, cls, set) {
+      while(i++ <= end) { glow('#block-' + (i-1) + '-' + row, cls, set) }
+    }
+
+    function edgeGlow(ref, piece, col, playerIndex, isSet) {
+      var cls = "glow" + playerIndex;
+      switch(piece.cell.type) {
+        case 'topmove':
+          glowVirt(col - 1, 0, piece.cell.offset, cls, isSet);
+          break;
+        case 'botmove':
+          glowVirt(col - 1, piece.cell.offset, board.height, cls, isSet);
+          break;
+        case 'leftmove':
+          glowHoriz(piece.row - 1, 0, piece.cell.offset, cls, isSet);
+          break;
+        case 'rightmove':
+          glowHoriz(piece.row - 1, piece.cell.offset, board.width, cls, isSet);
+          break;
+        default:
+          break;
+      }
+      glow(ref, "edge-" + cls, isSet);
+    }
+
+    var tbody = d3.select("#game_board").append("tbody");
+
+    var topRowData = game.game_detail.move_depth.top.map(function(p) {
+      return {'offset': p, 'type': 'topmove'};
+    });
+    var bottomRowData = game.game_detail.move_depth.bottom.map(function(p) {
+      return {'offset': p, 'type': 'botmove'};
+    });
+    // add the top-right corner
+    topRowData.push({'type': 'corner'});
+    // add the top-left corner
+    topRowData = [{'type': 'corner'}].concat(topRowData);
+    // add the bottom-right corner
+    bottomRowData.push({'type': 'corner'});
+    // add the bottom-left corner
+    bottomRowData = [{'type': 'corner'}].concat(bottomRowData);
+
+    var xyData = game.game_detail.xy.map(function(row, rowIdx) {
+      var newRow = row.map(function(p) { return {'type': 'block', 'value': p}});
+      // add the left side
+      newRow = [{'type': 'leftmove', 'offset': game.game_detail.move_depth.left[rowIdx]}]
+        .concat(newRow);
+      newRow.push({'type': 'rightmove', 'offset': game.game_detail.move_depth.right[rowIdx]});
+      return newRow;
+    });
+    xyData = [topRowData].concat(xyData);
+    xyData.push(bottomRowData);
+
+    var rows = tbody.selectAll("tr")
+        .data(xyData)
+      .enter()
+      .append("tr");
+
+    rows.selectAll("td")
+        .data(function(d, idx) { return d.map(function(col) {
+            return {'cell': col, 'row': idx};
+          });
+        })
+      .enter()
+      .append("td")
+        .attr("class", function(d) {
+          var c = d.cell.type + " board_block"
+          if(d.cell.type == 'block') { c += " piece-" + (d.cell.value & 0x07)}
+          return c;
+        })
+        .attr("id", function(d, i) {
+          return d.cell.type + "-" + (i - 1) + "-" + (d.row - 1);
+        })
+        .on("mouseover", function(d, i) {
+          if(player == turn && d.cell.offset != undefined) {
+            edgeGlow(this, d, i, game.players.indexOf(player), true);
+          }
+        })
+        .on("mouseout", function(d, i) {
+          if(player == turn && d.cell.offset != undefined) {
+            edgeGlow(this, d, i, game.players.indexOf(player), false);
+          }
+        });
+  </script>
 <% end %>

@@ -61,6 +61,7 @@ module Pushfour
           board_id = g[4]
           game = {
             id: game_id, player1: g[0], player2: g[1],
+            players: [g[0], g[1]],
             turn: g[2], status: g[3], board_id: board_id
           }
           res = Pushfour::Database.execute_query <<-HERE
@@ -81,7 +82,8 @@ module Pushfour
                 offset = move[:ylocation] * width + move[:xlocation]
                 board_string[offset] = ['0', '1'][move[:player]]
               end
-              game_string = "+,#{board_string},#{height},#{width},2,01,#{game[:turn].to_s}"
+              player_index = game[:players].index(game[:turn]) + 1
+              game_string = "+,#{board_string},#{height},#{width},2,12,#{player_index}"
               detail = Pushfour.parse_game_string(game_string)
               xy = process_xy(detail.board.xy)
               game[:game_detail] = {
@@ -158,18 +160,18 @@ module Pushfour
         )
         if board_id and board_id > 0
           if creator
-            player1 = [creator, opponent][first_move]
-            player2 = [opponent, creator][first_move]
+            p1 = [creator, opponent][first_move]
+            p2 = [opponent, creator][first_move]
             game_id = Pushfour::Database.insert(
               Pushfour::Database::GAME_TABLE,
               [:player1, :player2, :turn, :status, :board],
-              [player1, player2, player1, status_id_for(:normal), board_id]
+              [p1, p2, p1, status_id_for(:in_progress), board_id]
             )
           else
             game_id = Pushfour::Database.insert(
               Pushfour::Database::GAME_TABLE,
               [:player1, :player2, :turn, :status, :board],
-              [0, 0, 0, status_id_for(:normal), board_id]
+              [0, 0, 0, status_id_for(:in_progress), board_id]
             )
             errors << 'Could not create game' unless game_id and game_id > 0
           end
