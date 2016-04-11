@@ -82,8 +82,7 @@ module Pushfour
                 offset = move[:ylocation] * width + move[:xlocation]
                 board_string[offset] = ['0', '1'][move[:player]]
               end
-              player_index = game[:players].index(game[:turn]) + 1
-              game_string = "+,#{board_string},#{height},#{width},2,12,#{player_index}"
+              game_string = "+,#{board_string},#{height},#{width},2,01,#{game[:turn]}"
               detail = Pushfour.parse_game_string(game_string)
               xy = process_xy(detail.board.xy)
               game[:game_detail] = {

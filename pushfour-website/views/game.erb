@@ -58,8 +58,9 @@
         }
       }
 
-      var tbody = d3.select("#game_board").append("tbody");
+      var playerTurn = (player == game.players[turn]);
 
+      var tbody = d3.select("#game_board").append("tbody");
       var topRowData = game.game_detail.move_depth.top.map(function(p) {
         return {'offset': p, 'type': 'topmove'};
       });
@@ -107,17 +108,17 @@
             return d.cell.type + "-" + (i - 1) + "-" + (d.row - 1);
           })
           .on("mouseover", function(d, i) {
-            if(player == turn && d.cell.offset != undefined) {
+            if(playerTurn && d.cell.offset != undefined) {
               edgeGlow(this, d, i, game.players.indexOf(player), true);
             }
           })
           .on("mouseout", function(d, i) {
-            if(player == turn && d.cell.offset != undefined) {
+            if(playerTurn && d.cell.offset != undefined) {
               edgeGlow(this, d, i, game.players.indexOf(player), false);
             }
           })
           .on("click", function(d, i) {
-            if(player == turn && d.cell.offset != undefined) {
+            if(playerTurn && d.cell.offset != undefined) {
               makeMove(d, i);
             }
           });

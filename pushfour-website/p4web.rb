@@ -75,8 +75,8 @@ class PushfourWebsite < Sinatra::Base
   # AJAX requests
 
   post URL[:make_move] do
-    raw_params = filter(params, [:game_id, :password, :password2])
-    user_id = session[:user_id]
+    raw_params = filter(params, [:game_id, :x, :y])
+    player = session[:user_id]
   end
 
   # page load requests
