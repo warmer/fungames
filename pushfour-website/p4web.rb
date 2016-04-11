@@ -15,6 +15,7 @@ PATH_ROOT = '/'
 URL = {
   tournaments: PATH_ROOT + 'tournaments',
   tournament: PATH_ROOT + 'tournament/:id',
+  make_move: PATH_ROOT + 'make_move',
   make_game: PATH_ROOT + 'new_game',
   register: PATH_ROOT + 'register',
   profile: PATH_ROOT + 'profile',
@@ -70,6 +71,15 @@ class PushfourWebsite < Sinatra::Base
   def url(page, opts = {})
     url_replace(URL, page, opts)
   end
+
+  # AJAX requests
+
+  post URL[:make_move] do
+    raw_params = filter(params, [:game_id, :password, :password2])
+    user_id = session[:user_id]
+  end
+
+  # page load requests
 
   get URL[:players] do
     raw_params = filter(params, [:limit, :start])

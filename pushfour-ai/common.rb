@@ -80,6 +80,7 @@ module Pushfour
         bottom: [0] * x,
       }
 
+      player_chars = player_chars.chars.to_a if player_chars.is_a? String
       @players = player_chars.map {|p| player_chars.index(p) + 1 } if player_chars
 
       # start building the board as arrays of ints, rather than a string
@@ -483,9 +484,7 @@ module Pushfour
 
   def self.game_info(game_id, player)
     res = get "#{SERVER_URL}/gameinfo.php?gameid=#{game_id.to_i}&playerid=#{player.to_i}"
-    if res
-      parse_game_string(res, game_id)
-    end
+    parse_game_string(res, game_id) if res
   end
 
   def self.parse_game_string(str, id = nil)

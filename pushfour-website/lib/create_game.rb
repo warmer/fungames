@@ -148,7 +148,7 @@ module Pushfour
         space_count = height * width
         ob_count = [space_count / 4, obstacles].min
         notes << "Obstacle count reduced to #{ob_count}" unless ob_count == obstacles
-        blocks = (0...space_count).to_a.sample(obstacles, random: rand)
+        blocks = (0...space_count).to_a.sample(ob_count, random: rand)
         board_string = '+' * space_count
         blocks.each do |idx|
           board_string[idx] = '#'
@@ -165,7 +165,7 @@ module Pushfour
             game_id = Pushfour::Database.insert(
               Pushfour::Database::GAME_TABLE,
               [:player1, :player2, :turn, :status, :board],
-              [p1, p2, p1, status_id_for(:in_progress), board_id]
+              [p1, p2, 0, status_id_for(:in_progress), board_id]
             )
           else
             game_id = Pushfour::Database.insert(

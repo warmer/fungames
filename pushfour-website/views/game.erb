@@ -4,98 +4,129 @@
     </table>
   </div>
   <script>
+    function updateBoard(turn, player, board, game) {
+      function glow(item, cls, set) { d3.select(item).classed(cls, set) }
+      function glowVirt(col, i, end, cls, set) {
+        while(i++ <= end) { glow('#block-' + col + '-' + (i-1), cls, set) }
+      }
+      function glowHoriz(row, i, end, cls, set) {
+        while(i++ <= end) { glow('#block-' + (i-1) + '-' + row, cls, set) }
+      }
+      function edgeGlow(ref, piece, col, playerIndex, isSet) {
+        var cls = "glow" + playerIndex;
+        switch(piece.cell.type) {
+          case 'topmove':
+            glowVirt(col - 1, 0, piece.cell.offset, cls, isSet);
+            break;
+          case 'botmove':
+            glowVirt(col - 1, piece.cell.offset, board.height, cls, isSet);
+            break;
+          case 'leftmove':
+            glowHoriz(piece.row - 1, 0, piece.cell.offset, cls, isSet);
+            break;
+          case 'rightmove':
+            glowHoriz(piece.row - 1, piece.cell.offset, board.width, cls, isSet);
+            break;
+          default: break;
+        }
+        glow(ref, "edge-" + cls, isSet);
+      }
+
+      function makeMove(piece, index) {
+        var x, y = null;
+        switch(piece.cell.type) {
+          case 'topmove':
+            x = index - 1;
+            y = piece.cell.offset;
+            break;
+          case 'botmove':
+            x = index - 1;
+            y = piece.cell.offset;
+            break;
+          case 'leftmove':
+            x = piece.cell.offset;
+            y = piece.row - 1;
+            break;
+          case 'rightmove':
+            x = piece.cell.offset;
+            y = piece.row - 1;
+            break;
+          default: break;
+        }
+        if(x >= 0 && x < board.width && y >= 0 && y < board.height) {
+          console.log("Moving to x: " + x + ", y: " + y);
+        }
+      }
+
+      var tbody = d3.select("#game_board").append("tbody");
+
+      var topRowData = game.game_detail.move_depth.top.map(function(p) {
+        return {'offset': p, 'type': 'topmove'};
+      });
+      var bottomRowData = game.game_detail.move_depth.bottom.map(function(p) {
+        return {'offset': p, 'type': 'botmove'};
+      });
+      // add the top-right corner
+      topRowData.push({'type': 'corner'});
+      // add the top-left corner
+      topRowData = [{'type': 'corner'}].concat(topRowData);
+      // add the bottom-right corner
+      bottomRowData.push({'type': 'corner'});
+      // add the bottom-left corner
+      bottomRowData = [{'type': 'corner'}].concat(bottomRowData);
+
+      var xyData = game.game_detail.xy.map(function(row, rowIdx) {
+        var newRow = row.map(function(p) { return {'type': 'block', 'value': p}});
+        // add the left side
+        newRow = [{'type': 'leftmove', 'offset': game.game_detail.move_depth.left[rowIdx]}]
+          .concat(newRow);
+        newRow.push({'type': 'rightmove', 'offset': game.game_detail.move_depth.right[rowIdx]});
+        return newRow;
+      });
+      xyData = [topRowData].concat(xyData);
+      xyData.push(bottomRowData);
+
+      var rows = tbody.selectAll("tr")
+          .data(xyData)
+        .enter()
+        .append("tr");
+
+      rows.selectAll("td")
+          .data(function(d, idx) { return d.map(function(col) {
+              return {'cell': col, 'row': idx};
+            });
+          })
+        .enter()
+        .append("td")
+          .attr("class", function(d) {
+            var c = d.cell.type + " board_block"
+            if(d.cell.type == 'block') { c += " piece-" + (d.cell.value & 0x07)}
+            return c;
+          })
+          .attr("id", function(d, i) {
+            return d.cell.type + "-" + (i - 1) + "-" + (d.row - 1);
+          })
+          .on("mouseover", function(d, i) {
+            if(player == turn && d.cell.offset != undefined) {
+              edgeGlow(this, d, i, game.players.indexOf(player), true);
+            }
+          })
+          .on("mouseout", function(d, i) {
+            if(player == turn && d.cell.offset != undefined) {
+              edgeGlow(this, d, i, game.players.indexOf(player), false);
+            }
+          })
+          .on("click", function(d, i) {
+            if(player == turn && d.cell.offset != undefined) {
+              makeMove(d, i);
+            }
+          });
+    }
     var turn = <%= game[:turn] %>;
     var player = <%= session[:user_id] || 0 %>;
     var board = <%= board.to_json %>;
     var game = <%= game.to_json %>;
 
-    function glow(item, cls, set) { d3.select(item).classed(cls, set) }
-
-    function glowVirt(col, i, end, cls, set) {
-      while(i++ <= end) { glow('#block-' + col + '-' + (i-1), cls, set) }
-    }
-    function glowHoriz(row, i, end, cls, set) {
-      while(i++ <= end) { glow('#block-' + (i-1) + '-' + row, cls, set) }
-    }
-
-    function edgeGlow(ref, piece, col, playerIndex, isSet) {
-      var cls = "glow" + playerIndex;
-      switch(piece.cell.type) {
-        case 'topmove':
-          glowVirt(col - 1, 0, piece.cell.offset, cls, isSet);
-          break;
-        case 'botmove':
-          glowVirt(col - 1, piece.cell.offset, board.height, cls, isSet);
-          break;
-        case 'leftmove':
-          glowHoriz(piece.row - 1, 0, piece.cell.offset, cls, isSet);
-          break;
-        case 'rightmove':
-          glowHoriz(piece.row - 1, piece.cell.offset, board.width, cls, isSet);
-          break;
-        default:
-          break;
-      }
-      glow(ref, "edge-" + cls, isSet);
-    }
-
-    var tbody = d3.select("#game_board").append("tbody");
-
-    var topRowData = game.game_detail.move_depth.top.map(function(p) {
-      return {'offset': p, 'type': 'topmove'};
-    });
-    var bottomRowData = game.game_detail.move_depth.bottom.map(function(p) {
-      return {'offset': p, 'type': 'botmove'};
-    });
-    // add the top-right corner
-    topRowData.push({'type': 'corner'});
-    // add the top-left corner
-    topRowData = [{'type': 'corner'}].concat(topRowData);
-    // add the bottom-right corner
-    bottomRowData.push({'type': 'corner'});
-    // add the bottom-left corner
-    bottomRowData = [{'type': 'corner'}].concat(bottomRowData);
-
-    var xyData = game.game_detail.xy.map(function(row, rowIdx) {
-      var newRow = row.map(function(p) { return {'type': 'block', 'value': p}});
-      // add the left side
-      newRow = [{'type': 'leftmove', 'offset': game.game_detail.move_depth.left[rowIdx]}]
-        .concat(newRow);
-      newRow.push({'type': 'rightmove', 'offset': game.game_detail.move_depth.right[rowIdx]});
-      return newRow;
-    });
-    xyData = [topRowData].concat(xyData);
-    xyData.push(bottomRowData);
-
-    var rows = tbody.selectAll("tr")
-        .data(xyData)
-      .enter()
-      .append("tr");
-
-    rows.selectAll("td")
-        .data(function(d, idx) { return d.map(function(col) {
-            return {'cell': col, 'row': idx};
-          });
-        })
-      .enter()
-      .append("td")
-        .attr("class", function(d) {
-          var c = d.cell.type + " board_block"
-          if(d.cell.type == 'block') { c += " piece-" + (d.cell.value & 0x07)}
-          return c;
-        })
-        .attr("id", function(d, i) {
-          return d.cell.type + "-" + (i - 1) + "-" + (d.row - 1);
-        })
-        .on("mouseover", function(d, i) {
-          if(player == turn && d.cell.offset != undefined) {
-            edgeGlow(this, d, i, game.players.indexOf(player), true);
-          }
-        })
-        .on("mouseout", function(d, i) {
-          if(player == turn && d.cell.offset != undefined) {
-            edgeGlow(this, d, i, game.players.indexOf(player), false);
-          }
-        });
+    updateBoard(turn, player, board, game);
   </script>
 <% end %>

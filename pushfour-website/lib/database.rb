@@ -37,6 +37,8 @@ module Pushfour
             Name VARCHAR(255));
         SQL
 
+        # Notes:
+        # - 'Turn' is '0' when it's Player1's turn, '1' when it's Player2's turn
         db.execute <<-SQL
           CREATE TABLE IF NOT EXISTS #{GAME_TABLE}(
             Id INTEGER PRIMARY KEY,

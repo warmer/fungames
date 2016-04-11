@@ -12,9 +12,9 @@ tcs = [
   { game: {height: 4, width: 4, obstacles: 0, creator: 1, opponent: 2, first_move: 0, user_id: 1},
     moves: [
       {player: 1, x: 0, y: 0},
-      {player: 2, x: 0, y: 0},
-      {player: 1, x: 0, y: 0},
-      {player: 2, x: 0, y: 0},
+      {player: 2, x: 0, y: 1},
+      {player: 1, x: 0, y: 2},
+      {player: 2, x: 0, y: 3},
     ],
     last_move: 0,
   },
@@ -49,6 +49,7 @@ Harness.run_test(mock_db: true) do
     game_id = create_result[:game]
 
     tc[:moves].each_with_index do |move, idx|
+      puts "Player #{move[:player]} moving to [#{move[:x]}, #{move[:y]}]"
       res = Pushfour::WebGame.make_move(
         game_id: game_id, player: move[:player], x: move[:x], y: move[:y]
       )

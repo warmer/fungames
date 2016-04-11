@@ -3,7 +3,7 @@
 require 'open3'
 
 script = File.expand_path(__FILE__)
-Dir.chdir(File.dirname(script))
+#Dir.chdir(File.dirname(script))
 
 opts = ARGV.dup
 switches = opts.select { |x| x[0] == '-' }.join.split('')
@@ -17,7 +17,8 @@ unless switches.empty?
 end
 
 scenarios = opts.reject { |x| x[0] == '-' }
-scenarios = Dir.glob('../regress/*.rb') if scenarios.empty?
+regress_dir = File.expand_path(File.join(__FILE__, '../../', 'regress/*.rb'))
+scenarios = Dir.glob(regress_dir) if scenarios.empty?
 scenarios.each do |s|
   unless File.file?(s) and File.executable?(s)
     abort "Not an executable scenario: #{s}"

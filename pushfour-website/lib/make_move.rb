@@ -24,9 +24,7 @@ module Pushfour
           WHERE game = #{game_id}
           GROUP BY game;
         HERE
-        if res and res[0]
-          move = res[0][0]
-        end
+        move = res[0][0] if res and res[0]
       end
 
       {errors: errors, move_number: move}
@@ -34,26 +32,80 @@ module Pushfour
 
     def self.make_move(params)
       errors = []
+      game_info = player_info = nil
 
       game_id = val_if_int(params[:game_id])
       errors << 'Invalid game id' unless game_id and game_id > 0
+      player_id = val_if_int(params[:player])
+      errors << 'Invalid player id' unless player_id and player_id > 0
 
-      player = val_if_int(params[:player])
-      # TODO: validate player
-      x = params[:x]
-      y = params[:y]
-      # TODO: validate x, y
+      # load details about the current player
+      if errors.size == 0
+        player_info = Pushfour::Players.info_for(player_id)
+        errors << 'Player not found' unless player_info
+      end
+
+      # load the game details
+      if errors.size == 0
+        game_info = load_game(game_id: game_id)
+        errors.concat(game_info[:errors])
+      end
+
+      # validate some game state
+      if errors.size == 0
+        players = [game_info[:game][:player1], game_info[:game][:player2]]
+        player_turn = players[game_info[:game][:turn]]
+        errors << 'Out of turn move' unless player_turn == player_id
+        errors << 'Game not active' unless game_info[:game][:status] == 0
+      end
+
+      # check that this is a legal move
+      if errors.size == 0
+        x = val_if_int(params[:x])
+        y = val_if_int(params[:y])
+        errors << 'Invalid x' unless x
+        errors << 'Invalid y' unless y
+
+        mb = game_info[:game][:game_detail][:movable_blocks]
+        errors << "Cannot move to #{x}, #{y}" unless mb.include? [x, y]
+      end
 
       if errors.size == 0
         # TODO: get the maximum move number
         move_num = move_number(game_id: game_id)[:move_number] + 1
 
         columns = %w(game movenumber player xlocation ylocation)
-        values = [game_id, move_num, player, x, y]
-        Pushfour::Database.insert(
+        values = [game_id, move_num, game_info[:game][:turn], x, y]
+        move_id = Pushfour::Database.insert(
           Pushfour::Database::MOVE_TABLE,
           columns,
           values
+        )
+        errors << 'Problem making move' unless move_id
+      end
+
+      # update the game state
+      if errors.size == 0
+        board = game_info[:board]
+        board_string = board[:board_string]
+        game = game_info[:game]
+        # make the move and update the status from the AI library
+        offset = y * board[:width] + x
+        turn = (player_id == game[:player1]) ? 0 : 1
+        board_string[offset] = turn.to_s if player_id == game[:player1]
+        board_string[offset] = turn.to_s if player_id == game[:player2]
+        b = Pushfour.make_board(board_string, board[:width], board[:height], '+', '01')
+        status = :in_progress
+        status = :stalemate if b.movable_blocks.length == 0
+        status = :ended if b.game_over and b.game_over > 0
+        new_turn = (turn + 1) & 1 if status == :in_progress
+        status_id = status_id_for(status)
+
+        result = Pushfour::Database.update(
+          Pushfour::Database::GAME_TABLE,
+          %w(turn status),
+          [new_turn, status_id],
+          game_id
         )
       end
 
@@ -94,6 +146,18 @@ module Pushfour
       {game_id: game_id, moves: moves, errors: errors}
     end
 
+    def self.populate_board_string(board_string, moves, width)
+      moves.each do |move|
+        offset = move[:ylocation] * width + move[:xlocation]
+        board_string[offset] = ['0', '1'][move[:player]]
+      end
+      board_string
+    end
+
+    def self.make_game_string(board_string, height, width, turn)
+      "+,#{board_string},#{height},#{width},2,01,#{turn}"
+    end
+
     def self.load_game(params)
       board = game = board_id = game_id = moves = game_string = nil
       errors = []
@@ -128,12 +192,10 @@ module Pushfour
             move_result = load_moves(game_id: game_id)
             if move_result[:errors].size == 0
               moves = move_result[:moves]
-              moves.each do |move|
-                offset = move[:ylocation] * width + move[:xlocation]
-                board_string[offset] = ['0', '1'][move[:player]]
-              end
-              game_string = "+,#{board_string},#{height},#{width},2,01,#{game[:turn].to_s}"
+              board_string = populate_board_string(board_string, moves, width)
+              game_string = make_game_string(board_string, height, width, game[:turn])
               detail = Pushfour.parse_game_string(game_string)
+
               xy = process_xy(detail.board.xy)
               game[:game_detail] = {
                 xy: xy, move_depth: detail.board.move_depth, game_over: detail.board.game_over,
@@ -158,6 +220,5 @@ module Pushfour
         board: board, game: game, moves: moves
       }
     end
-
   end
 end
