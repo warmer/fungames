@@ -6,6 +6,7 @@ require 'sqlite3'
 require_relative 'lib/common.rb'
 require_relative 'lib/registration.rb'
 require_relative 'lib/create_game.rb'
+require_relative 'lib/make_move.rb'
 require_relative 'lib/game_status.rb'
 require_relative 'lib/login.rb'
 require_relative 'lib/players.rb'
@@ -77,6 +78,9 @@ class PushfourWebsite < Sinatra::Base
   post URL[:make_move] do
     raw_params = filter(params, [:game_id, :x, :y])
     player = session[:user_id]
+    params = {player: player}.merge(raw_params)
+    results = Pushfour::WebGame.make_move(params)
+    results.to_json
   end
 
   # page load requests

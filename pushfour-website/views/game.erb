@@ -55,6 +55,20 @@
         }
         if(x >= 0 && x < board.width && y >= 0 && y < board.height) {
           console.log("Moving to x: " + x + ", y: " + y);
+          var data = {x: x, y: y, game_id: game.id, csrf_token: "<%= session[:csrf] %>" };
+          $.post("<%= url(:make_move) %>", data)
+            .done(function(res) {
+              console.log("Success!");
+              console.log(res);
+            })
+            .fail(function(res) {
+              console.log("Fail!");
+              console.log(res);
+            })
+            .always(function(res) {
+              console.log("Always!");
+              console.log(res);
+            });
         }
       }
 

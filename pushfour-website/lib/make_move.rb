@@ -176,6 +176,7 @@ module Pushfour
           board_id = g[4]
           game = {
             id: game_id, player1: g[0], player2: g[1],
+            players: [g[0], g[1]],
             turn: g[2], status: g[3], board_id: board_id
           }
           res = Pushfour::Database.execute_query <<-HERE
@@ -195,7 +196,6 @@ module Pushfour
               board_string = populate_board_string(board_string, moves, width)
               game_string = make_game_string(board_string, height, width, game[:turn])
               detail = Pushfour.parse_game_string(game_string)
-
               xy = process_xy(detail.board.xy)
               game[:game_detail] = {
                 xy: xy, move_depth: detail.board.move_depth, game_over: detail.board.game_over,
