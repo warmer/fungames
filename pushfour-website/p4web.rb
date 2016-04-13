@@ -14,6 +14,7 @@ require_relative 'lib/players.rb'
 PATH_ROOT = '/'
 
 URL = {
+  full_game_details: PATH_ROOT + 'game_details/:id',
   tournaments: PATH_ROOT + 'tournaments',
   tournament: PATH_ROOT + 'tournament/:id',
   make_move: PATH_ROOT + 'make_move',
@@ -22,7 +23,6 @@ URL = {
   profile: PATH_ROOT + 'profile',
   players: PATH_ROOT + 'players',
   player: PATH_ROOT + 'player/:id',
-  status: PATH_ROOT + 'game_status/:id',
   stats: PATH_ROOT + 'stats',
   games: PATH_ROOT + 'games',
   game: PATH_ROOT + 'game/:id',
@@ -45,6 +45,7 @@ class PushfourWebsite < Sinatra::Base
       unless form_ok && cookie_ok
         puts "Form ok? #{form_ok}"
         puts "Cookie ok? #{cookie_ok}"
+        rotate_csrf
         halt 403, erb(:error)
       end
       rotate_csrf
@@ -80,6 +81,7 @@ class PushfourWebsite < Sinatra::Base
     player = session[:user_id]
     params = {player: player}.merge(raw_params)
     results = Pushfour::WebGame.make_move(params)
+    results[:csrf] = session[:csrf]
     results.to_json
   end
 
@@ -165,6 +167,13 @@ class PushfourWebsite < Sinatra::Base
     end
   end
 
+  get URL[:full_game_details] do |id|
+    opts = {game_id: id, user_id: session[:user_id]}
+    results = Pushfour::WebGame.load_game(opts)
+
+    results.to_json
+  end
+
   get URL[:game] do |id|
     opts = {game_id: id, user_id: session[:user_id]}
     results = Pushfour::WebGame.load_game(opts)
@@ -177,10 +186,6 @@ class PushfourWebsite < Sinatra::Base
     results = Pushfour::WebGame.list(raw_params)
 
     erb :games, locals: locals(results)
-  end
-
-  get URL[:status] do |id|
-    opts = {game_id: id, user_id: session[:user_id]}
   end
 
   get URL[:login] do

@@ -98,13 +98,13 @@ module Pushfour
         status = :in_progress
         status = :stalemate if b.movable_blocks.length == 0
         status = :ended if b.game_over and b.game_over > 0
-        new_turn = (turn + 1) & 1 if status == :in_progress
+        turn = (turn + 1) & 1 if status == :in_progress
         status_id = status_id_for(status)
 
         result = Pushfour::Database.update(
           Pushfour::Database::GAME_TABLE,
           %w(turn status),
-          [new_turn, status_id],
+          [turn, status_id],
           game_id
         )
       end
@@ -193,8 +193,10 @@ module Pushfour
             move_result = load_moves(game_id: game_id)
             if move_result[:errors].size == 0
               moves = move_result[:moves]
+              game[:turn] ||= moves.length & 1
               board_string = populate_board_string(board_string, moves, width)
               game_string = make_game_string(board_string, height, width, game[:turn])
+              puts "Game string: #{game_string}"
               detail = Pushfour.parse_game_string(game_string)
               xy = process_xy(detail.board.xy)
               game[:game_detail] = {
