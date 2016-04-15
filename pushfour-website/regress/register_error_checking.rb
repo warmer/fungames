@@ -4,6 +4,8 @@ require_relative '../test/harness.rb'
 require_relative '../lib/database.rb'
 require_relative '../lib/registration.rb'
 
+include Pushfour::Website
+
 tcs = [
   {name: 'bob1', password: 'pass1', password2: 'pass2'},
   {name: 'bob2', password: 'pass1', password2: nil},
@@ -24,11 +26,11 @@ Harness.run_test(mock_db: true) do
     puts '=' * 60
 
     puts "Test case: #{tc.inspect}"
-    reg_result = Pushfour::Registration.register(tc)
+    reg_result = Registration.register(tc)
     puts reg_result.inspect
 
-    db_result = Pushfour::Database.execute_query <<-HERE
-      SELECT name,passhash,id FROM #{Pushfour::Database::PLAYER_TABLE}
+    db_result = Database.execute_query <<-HERE
+      SELECT name,passhash,id FROM #{Database::PLAYER_TABLE}
     HERE
 
     puts db_result.inspect

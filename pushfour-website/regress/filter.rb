@@ -2,7 +2,7 @@
 
 require_relative '../lib/common.rb'
 
-include Pushfour::Common
+include Pushfour::Website::Common
 
 strings = [
   'bob',

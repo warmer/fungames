@@ -32,7 +32,8 @@ URL = {
 }
 
 class PushfourWebsite < Sinatra::Base
-  include Pushfour::Common
+  include Pushfour::Website
+  include Common
 
   use Rack::Session::Pool, :expire_after => 2592000
 
@@ -41,10 +42,10 @@ class PushfourWebsite < Sinatra::Base
 
     if !request.safe?
       form_ok = session[:csrf] == params[:csrf_token]
-      cookie_ok = session[:csrf] == request.cookies['authenticity_token']
+      cookie_ok = session[:auth_token] == request.cookies['auth_token']
       unless form_ok && cookie_ok
         puts "Form ok? #{form_ok}"
-        puts "Cookie ok? #{cookie_ok}"
+        puts "Cookie ok? #{cookie_ok} [#{request.cookies['auth_token']} not #{session[:auth_token]}"
         rotate_csrf
         halt 403, erb(:error)
       end
@@ -54,9 +55,10 @@ class PushfourWebsite < Sinatra::Base
 
   def rotate_csrf
     session[:csrf] = SecureRandom.hex(32)
+    session[:auth_token] = SecureRandom.hex(32)
 
-    response.set_cookie 'authenticity_token', {
-      value: session[:csrf],
+    response.set_cookie 'auth_token', {
+      value: session[:auth_token],
       expires: Time.now + (24 * 60 * 60),
       path: '/',
       httponly: true,
@@ -80,7 +82,7 @@ class PushfourWebsite < Sinatra::Base
     raw_params = filter(params, [:game_id, :x, :y])
     player = session[:user_id]
     params = {player: player}.merge(raw_params)
-    results = Pushfour::WebGame.make_move(params)
+    results = Pushfour::Website.make_move(params)
     results[:csrf] = session[:csrf]
     results.to_json
   end
@@ -89,7 +91,7 @@ class PushfourWebsite < Sinatra::Base
 
   get URL[:players] do
     raw_params = filter(params, [:limit, :start])
-    results = Pushfour::Players.player_list(raw_params)
+    results = Players.player_list(raw_params)
 
     erb :players, locals: locals(results)
   end
@@ -99,7 +101,7 @@ class PushfourWebsite < Sinatra::Base
     error = player = nil
 
     if player_id > 0
-      player = Pushfour::Players.info_for(player_id)
+      player = Players.info_for(player_id)
       error = 'Player not found' unless player
     else
       error = 'Player not found'
@@ -116,7 +118,7 @@ class PushfourWebsite < Sinatra::Base
 
   post URL[:register] do
     raw_params = filter(params, [:name, :password, :password2])
-    results = Pushfour::Registration.register(raw_params)
+    results = Registration.register(raw_params)
     if results[:errors].size == 0
       redirect to(URL[:login])
     else
@@ -130,7 +132,7 @@ class PushfourWebsite < Sinatra::Base
 
   post URL[:login] do
     raw_params = filter(params, [:name, :password])
-    results = Pushfour::Login.login(raw_params)
+    results = Login.login(raw_params)
     if results[:errors].size == 0
       session[:user_id] = results[:id]
       session[:login_name] = results[:name]
@@ -147,7 +149,7 @@ class PushfourWebsite < Sinatra::Base
   end
 
   get URL[:make_game] do
-    results = Pushfour::Players.player_list(exclude: session[:user_id])
+    results = Players.player_list(exclude: session[:user_id])
 
     erb :create_game, locals: locals(results)
   end
@@ -156,7 +158,7 @@ class PushfourWebsite < Sinatra::Base
     raw_params = filter(params, [:height, :width, :obstacles, :creator, :opponent, :first_move])
     raw_params = raw_params.merge(user_id: session[:user_id])
 
-    results = Pushfour::WebGame.create_game(raw_params)
+    results = Pushfour::Website.create_game(raw_params)
 
 
     if results[:errors].size == 0
@@ -169,21 +171,21 @@ class PushfourWebsite < Sinatra::Base
 
   get URL[:full_game_details] do |id|
     opts = {game_id: id, user_id: session[:user_id]}
-    results = Pushfour::WebGame.load_game(opts)
+    results = Pushfour::Website.load_game(opts)
 
     results.to_json
   end
 
   get URL[:game] do |id|
     opts = {game_id: id, user_id: session[:user_id]}
-    results = Pushfour::WebGame.load_game(opts)
+    results = Pushfour::Website.load_game(opts)
 
     erb :game, locals: locals(results)
   end
 
   get URL[:games] do
     raw_params = filter(params, [:start])
-    results = Pushfour::WebGame.list(raw_params)
+    results = Pushfour::Website.list(raw_params)
 
     erb :games, locals: locals(results)
   end

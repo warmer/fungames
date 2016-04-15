@@ -5,9 +5,11 @@ require_relative '../lib/database.rb'
 require_relative '../lib/registration.rb'
 require_relative '../lib/players.rb'
 
+include Pushfour::Website
+
 def pp_player_table
-  db_result = Pushfour::Database.execute_query <<-HERE
-    SELECT name,passhash,id FROM #{Pushfour::Database::PLAYER_TABLE}
+  db_result = Database.execute_query <<-HERE
+    SELECT name,passhash,id FROM #{Database::PLAYER_TABLE}
   HERE
 
   puts "#{'=' * 20} PLAYER TABLE #{'=' * 20}"
@@ -34,7 +36,7 @@ tcs = [
 
 Harness.run_test(mock_db: true) do
   30.times do |i|
-    reg_result = Pushfour::Registration.register(
+    reg_result = Registration.register(
       name: sprintf('foo%02d', i + 1),
       password: 'test',
       password2: 'test')
@@ -47,7 +49,7 @@ Harness.run_test(mock_db: true) do
   tcs.each do |tc|
     puts 'Test case:'
     puts tc.inspect
-    list_result = Pushfour::Players.player_list(tc)
+    list_result = Players.player_list(tc)
 
     puts 'Results returned:'
     puts list_result.inspect

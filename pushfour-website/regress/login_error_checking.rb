@@ -5,6 +5,8 @@ require_relative '../lib/database.rb'
 require_relative '../lib/registration.rb'
 require_relative '../lib/login.rb'
 
+include Pushfour::Website
+
 tcs = [
   {name: 'basic_user', password: 'incorrect'},
   {name: 'basic_user', password: nil},
@@ -15,13 +17,13 @@ tcs = [
 ]
 
 Harness.run_test(mock_db: true) do
-  reg_result = Pushfour::Registration.register(
+  reg_result = Registration.register(
     name: 'basic_user',
     password: 'test',
     password2: 'test')
 
-  db_result = Pushfour::Database.execute_query <<-HERE
-    SELECT name,passhash,id FROM #{Pushfour::Database::PLAYER_TABLE}
+  db_result = Database.execute_query <<-HERE
+    SELECT name,passhash,id FROM #{Database::PLAYER_TABLE}
   HERE
 
   puts db_result.inspect
@@ -30,11 +32,11 @@ Harness.run_test(mock_db: true) do
     puts '=' * 60
 
     puts "Test case: #{tc.inspect}"
-    login_result = Pushfour::Login.login(tc)
+    login_result = Login.login(tc)
     puts login_result.inspect
 
-    db_result = Pushfour::Database.execute_query <<-HERE
-      SELECT name,passhash,id FROM #{Pushfour::Database::PLAYER_TABLE}
+    db_result = Database.execute_query <<-HERE
+      SELECT name,passhash,id FROM #{Database::PLAYER_TABLE}
     HERE
 
     puts db_result.inspect

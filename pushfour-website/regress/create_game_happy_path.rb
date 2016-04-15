@@ -17,18 +17,20 @@ tcs = [
 ]
 seed = 4
 
+include Pushfour::Website
+
 Harness.run_test(mock_db: true) do
-  Pushfour::Registration.register(
+  Registration.register(
     name: 'user1',
     password: 'test',
     password2: 'test')
-  Pushfour::Registration.register(
+  Registration.register(
     name: 'user2',
     password: 'test',
     password2: 'test')
 
-  db_result = Pushfour::Database.execute_query <<-HERE
-    SELECT name,passhash,id FROM #{Pushfour::Database::PLAYER_TABLE}
+  db_result = Database.execute_query <<-HERE
+    SELECT name,passhash,id FROM #{Database::PLAYER_TABLE}
   HERE
 
   puts db_result.inspect
@@ -39,15 +41,15 @@ Harness.run_test(mock_db: true) do
     puts "Test case: #{tc.inspect}"
     tc = {rand_seed: seed}.merge(tc)
 
-    create_result = Pushfour::WebGame.create_game(tc)
+    create_result = Pushfour::Website.create_game(tc)
     puts 'Result of game creation:'
     puts create_result.inspect
 
-    game_result = Pushfour::Database.execute_query <<-HERE
-      SELECT id,player1,player2,status,turn,board FROM #{Pushfour::Database::GAME_TABLE}
+    game_result = Database.execute_query <<-HERE
+      SELECT id,player1,player2,status,turn,board FROM #{Database::GAME_TABLE}
     HERE
-    board_result = Pushfour::Database.execute_query <<-HERE
-      SELECT id,width,height,boardstring FROM #{Pushfour::Database::BOARD_TABLE}
+    board_result = Database.execute_query <<-HERE
+      SELECT id,width,height,boardstring FROM #{Database::BOARD_TABLE}
     HERE
 
     puts 'Game table after running test case:'

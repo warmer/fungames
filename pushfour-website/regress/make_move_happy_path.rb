@@ -8,6 +8,8 @@ require_relative '../lib/create_game.rb'
 require_relative '../lib/game_status.rb'
 require_relative '../lib/make_move.rb'
 
+include Pushfour::Website
+
 tcs = [
   { game: {height: 4, width: 4, obstacles: 0, creator: 1, opponent: 2, first_move: 0, user_id: 1},
     moves: [
@@ -22,17 +24,17 @@ tcs = [
 seed = 4
 
 Harness.run_test(mock_db: true) do
-  Pushfour::Registration.register(
+  Registration.register(
     name: 'user1',
     password: 'test',
     password2: 'test')
-  Pushfour::Registration.register(
+  Registration.register(
     name: 'user2',
     password: 'test',
     password2: 'test')
 
-  db_result = Pushfour::Database.execute_query <<-HERE
-    SELECT name,passhash,id FROM #{Pushfour::Database::PLAYER_TABLE}
+  db_result = Database.execute_query <<-HERE
+    SELECT name,passhash,id FROM #{Database::PLAYER_TABLE}
   HERE
 
   puts db_result.inspect
@@ -43,14 +45,14 @@ Harness.run_test(mock_db: true) do
     puts "Test case: #{tc.inspect}"
     tc = {rand_seed: seed}.merge(tc)
 
-    create_result = Pushfour::WebGame.create_game(tc[:game])
+    create_result = Pushfour::Website.create_game(tc[:game])
     puts 'Result of game creation:'
     puts create_result.inspect
     game_id = create_result[:game]
 
     tc[:moves].each_with_index do |move, idx|
       puts "Player #{move[:player]} moving to [#{move[:x]}, #{move[:y]}]"
-      res = Pushfour::WebGame.make_move(
+      res = Pushfour::Website.make_move(
         game_id: game_id, player: move[:player], x: move[:x], y: move[:y]
       )
       puts 'Make move result:'
@@ -58,7 +60,7 @@ Harness.run_test(mock_db: true) do
       puts
     end
 
-    status = Pushfour::WebGame.get_status(game_id: game_id, last_move: tc[:last_move])
+    status = Pushfour::Website.get_status(game_id: game_id, last_move: tc[:last_move])
     puts 'Get status result:'
     puts status.inspect
 

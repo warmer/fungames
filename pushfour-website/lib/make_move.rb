@@ -7,20 +7,20 @@ require_relative 'create_game.rb'
 require_relative '../../pushfour-ai/common.rb'
 
 module Pushfour
-  class WebGame
-    extend Pushfour::Common
+  module Website
+    extend Common
 
     def self.move_number(params)
       errors = []
       move = 0
 
-      game_id = val_if_int(params[:game_id])
+      game_id = val_if_int(params.delete(:game_id))
       errors << 'Invalid game id' unless game_id and game_id > 0
 
       if errors.size == 0
-        res = Pushfour::Database.execute_query <<-HERE
+        res = Database.execute_query <<-HERE
           SELECT max(movenumber)
-          FROM #{Pushfour::Database::MOVE_TABLE}
+          FROM #{Database::MOVE_TABLE}
           WHERE game = #{game_id}
           GROUP BY game;
         HERE
@@ -34,14 +34,14 @@ module Pushfour
       errors = []
       game_info = player_info = nil
 
-      game_id = val_if_int(params[:game_id])
+      game_id = val_if_int(params.delete(:game_id))
       errors << 'Invalid game id' unless game_id and game_id > 0
-      player_id = val_if_int(params[:player])
+      player_id = val_if_int(params.delete(:player))
       errors << 'Invalid player id' unless player_id and player_id > 0
 
       # load details about the current player
       if errors.size == 0
-        player_info = Pushfour::Players.info_for(player_id)
+        player_info = Players.info_for(player_id)
         errors << 'Player not found' unless player_info
       end
 
@@ -61,8 +61,8 @@ module Pushfour
 
       # check that this is a legal move
       if errors.size == 0
-        x = val_if_int(params[:x])
-        y = val_if_int(params[:y])
+        x = val_if_int(params.delete(:x))
+        y = val_if_int(params.delete(:y))
         errors << 'Invalid x' unless x
         errors << 'Invalid y' unless y
 
@@ -76,8 +76,8 @@ module Pushfour
 
         columns = %w(game movenumber player xlocation ylocation)
         values = [game_id, move_num, game_info[:game][:turn], x, y]
-        move_id = Pushfour::Database.insert(
-          Pushfour::Database::MOVE_TABLE,
+        move_id = Database.insert(
+          Database::MOVE_TABLE,
           columns,
           values
         )
@@ -94,15 +94,15 @@ module Pushfour
         turn = (player_id == game[:player1]) ? 0 : 1
         board_string[offset] = turn.to_s if player_id == game[:player1]
         board_string[offset] = turn.to_s if player_id == game[:player2]
-        b = Pushfour.make_board(board_string, board[:width], board[:height], '+', '01')
+        b = Pushfour::AI.make_board(board_string, board[:width], board[:height], '+', '01')
         status = :in_progress
         status = :stalemate if b.movable_blocks.length == 0
         status = :ended if b.game_over and b.game_over > 0
         turn = (turn + 1) & 1 if status == :in_progress
         status_id = status_id_for(status)
 
-        result = Pushfour::Database.update(
-          Pushfour::Database::GAME_TABLE,
+        result = Database.update(
+          Database::GAME_TABLE,
           %w(turn status),
           [turn, status_id],
           game_id
@@ -112,114 +112,31 @@ module Pushfour
       {errors: errors}
     end
 
-    def self.process_xy(xy)
-      xy.each_with_index do |row, y|
-        row.each_with_index do |val, x|
-          xy[y][x] = val & 0x0f
-        end
-      end
-    end
-
-    def self.load_moves(params)
-      game_id = nil
-      errors = []
-      moves = []
-
-      game_id = val_if_int(params[:game_id])
-      errors << 'Invalid game ID' unless game_id and game_id > 0
-
-      if errors.size == 0
-        res = Pushfour::Database.execute_query <<-HERE
-          SELECT id,movenumber,player,xlocation,ylocation,movedate
-          FROM #{Pushfour::Database::MOVE_TABLE}
-          WHERE game = #{game_id}
-          ORDER BY movenumber ASC;
-        HERE
-        res.each do |m|
-          moves << {
-            id: m[0], movenumber: m[1], player: m[2],
-            xlocation: m[3], ylocation: m[4]
-          }
-        end
-      end
-
-      {game_id: game_id, moves: moves, errors: errors}
-    end
-
-    def self.populate_board_string(board_string, moves, width)
-      moves.each do |move|
-        offset = move[:ylocation] * width + move[:xlocation]
-        board_string[offset] = ['0', '1'][move[:player]]
-      end
-      board_string
-    end
-
-    def self.make_game_string(board_string, height, width, turn)
-      "+,#{board_string},#{height},#{width},2,01,#{turn}"
-    end
-
     def self.load_game(params)
-      board = game = board_id = game_id = moves = game_string = nil
+      game = game_info = board_info = game_id = nil
       errors = []
 
-      game_id = val_if_int(params[:game_id])
+      game_id = val_if_int(params.delete(:game_id))
       errors << 'Invalid game ID' unless game_id and game_id > 0
 
       if errors.size == 0
-        res = Pushfour::Database.execute_query <<-HERE
-          SELECT player1,player2,turn,status,board
-          FROM #{Pushfour::Database::GAME_TABLE}
-          WHERE id = #{game_id};
-        HERE
-        if res.size > 0
-          g = res[0]
-          board_id = g[4]
-          game = {
-            id: game_id, player1: g[0], player2: g[1],
-            players: [g[0], g[1]],
-            turn: g[2], status: g[3], board_id: board_id
-          }
-          res = Pushfour::Database.execute_query <<-HERE
-            SELECT width,height,boardstring
-            FROM #{Pushfour::Database::BOARD_TABLE}
-            WHERE id = #{board_id};
-          HERE
-
-          if res.size > 0
-            b = res[0]
-            width = b[0]
-            height = b[1]
-            board_string = b[2]
-            move_result = load_moves(game_id: game_id)
-            if move_result[:errors].size == 0
-              moves = move_result[:moves]
-              game[:turn] ||= moves.length & 1
-              board_string = populate_board_string(board_string, moves, width)
-              game_string = make_game_string(board_string, height, width, game[:turn])
-              puts "Game string: #{game_string}"
-              detail = Pushfour.parse_game_string(game_string)
-              xy = process_xy(detail.board.xy)
-              game[:game_detail] = {
-                xy: xy, move_depth: detail.board.move_depth, game_over: detail.board.game_over,
-                movable_blocks: detail.board.movable_blocks
-              }
-            else
-              errors << move_result[:errors]
-              errors.flatten!
-            end
-            board = {id: board_id, width: width, height: height, board_string: board_string}
-          else
-            errors << 'Could not find the board for the game'
-          end
-
+        begin
+          game = Game.new(id: game_id)
+        rescue => e
+          errors << e.message
         else
-          errors << 'Game not found'
+          game_info = {id: game.id, player1: game.player1, player2: game.player2,
+            players: [game.player1, game.player2], turn: game.turn, status: game.status,
+            game_detail: game.game_detail, moves: game.moves
+          }
+          board = game.board
+          board_info = {width: board.width, height: board.height, board_string: game.board_string}
         end
       end
 
       {
-        errors: errors, game_id: game_id, board_id: board_id,
-        board: board, game: game, moves: moves
+        errors: errors, game_id: game_id,
+        board: board_info, game: game_info
       }
     end
   end
