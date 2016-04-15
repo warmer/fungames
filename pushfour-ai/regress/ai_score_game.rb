@@ -14,9 +14,9 @@ game_strings.each do |game_string|
   puts game_string
   puts
 
-  game = Pushfour.parse_game_string(game_string)
+  game = Pushfour::AI.parse_game_string(game_string)
 
-  Pushfour.print_board(game)
+  Pushfour::AI.print_board(game)
 
   3.times do |depth|
     depth += 1

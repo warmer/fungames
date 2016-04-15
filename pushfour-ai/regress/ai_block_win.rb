@@ -9,10 +9,10 @@ puts game_string
 puts
 
 ai = PushfourAI::AI.new(1000, search_depth: 3)
-game = Pushfour.parse_game_string(game_string)
+game = Pushfour::AI.parse_game_string(game_string)
 
 puts 'Before move:'
-Pushfour.print_board(game)
+Pushfour::AI.print_board(game)
 
 game.board.players.each do |player|
   score = ai.score(game.board, player, game.turn)

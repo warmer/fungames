@@ -21,7 +21,7 @@ moves = [
   [3, 5], [2, 0],
 ]
 
-game = Pushfour.parse_game_string(game_string)
+game = Pushfour::AI.parse_game_string(game_string)
 
 puts '===== BEFORE MOVING ====='
 puts 'From the parsed game string:'
@@ -31,7 +31,7 @@ puts "  game.board.xy array:"
 puts "  game.board.x: #{game.board.x}"
 puts "  game.board.y: #{game.board.y}"
 puts "  board players: #{game.board.players}"
-Pushfour.print_board(game)
+Pushfour::AI.print_board(game)
 puts "game.board.movable_blocks #{game.board.movable_blocks}"
 puts
 
@@ -47,7 +47,7 @@ moves.each do |move|
   puts "  game.board.x: #{game.board.x}"
   puts "  game.board.y: #{game.board.y}"
   puts "  board players: #{game.board.players}"
-  Pushfour.print_board(game)
+  Pushfour::AI.print_board(game)
   puts "game.board.movable_blocks #{game.board.movable_blocks}"
   puts
 end

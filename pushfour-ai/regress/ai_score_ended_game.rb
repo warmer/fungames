@@ -8,7 +8,7 @@ puts 'Game string:'
 puts game_string
 puts
 
-game = Pushfour.parse_game_string(game_string)
+game = Pushfour::AI.parse_game_string(game_string)
 
 ai = PushfourAI::AI.new(1000)
 

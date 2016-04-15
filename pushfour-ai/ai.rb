@@ -234,7 +234,7 @@ module PushfourAI
 
       board.xy.each_with_index do |row, y|
         row.each_with_index do |block, x|
-          if (p = block & Pushfour::PLAYER_MASK) > 0
+          if (p = block & Pushfour::AI::PLAYER_MASK) > 0
             # horizontal
             run = runs[p][HORIZ].delete([x-1, y]) || PieceRun.new(x, y, HORIZ)
             run.add(x, y)
@@ -299,15 +299,15 @@ module PushfourAI
                 after = board.xy[one_down] && board.xy[one_down][one_right] if one_down and one_right
             end
 
-            if before.to_i & Pushfour::MOVABLE_MASK > 0
+            if before.to_i & Pushfour::AI::MOVABLE_MASK > 0
               movable_ends += 1
-            elsif before.to_i & Pushfour::OPEN_MASK > 0
+            elsif before.to_i & Pushfour::AI::OPEN_MASK > 0
               open_ends += 1
             end
 
-            if after.to_i & Pushfour::MOVABLE_MASK > 0
+            if after.to_i & Pushfour::AI::MOVABLE_MASK > 0
               movable_ends += 1
-            elsif after.to_i & Pushfour::OPEN_MASK > 0
+            elsif after.to_i & Pushfour::AI::OPEN_MASK > 0
               open_ends += 1
             end
 
