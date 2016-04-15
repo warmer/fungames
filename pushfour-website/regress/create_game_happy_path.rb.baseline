@@ -20,7 +20,7 @@ Board table after running test case:
 ============================================================
 Test case: {:height=>15, :width=>15, :obstacles=>57}
 Result of game creation:
-{:errors=>[], :notes=>["Obstacle count reduced to 56"], :board=>3, :game=>3}
+{:errors=>[], :notes=>[], :board=>3, :game=>3}
 Game table after running test case:
 [[1, 0, 0, 0, 0, 1], [2, 0, 0, 0, 0, 2], [3, 0, 0, 0, 0, 3]]
 Board table after running test case:
