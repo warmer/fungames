@@ -12,6 +12,7 @@ module Pushfour
 
     def self.create_game(params)
       board = game = board_id = game_id = nil
+      persisted = true
 
       height = val_if_int(params.delete(:height)) || 0
       width = val_if_int(params.delete(:width)) || 0
@@ -25,7 +26,6 @@ module Pushfour
       rand_seed = val_if_int(params.delete(:rand_seed))
 
       errors = []
-      notes = []
 
       errors << 'Board height must be between 4 and 15' unless height >= 4 and height <= 15
       errors << 'Board width must be between 4 and 15' unless width >= 4 and width <= 15
@@ -39,6 +39,7 @@ module Pushfour
         errors << 'First move out of bounds' unless first_move and [0, 1].include?(first_move)
         errors << 'Signed in user does not match creator' unless user == creator
         errors << 'Opponent cannot be self' if user == opponent
+        persisted = true
       elsif first_move or opponent
         errors << 'Unexpected game creation parameters provided'
       end
@@ -46,19 +47,21 @@ module Pushfour
       unless errors.size > 0
         begin
           board = Board.new(height: height, width: width, obstacles: obstacles,
-            rand_seed: rand_seed)
+            rand_seed: rand_seed, persisted: persisted)
           board_id = board.id
           game = Game.new(creator: creator, opponent: opponent,
-            first_move: first_move, board_id: board_id)
+            first_move: first_move, board_id: board_id, persisted: persisted)
           game_id = game.id
         rescue => e
           errors << e.message
-          errors << 'Could not create board/game database'
-          raise e
+          $stderr.puts e.backtrace.join("\n")
+          errors << 'Could not create board or game'
+          board_id = nil
+          game_id = nil
         end
       end
 
-      {errors: errors, notes: notes, board: board_id, game: game_id}
+      {errors: errors, board: board_id, game: game_id}
     end
   end
 end

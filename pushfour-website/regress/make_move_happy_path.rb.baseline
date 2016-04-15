@@ -2,7 +2,7 @@
 ============================================================
 Test case: {:game=>{:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>2, :first_move=>0, :user_id=>1}, :moves=>[{:player=>1, :x=>0, :y=>0}, {:player=>2, :x=>0, :y=>1}, {:player=>1, :x=>0, :y=>2}, {:player=>2, :x=>0, :y=>3}], :last_move=>0}
 Result of game creation:
-{:errors=>[], :notes=>[], :board=>1, :game=>1}
+{:errors=>[], :board=>1, :game=>1}
 Player 1 moving to [0, 0]
 Make move result:
 {:errors=>[]}

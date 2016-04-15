@@ -71,36 +71,6 @@ module Pushfour
       end
 
       result
-#      errors = []
-#      turn = nil
-#      status = nil
-#
-#      game_id = val_if_int(params.delete(:game_id))
-#      errors << 'Invalid game ID' unless game_id and game_id > 0
-#
-#      last_move = val_if_int(params.delete(:last_move)) || 0
-#
-#      if errors.size == 0
-#        res = Database.execute_query <<-HERE
-#          SELECT player1,player2,turn,status,board
-#          FROM #{Database::GAME_TABLE}
-#          WHERE id = #{game_id};
-#        HERE
-#        if res.size > 0
-#          moves = load_moves(game_id: game_id)[:moves]
-#          turn = res[2].to_i
-#          status = res[3].to_i
-#        else
-#          errors << 'Game status not found'
-#        end
-#      end
-#
-#      {
-#        status: status,
-#        moves: moves,
-#        current_turn: turn,
-#        errors: errors,
-#       }
     end
   end
 end

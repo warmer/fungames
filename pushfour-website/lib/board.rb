@@ -7,15 +7,13 @@ module Pushfour
     class Board
       include Common
 
-      attr_reader :id, :width, :height, :board_string
+      attr_reader :id, :width, :height, :board_string, :persisted
 
       def initialize(params)
         @id = val_if_int(params.delete(:id))
 
         if @id
-          if params.size > 0
-            raise ArgumentError, "Given game ID, too many params: #{params.keys.sort}"
-          end
+          raise ArgumentError, "Too many params for board: #{params.keys.sort}" if params.size > 0
 
           load_board
         else
@@ -25,28 +23,15 @@ module Pushfour
           # test hook for creating deterministic output
           @rand_seed = val_if_int(params.delete(:rand_seed))
           @rand = (@rand_seed ? Random.new(@rand_seed) : Random.new)
+          @persisted = params.delete(:persisted)
+          @persisted = false if @persisted.nil?
 
-          if params.size > 0
-            raise ArgumentError, "Given game ID, too many params: #{params.keys.sort}"
-          end
+          raise ArgumentError, "Too many params for board: #{params.keys.sort}" if params.size > 0
 
           create_board
         end
-        # TODO: think through this flag more
-        @persisted = false
 
         load_board if @id and @id > 0
-      end
-
-      # returns true if this game is persisted to the datbase
-      def persisted?
-        return @persisted
-      end
-
-      # persists this game to database
-      def persist!
-        # TODO: persist
-        @persisted = true
       end
 
       private
@@ -54,20 +39,18 @@ module Pushfour
       def create_board
         space_count = @height * @width
         ob_count = [space_count / 4, @obstacles].min
-        #notes << "Obstacle count reduced to #{ob_count}" unless ob_count == @obstacles
-        @obstacles = ob_count
         blocks = (0...space_count).to_a.sample(ob_count, random: @rand)
         @board_string = '+' * space_count
-        blocks.each do |idx|
-          @board_string[idx] = '#'
-        end
-        @id = Database.insert(
-          Database::BOARD_TABLE,
-          [:width, :height, :boardstring],
-          [@width, @height, @board_string]
-        )
-        if not @id or @id <= 0
-          raise 'Could not insert board into database'
+        blocks.each {|idx| @board_string[idx] = '#'}
+        if @persisted
+          @id = Database.insert(
+            Database::BOARD_TABLE,
+            [:width, :height, :boardstring],
+            [@width, @height, @board_string]
+          )
+          raise 'Could not insert board into database' unless @id and @id > 0
+        else
+          # TODO
         end
       end
 

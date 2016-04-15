@@ -30,6 +30,7 @@ module Pushfour
       {errors: errors, move_number: move}
     end
 
+    # TODO: move to Game object
     def self.make_move(params)
       errors = []
       game_info = player_info = nil
@@ -129,6 +130,7 @@ module Pushfour
             players: [game.player1, game.player2], turn: game.turn, status: game.status,
             game_detail: game.game_detail, moves: game.moves
           }
+
           board = game.board
           board_info = {width: board.width, height: board.height, board_string: game.board_string}
         end

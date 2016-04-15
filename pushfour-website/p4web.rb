@@ -55,7 +55,7 @@ class PushfourWebsite < Sinatra::Base
 
   def rotate_csrf
     session[:csrf] = SecureRandom.hex(32)
-    session[:auth_token] = SecureRandom.hex(32)
+    session[:auth_token] = session[:csrf]
 
     response.set_cookie 'auth_token', {
       value: session[:auth_token],

@@ -2,7 +2,7 @@
 ============================================================
 Test case: {:height=>7, :width=>7, :obstacles=>4}
 Result of game creation:
-{:errors=>[], :notes=>[], :board=>1, :game=>1}
+{:errors=>[], :board=>1, :game=>1}
 Game table after running test case:
 [[1, 0, 0, 0, 0, 1]]
 Board table after running test case:
@@ -11,7 +11,7 @@ Board table after running test case:
 ============================================================
 Test case: {:height=>4, :width=>4, :obstacles=>0}
 Result of game creation:
-{:errors=>[], :notes=>[], :board=>2, :game=>2}
+{:errors=>[], :board=>2, :game=>2}
 Game table after running test case:
 [[1, 0, 0, 0, 0, 1], [2, 0, 0, 0, 0, 2]]
 Board table after running test case:
@@ -20,7 +20,7 @@ Board table after running test case:
 ============================================================
 Test case: {:height=>15, :width=>15, :obstacles=>57}
 Result of game creation:
-{:errors=>[], :notes=>[], :board=>3, :game=>3}
+{:errors=>[], :board=>3, :game=>3}
 Game table after running test case:
 [[1, 0, 0, 0, 0, 1], [2, 0, 0, 0, 0, 2], [3, 0, 0, 0, 0, 3]]
 Board table after running test case:
@@ -29,7 +29,7 @@ Board table after running test case:
 ============================================================
 Test case: {:height=>4, :width=>15, :obstacles=>10}
 Result of game creation:
-{:errors=>[], :notes=>[], :board=>4, :game=>4}
+{:errors=>[], :board=>4, :game=>4}
 Game table after running test case:
 [[1, 0, 0, 0, 0, 1], [2, 0, 0, 0, 0, 2], [3, 0, 0, 0, 0, 3], [4, 0, 0, 0, 0, 4]]
 Board table after running test case:
@@ -38,7 +38,7 @@ Board table after running test case:
 ============================================================
 Test case: {:height=>15, :width=>4, :obstacles=>10}
 Result of game creation:
-{:errors=>[], :notes=>[], :board=>5, :game=>5}
+{:errors=>[], :board=>5, :game=>5}
 Game table after running test case:
 [[1, 0, 0, 0, 0, 1], [2, 0, 0, 0, 0, 2], [3, 0, 0, 0, 0, 3], [4, 0, 0, 0, 0, 4], [5, 0, 0, 0, 0, 5]]
 Board table after running test case:
@@ -47,7 +47,7 @@ Board table after running test case:
 ============================================================
 Test case: {:height=>4, :width=>4, :obstacles=>1, :creator=>1, :opponent=>2, :first_move=>0, :user_id=>1}
 Result of game creation:
-{:errors=>[], :notes=>[], :board=>6, :game=>6}
+{:errors=>[], :board=>6, :game=>6}
 Game table after running test case:
 [[1, 0, 0, 0, 0, 1], [2, 0, 0, 0, 0, 2], [3, 0, 0, 0, 0, 3], [4, 0, 0, 0, 0, 4], [5, 0, 0, 0, 0, 5], [6, 1, 2, 0, 0, 6]]
 Board table after running test case:
@@ -56,7 +56,7 @@ Board table after running test case:
 ============================================================
 Test case: {:height=>4, :width=>4, :obstacles=>1, :creator=>2, :opponent=>1, :first_move=>1, :user_id=>2}
 Result of game creation:
-{:errors=>[], :notes=>[], :board=>7, :game=>7}
+{:errors=>[], :board=>7, :game=>7}
 Game table after running test case:
 [[1, 0, 0, 0, 0, 1], [2, 0, 0, 0, 0, 2], [3, 0, 0, 0, 0, 3], [4, 0, 0, 0, 0, 4], [5, 0, 0, 0, 0, 5], [6, 1, 2, 0, 0, 6], [7, 1, 2, 0, 0, 7]]
 Board table after running test case:

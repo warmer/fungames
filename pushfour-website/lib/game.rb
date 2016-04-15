@@ -13,7 +13,7 @@ module Pushfour
 
       attr_reader :id, :board, :creator, :opponent, :first_move, :moves, :turn
       attr_reader :status, :game_detail, :board_string, :game_string
-      attr_reader :player1, :player2
+      attr_reader :player1, :player2, :persisted
 
       # TODO: implement caching on object level; override the 'new' class method
 
@@ -22,9 +22,7 @@ module Pushfour
 
         # if we have an ID, it's the only parameter we need
         if @id
-          if params.size > 0
-            raise ArgumentError, "Given game ID, too many params: #{params.keys.sort}"
-          end
+          raise ArgumentError, "Too many params for game: #{params.keys.sort}" if params.size > 0
 
           load_game
           @board = Board.new(id: @board_id)
@@ -38,54 +36,41 @@ module Pushfour
 
           @board_id = val_if_int(params.delete(:board_id))
 
+          @persisted = params.delete(:persisted)
+          @persisted = false if @persisted.nil?
+
           if @board_id
-            if params.size > 0
-              raise ArgumentError, "Too many parameters given: #{params.keys.sort}"
-            end
+            raise ArgumentError, "Too many params for game: #{params.keys.sort}" if params.size > 0
 
             @board = Board.new(id: @board_id)
           else
-            @board = Board.new(params)
+            @board = Board.new(params.merge(persisted: @persisted))
           end
 
           create_game
         end
 
-        @persisted = params.delete(:persisted)
-        @persisted = false if @persisted.nil?
-
         load_game if @id
-      end
-
-      # returns true if this game is persisted to the datbase
-      def persisted?
-        return @persisted
-      end
-
-      # persists this game to database
-      def persist!
-        # TODO: persist the game to the database
-        @persisted = true
       end
 
       private
 
       def create_game
-        if creator
+        p1 = p2 = 0
+
+        if @creator
           p1 = [@creator, @opponent][@first_move]
           p2 = [@opponent, @creator][@first_move]
+        end
+
+        if @persisted
           @id = Database.insert(
             Database::GAME_TABLE,
             [:player1, :player2, :turn, :status, :board],
             [p1, p2, 0, status_id_for(:in_progress), @board.id]
           )
-        else
-          @id = Database.insert(
-            Database::GAME_TABLE,
-            [:player1, :player2, :turn, :status, :board],
-            [0, 0, 0, status_id_for(:in_progress), @board.id]
-          )
           raise 'Could not create game' unless @id and @id > 0
+        else
         end
       end
 
@@ -141,38 +126,31 @@ module Pushfour
           FROM #{Database::GAME_TABLE}
           WHERE id = #{@id};
         HERE
-        if res.size > 0
-          res = res[0]
-          @moves = load_moves(game_id: @id)[:moves]
-          @player1 = res[0].to_i
-          @player2 = res[1].to_i
-          @turn = res[2].to_i
-          @status = res[3].to_i
-          @board_id = res[4].to_i
-        else
-          raise ArgumentError, 'Game status not found'
-        end
+
+        raise ArgumentError, 'Game status not found' unless res.size > 0
+        res = res[0]
+        @moves = load_moves(game_id: @id)[:moves]
+        @player1 = res[0].to_i
+        @player2 = res[1].to_i
+        @turn = res[2].to_i
+        @status = res[3].to_i
+        @board_id = res[4].to_i
 
         @board = Board.new(id: @board_id)
 
         move_result = load_moves(game_id: @id)
+        raise move_result[:errors] if move_result[:errors].size > 0
 
-        if move_result[:errors].size == 0
-          @moves = move_result[:moves]
-          @turn ||= moves.length & 1
-          @board_string = populate_board_string(board.board_string, @moves, board.width)
-          @game_string = make_game_string(@board_string, board.height, board.width, @turn)
-          detail = Pushfour::AI.parse_game_string(@game_string)
-          xy = process_xy(detail.board.xy)
-          @game_detail = {
-            xy: xy, move_depth: detail.board.move_depth, game_over: detail.board.game_over,
-            movable_blocks: detail.board.movable_blocks
-          }
-        else
-          errors << move_result[:errors]
-          errors.flatten!
-          raise errors
-        end
+        @moves = move_result[:moves]
+        @turn ||= moves.length & 1
+        @board_string = populate_board_string(board.board_string, @moves, board.width)
+        @game_string = make_game_string(@board_string, board.height, board.width, @turn)
+        detail = Pushfour::AI.parse_game_string(@game_string)
+        xy = process_xy(detail.board.xy)
+        @game_detail = {
+          xy: xy, move_depth: detail.board.move_depth, game_over: detail.board.game_over,
+          movable_blocks: detail.board.movable_blocks
+        }
       end
     end
   end
