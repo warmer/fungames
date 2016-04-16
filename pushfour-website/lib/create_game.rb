@@ -12,7 +12,6 @@ module Pushfour
 
     def self.create_game(params)
       board = game = board_id = game_id = nil
-      persisted = true
 
       height = val_if_int(params.delete(:height)) || 0
       width = val_if_int(params.delete(:width)) || 0
@@ -39,7 +38,6 @@ module Pushfour
         errors << 'First move out of bounds' unless first_move and [0, 1].include?(first_move)
         errors << 'Signed in user does not match creator' unless user == creator
         errors << 'Opponent cannot be self' if user == opponent
-        persisted = true
       elsif first_move or opponent
         errors << 'Unexpected game creation parameters provided'
       end
@@ -47,10 +45,10 @@ module Pushfour
       unless errors.size > 0
         begin
           board = Board.new(height: height, width: width, obstacles: obstacles,
-            rand_seed: rand_seed, persisted: persisted)
+            rand_seed: rand_seed)
           board_id = board.id
           game = Game.new(creator: creator, opponent: opponent,
-            first_move: first_move, board_id: board_id, persisted: persisted)
+            first_move: first_move, board_id: board_id)
           game_id = game.id
         rescue => e
           errors << e.message

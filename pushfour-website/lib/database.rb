@@ -40,11 +40,17 @@ module Pushfour
 
           # Notes:
           # - 'Turn' is '0' when it's Player1's turn, '1' when it's Player2's turn
+          # - Anonymous is NULL when Player1, Player2 represent players in the players
+          #   table; it is '1' when Player1, Player2 are anonymously represented
+          # TODO: add the following fields? or store in-memory only?
+          # Player1Token VARCHAR(24),
+          # Player2Token VARCHAR(24),
           db.execute <<-SQL
             CREATE TABLE IF NOT EXISTS #{GAME_TABLE}(
               Id INTEGER PRIMARY KEY,
               Created INTEGER DEFAULT CURRENT_TIMESTAMP,
               Updated INTEGER DEFAULT CURRENT_TIMESTAMP,
+              Anonymous INTEGER DEFAULT NULL,
               Player1 INTEGER,
               Player2 INTEGER,
               Status INTEGER,

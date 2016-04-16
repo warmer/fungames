@@ -1,0 +1,31 @@
+[["user1", "7ddd4e549b62bfeb0fe27bdcc66988d8", 1], ["user2", "6896ae1b8d65b86b3ac0ca60f23307f0", 2]]
+============================================================
+Game: {:height=>4, :width=>7, :obstacles=>4}
+Result of game creation:
+{:errors=>[], :board=>1, :game=>1}
+
+============================================================
+Game: {:height=>7, :width=>4, :obstacles=>1, :creator=>1, :opponent=>2, :first_move=>0, :user_id=>1}
+Result of game creation:
+{:errors=>[], :board=>2, :game=>2}
+
+Game table after creating games:
+[[1, nil, nil, 0, 0, 1], [2, 1, 2, 0, 0, 2]]
+Board table after creating games:
+[[1, 7, 4, "++++++++++++++#+++#+++++++##"], [2, 4, 7, "+++++++++++++++++++++++++++#"]]
+
+============================================================
+Test case: {:user_id=>1, :game_id=>1}
+Result of game load:
+{:errors=>[], :game_id=>1, :board=>{:width=>7, :height=>4, :board_string=>"0++++++10+++++#+++#+++++++##"}, :game=>{:id=>1, :player1=>0, :player2=>0, :players=>[0, 0], :turn=>0, :status=>0, :game_detail=>{:xy=>[[1, 0, 0, 0, 0, 0, 0], [2, 1, 0, 0, 0, 0, 0], [4, 0, 0, 0, 4, 0, 0], [0, 0, 0, 0, 0, 4, 4]], :move_depth=>{:left=>[-1, -1, -1, 4], :right=>[1, 2, 5, 7], :top=>[-1, 0, 3, 3, 1, 2, 2], :bottom=>[3, 2, 0, 0, 3, 4, 4]}, :game_over=>0, :movable_blocks=>[[0, 3], [1, 0], [1, 2], [2, 0], [2, 1], [2, 3], [3, 0], [3, 3], [4, 1], [4, 3], [5, 2], [6, 2]]}, :moves=>[{:id=>1, :movenumber=>1, :player=>0, :xlocation=>0, :ylocation=>0}, {:id=>2, :movenumber=>2, :player=>1, :xlocation=>0, :ylocation=>1}, {:id=>3, :movenumber=>3, :player=>0, :xlocation=>1, :ylocation=>1}]}}
+
+============================================================
+Test case: {:user_id=>2, :game_id=>1}
+Result of game load:
+{:errors=>[], :game_id=>1, :board=>{:width=>7, :height=>4, :board_string=>"0++++++10+++++#+++#+++++++##"}, :game=>{:id=>1, :player1=>0, :player2=>0, :players=>[0, 0], :turn=>0, :status=>0, :game_detail=>{:xy=>[[1, 0, 0, 0, 0, 0, 0], [2, 1, 0, 0, 0, 0, 0], [4, 0, 0, 0, 4, 0, 0], [0, 0, 0, 0, 0, 4, 4]], :move_depth=>{:left=>[-1, -1, -1, 4], :right=>[1, 2, 5, 7], :top=>[-1, 0, 3, 3, 1, 2, 2], :bottom=>[3, 2, 0, 0, 3, 4, 4]}, :game_over=>0, :movable_blocks=>[[0, 3], [1, 0], [1, 2], [2, 0], [2, 1], [2, 3], [3, 0], [3, 3], [4, 1], [4, 3], [5, 2], [6, 2]]}, :moves=>[{:id=>1, :movenumber=>1, :player=>0, :xlocation=>0, :ylocation=>0}, {:id=>2, :movenumber=>2, :player=>1, :xlocation=>0, :ylocation=>1}, {:id=>3, :movenumber=>3, :player=>0, :xlocation=>1, :ylocation=>1}]}}
+
+============================================================
+Test case: {:game_id=>1}
+Result of game load:
+{:errors=>[], :game_id=>1, :board=>{:width=>7, :height=>4, :board_string=>"0++++++10+++++#+++#+++++++##"}, :game=>{:id=>1, :player1=>0, :player2=>0, :players=>[0, 0], :turn=>0, :status=>0, :game_detail=>{:xy=>[[1, 0, 0, 0, 0, 0, 0], [2, 1, 0, 0, 0, 0, 0], [4, 0, 0, 0, 4, 0, 0], [0, 0, 0, 0, 0, 4, 4]], :move_depth=>{:left=>[-1, -1, -1, 4], :right=>[1, 2, 5, 7], :top=>[-1, 0, 3, 3, 1, 2, 2], :bottom=>[3, 2, 0, 0, 3, 4, 4]}, :game_over=>0, :movable_blocks=>[[0, 3], [1, 0], [1, 2], [2, 0], [2, 1], [2, 3], [3, 0], [3, 3], [4, 1], [4, 3], [5, 2], [6, 2]]}, :moves=>[{:id=>1, :movenumber=>1, :player=>0, :xlocation=>0, :ylocation=>0}, {:id=>2, :movenumber=>2, :player=>1, :xlocation=>0, :ylocation=>1}, {:id=>3, :movenumber=>3, :player=>0, :xlocation=>1, :ylocation=>1}]}}
+

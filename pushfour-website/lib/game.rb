@@ -1,3 +1,4 @@
+require 'securerandom'
 require_relative 'common.rb'
 require_relative 'database.rb'
 require_relative 'players.rb'
@@ -13,12 +14,29 @@ module Pushfour
 
       attr_reader :id, :board, :creator, :opponent, :first_move, :moves, :turn
       attr_reader :status, :game_detail, :board_string, :game_string
-      attr_reader :player1, :player2, :persisted
+      attr_reader :player1, :player2
+      attr_reader :anonymous, :p1_token, :p2_token, :p1_active, :p2_active, :game_token
 
-      # TODO: implement caching on object level; override the 'new' class method
+      # uncomment to enable caching
+#      def self.new(params)
+#        @@cache ||= LruRedux::ThreadSafeCache.new(512)
+#        found = false
+#
+#        if params[:id]
+#          obj = @@cache[params[:id]]
+#          found = true if obj
+#        end
+#        obj ||= super(params)
+#
+#        @@cache[obj.id] = obj if obj.id and not found
+#
+#        obj
+#      end
 
       def initialize(params)
         @id = val_if_int(params.delete(:id))
+        @p1_active = @p2_active = nil
+        @p1_token = @p2_token = @game_token = nil
 
         # if we have an ID, it's the only parameter we need
         if @id
@@ -27,6 +45,7 @@ module Pushfour
           load_game
           @board = Board.new(id: @board_id)
         else
+          @anonymous = nil
           # optional params
           @creator = val_if_int(params.delete(:creator))
           @opponent = val_if_int(params.delete(:opponent))
@@ -36,42 +55,113 @@ module Pushfour
 
           @board_id = val_if_int(params.delete(:board_id))
 
-          @persisted = params.delete(:persisted)
-          @persisted = false if @persisted.nil?
-
           if @board_id
             raise ArgumentError, "Too many params for game: #{params.keys.sort}" if params.size > 0
 
+            # load the given board ID
             @board = Board.new(id: @board_id)
           else
-            @board = Board.new(params.merge(persisted: @persisted))
+            # create a new board
+            @board = Board.new(params)
           end
 
-          create_game
+          create
         end
+      end
 
-        load_game if @id
+      def make_move(params)
+        player_info = nil
+
+        return 'Game not active' unless @status == 0
+
+        player_id = val_if_int(params.delete(:player))
+        return 'Invalid player id' unless player_id and player_id > 0
+
+        # load details about the current player
+        player_info = Players.info_for(player_id)
+        return 'Player not found' unless player_info
+
+        players = [@player1, @player2]
+        player_turn = players[@turn]
+        return 'Out of turn move' unless player_turn == player_id
+
+        x = val_if_int(params.delete(:x))
+        y = val_if_int(params.delete(:y))
+        errors << 'Invalid x' unless x
+        errors << 'Invalid y' unless y
+
+        mb = @game_detail[:movable_blocks]
+        return "Cannot move to #{x}, #{y}" unless mb.include? [x, y]
+
+        columns = %w(game movenumber player xlocation ylocation)
+        values = [@id, move_number + 1, @turn, x, y]
+        move_id = Database.insert(
+          Database::MOVE_TABLE,
+          columns,
+          values
+        )
+        return 'Problem making move' unless move_id
+
+        # make the move and update the status from the AI library
+        offset = y * @board.width + x
+        @board_string[offset] = @turn.to_s
+        b = Pushfour::AI.make_board(@board_string, @board.width, @board.height, '+', '01')
+        state = :in_progress
+        state = :stalemate if b.movable_blocks.length == 0
+        state = :ended if b.game_over and b.game_over > 0
+        @turn = (@turn + 1) & 1 if state == :in_progress
+        @status = status_id_for(state)
+
+        result = Database.update(
+          Database::GAME_TABLE,
+          %w(turn status),
+          [@turn, @status],
+          @id
+        )
+
+        nil
       end
 
       private
 
-      def create_game
+      def move_number
+        move = 0
+
+        res = Database.execute_query <<-HERE
+          SELECT max(movenumber)
+          FROM #{Database::MOVE_TABLE}
+          WHERE game = #{@id}
+          GROUP BY game;
+        HERE
+
+        move = res[0][0] if res and res[0]
+        move
+      end
+
+      def create
         p1 = p2 = 0
 
+        # "creator" will be set if this is NOT an anonymous game
         if @creator
-          p1 = [@creator, @opponent][@first_move]
-          p2 = [@opponent, @creator][@first_move]
+          @player1 = [@creator, @opponent][@first_move]
+          @player2 = [@opponent, @creator][@first_move]
+        else
+          @anonymous = 1
+          @p1_token = SecureRandom.base64
+          @p2_token = SecureRandom.base64
+          @game_token = SecureRandom.base64(3)
         end
 
-        if @persisted
-          @id = Database.insert(
-            Database::GAME_TABLE,
-            [:player1, :player2, :turn, :status, :board],
-            [p1, p2, 0, status_id_for(:in_progress), @board.id]
-          )
-          raise 'Could not create game' unless @id and @id > 0
-        else
-        end
+        persist
+      end
+
+      def persist
+        @id = Database.insert(
+          Database::GAME_TABLE,
+          [:player1, :player2, :anonymous, :turn, :status, :board],
+          [@player1, @player2, @anonymous, 0, status_id_for(:in_progress), @board.id]
+        )
+        raise 'Could not create game' unless @id and @id > 0
       end
 
       def process_xy(xy)

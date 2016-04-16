@@ -41,11 +41,15 @@ class PushfourWebsite < Sinatra::Base
     rotate_csrf unless session[:csrf]
 
     if !request.safe?
+      cookie_auth = request.cookies['auth_token']
+      session_auth = session[:auth_token]
+
       form_ok = session[:csrf] == params[:csrf_token]
-      cookie_ok = session[:auth_token] == request.cookies['auth_token']
+      cookie_ok = session_auth == cookie_auth
+
       unless form_ok && cookie_ok
         puts "Form ok? #{form_ok}"
-        puts "Cookie ok? #{cookie_ok} [#{request.cookies['auth_token']} not #{session[:auth_token]}"
+        puts "Cookie ok? #{cookie_ok} [#{cookie_auth} not #{session_auth}]"
         rotate_csrf
         halt 403, erb(:error)
       end
@@ -83,6 +87,8 @@ class PushfourWebsite < Sinatra::Base
     player = session[:user_id]
     params = {player: player}.merge(raw_params)
     results = Pushfour::Website.make_move(params)
+    # the CSRF token needs to be sent back to the page so more moves
+    # can be made without the client needing to refresh
     results[:csrf] = session[:csrf]
     results.to_json
   end
@@ -109,9 +115,6 @@ class PushfourWebsite < Sinatra::Base
 
     errors = []
     errors << error if error
-
-    puts "Player: #{player}"
-    puts "Errors: #{errors}"
 
     erb :player, locals: locals(player: player, errors: errors)
   end
@@ -149,6 +152,9 @@ class PushfourWebsite < Sinatra::Base
   end
 
   get URL[:make_game] do
+    # for now, only logged-in players can make games
+    redirect to(URL[:login]) if session[:user_id].nil?
+
     results = Players.player_list(exclude: session[:user_id])
 
     erb :create_game, locals: locals(results)
@@ -162,9 +168,9 @@ class PushfourWebsite < Sinatra::Base
 
 
     if results[:errors].size == 0
-      puts results.inspect.to_s
       redirect to(url(:game, {id: results[:game]}))
     else
+      results = results.merge(Players.player_list(exclude: session[:user_id]))
       erb :create_game, locals: locals(results)
     end
   end

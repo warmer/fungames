@@ -42,16 +42,16 @@ module Pushfour
         blocks = (0...space_count).to_a.sample(ob_count, random: @rand)
         @board_string = '+' * space_count
         blocks.each {|idx| @board_string[idx] = '#'}
-        if @persisted
-          @id = Database.insert(
-            Database::BOARD_TABLE,
-            [:width, :height, :boardstring],
-            [@width, @height, @board_string]
-          )
-          raise 'Could not insert board into database' unless @id and @id > 0
-        else
-          # TODO
-        end
+        persist
+      end
+
+      def persist
+        @id = Database.insert(
+          Database::BOARD_TABLE,
+          [:width, :height, :boardstring],
+          [@width, @height, @board_string]
+        )
+        raise 'Could not insert board into database' unless @id and @id > 0
       end
 
       def load_board
