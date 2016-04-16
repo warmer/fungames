@@ -1,2 +1,28 @@
-[["foo", "cdeb68b68f311608163d0d2f451ac96a", 1]]
-{:errors=>[], :name=>"foo", :id=>1}
+Test case: {:name=>"foo1", :password=>"test"}
+[["foo1", "9dc48d3e695cc7fee96cb3bffb780694815dd61ebdbf1b6b61f0c08efafdc053", 1]]
+{:errors=>[], :name=>"foo1", :id=>1}
+
+Test case: {:name=>"foo2", :password=>"f00"}
+[["foo1", "9dc48d3e695cc7fee96cb3bffb780694815dd61ebdbf1b6b61f0c08efafdc053", 1], ["foo2", "5fe2ed1436059661a0d66f55a9a6ae4da7ec5590bb2c05db59d9c69da8053764", 2]]
+{:errors=>[], :name=>"foo2", :id=>2}
+
+Test case: {:name=>"foo3", :password=>"123"}
+[["foo1", "9dc48d3e695cc7fee96cb3bffb780694815dd61ebdbf1b6b61f0c08efafdc053", 1], ["foo2", "5fe2ed1436059661a0d66f55a9a6ae4da7ec5590bb2c05db59d9c69da8053764", 2], ["foo3", "f40e2929f64b676b672969e22ce1790af16f03b564a39d789cf0f02d2f2bb7af", 3]]
+{:errors=>[], :name=>"foo3", :id=>3}
+
+Test case: {:name=>"f004", :password=>"test"}
+[["foo1", "9dc48d3e695cc7fee96cb3bffb780694815dd61ebdbf1b6b61f0c08efafdc053", 1], ["foo2", "5fe2ed1436059661a0d66f55a9a6ae4da7ec5590bb2c05db59d9c69da8053764", 2], ["foo3", "f40e2929f64b676b672969e22ce1790af16f03b564a39d789cf0f02d2f2bb7af", 3], ["f004", "cae83c1cc4dd8aa63d13c5d241c17b6fd6fd173c501e29139097342e994e7c21", 4]]
+{:errors=>[], :name=>"f004", :id=>4}
+
+Test case: {:name=>"1235", :password=>"test"}
+[["foo1", "9dc48d3e695cc7fee96cb3bffb780694815dd61ebdbf1b6b61f0c08efafdc053", 1], ["foo2", "5fe2ed1436059661a0d66f55a9a6ae4da7ec5590bb2c05db59d9c69da8053764", 2], ["foo3", "f40e2929f64b676b672969e22ce1790af16f03b564a39d789cf0f02d2f2bb7af", 3], ["f004", "cae83c1cc4dd8aa63d13c5d241c17b6fd6fd173c501e29139097342e994e7c21", 4], ["1235", "6666e4b974324e30dcc01b8ca6b7f50077714c3037cfef820f7f6784653f7241", 5]]
+{:errors=>[], :name=>"1235", :id=>5}
+
+Test case: {:name=>"1236", :password=>"1236"}
+[["foo1", "9dc48d3e695cc7fee96cb3bffb780694815dd61ebdbf1b6b61f0c08efafdc053", 1], ["foo2", "5fe2ed1436059661a0d66f55a9a6ae4da7ec5590bb2c05db59d9c69da8053764", 2], ["foo3", "f40e2929f64b676b672969e22ce1790af16f03b564a39d789cf0f02d2f2bb7af", 3], ["f004", "cae83c1cc4dd8aa63d13c5d241c17b6fd6fd173c501e29139097342e994e7c21", 4], ["1235", "6666e4b974324e30dcc01b8ca6b7f50077714c3037cfef820f7f6784653f7241", 5], ["1236", "8f2c3a7da8c4110b55676bc1686041fc8cc7dd87241cc17bdd75178110900ef3", 6]]
+{:errors=>[], :name=>"1236", :id=>6}
+
+Test case: {:name=>"0x1237", :password=>"0x1237"}
+[["foo1", "9dc48d3e695cc7fee96cb3bffb780694815dd61ebdbf1b6b61f0c08efafdc053", 1], ["foo2", "5fe2ed1436059661a0d66f55a9a6ae4da7ec5590bb2c05db59d9c69da8053764", 2], ["foo3", "f40e2929f64b676b672969e22ce1790af16f03b564a39d789cf0f02d2f2bb7af", 3], ["f004", "cae83c1cc4dd8aa63d13c5d241c17b6fd6fd173c501e29139097342e994e7c21", 4], ["1235", "6666e4b974324e30dcc01b8ca6b7f50077714c3037cfef820f7f6784653f7241", 5], ["1236", "8f2c3a7da8c4110b55676bc1686041fc8cc7dd87241cc17bdd75178110900ef3", 6], ["0x1237", "dd6c5590e0c7208c183c74402841a9e765a549c0f56891922ba80cd020621b83", 7]]
+{:errors=>[], :name=>"0x1237", :id=>7}
+

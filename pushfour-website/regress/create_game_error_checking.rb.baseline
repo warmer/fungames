@@ -1,8 +1,8 @@
-[["user1", "7ddd4e549b62bfeb0fe27bdcc66988d8", 1], ["user2", "6896ae1b8d65b86b3ac0ca60f23307f0", 2]]
+[["user1", "f3f371d3fc61e6d04791beb959aebfb46bdd1b78cd0672d399ed58b669534255", 1], ["user2", "e590aaa0439d47f9497849fe5ea80c6e04dee75931811de9e381c5c3cef2b3a3", 2]]
 ============================================================
 Test case: {:height=>7, :width=>7, :obstacles=>-1}
 Result of game creation:
-{:errors=>["There must be a positive number of obstacles"], :board=>nil, :game=>nil}
+{:errors=>["There must be a positive number of obstacles", "May not create games anonymously"], :board=>nil, :game=>nil}
 Game table after running test case:
 []
 Board table after running test case:
@@ -11,7 +11,7 @@ Board table after running test case:
 ============================================================
 Test case: {:height=>3, :width=>4, :obstacles=>0}
 Result of game creation:
-{:errors=>["Board height must be between 4 and 15"], :board=>nil, :game=>nil}
+{:errors=>["Board height must be between 4 and 15", "May not create games anonymously"], :board=>nil, :game=>nil}
 Game table after running test case:
 []
 Board table after running test case:
@@ -20,7 +20,7 @@ Board table after running test case:
 ============================================================
 Test case: {:height=>4, :width=>3, :obstacles=>0}
 Result of game creation:
-{:errors=>["Board width must be between 4 and 15"], :board=>nil, :game=>nil}
+{:errors=>["Board width must be between 4 and 15", "May not create games anonymously"], :board=>nil, :game=>nil}
 Game table after running test case:
 []
 Board table after running test case:
@@ -29,7 +29,7 @@ Board table after running test case:
 ============================================================
 Test case: {:height=>4, :width=>16, :obstacles=>0}
 Result of game creation:
-{:errors=>["Board width must be between 4 and 15"], :board=>nil, :game=>nil}
+{:errors=>["Board width must be between 4 and 15", "May not create games anonymously"], :board=>nil, :game=>nil}
 Game table after running test case:
 []
 Board table after running test case:
@@ -38,7 +38,7 @@ Board table after running test case:
 ============================================================
 Test case: {:height=>16, :width=>4, :obstacles=>0}
 Result of game creation:
-{:errors=>["Board height must be between 4 and 15"], :board=>nil, :game=>nil}
+{:errors=>["Board height must be between 4 and 15", "May not create games anonymously"], :board=>nil, :game=>nil}
 Game table after running test case:
 []
 Board table after running test case:
@@ -119,7 +119,7 @@ Board table after running test case:
 ============================================================
 Test case: {:height=>4, :width=>4, :obstacles=>0, :creator=>nil, :opponent=>2, :first_move=>0, :user_id=>1}
 Result of game creation:
-{:errors=>["Unexpected game creation parameters provided"], :board=>nil, :game=>nil}
+{:errors=>["May not create games anonymously"], :board=>nil, :game=>nil}
 Game table after running test case:
 []
 Board table after running test case:

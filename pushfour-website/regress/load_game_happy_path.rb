@@ -47,7 +47,7 @@ Harness.run_test(mock_db: true) do
     puts "Game: #{tc.inspect}"
     tc = {rand_seed: seed}.merge(tc)
 
-    create_result = Pushfour::Website.create_game(tc)
+    create_result = CreateGame.create_game(tc)
     puts 'Result of game creation:'
     puts create_result.inspect
 
@@ -80,9 +80,9 @@ Harness.run_test(mock_db: true) do
 
     puts "Test case: #{tc.inspect}"
 
-    load_result = Pushfour::Website.load_game(tc)
+    load_result = MakeMove.load_game(tc)
     puts 'Result of game load:'
-    puts load_result.inspect
+    puts load_result
 
     puts
   end

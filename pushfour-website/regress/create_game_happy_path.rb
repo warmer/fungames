@@ -6,12 +6,13 @@ require_relative '../lib/registration.rb'
 require_relative '../lib/login.rb'
 require_relative '../lib/create_game.rb'
 
+obs_max = (225 / 4) + 1
 tcs = [
-  {height: 7, width: 7, obstacles: 4},
-  {height: 4, width: 4, obstacles: 0},
-  {height: 15, width: 15, obstacles: (225 / 4) + 1},
-  {height: 4, width: 15, obstacles: 10},
-  {height: 15, width: 4, obstacles: 10},
+  {height: 7, width: 7, obstacles: 4, creator: 1, opponent: 2, first_move: 0, user_id: 1},
+  {height: 4, width: 4, obstacles: 0, creator: 1, opponent: 2, first_move: 0, user_id: 1},
+  {height: 15, width: 15, obstacles: obs_max, creator: 1, opponent: 2, first_move: 0, user_id: 1},
+  {height: 4, width: 15, obstacles: 10, creator: 1, opponent: 2, first_move: 0, user_id: 1},
+  {height: 15, width: 4, obstacles: 10, creator: 1, opponent: 2, first_move: 0, user_id: 1},
   {height: 4, width: 4, obstacles: 1, creator: 1, opponent: 2, first_move: 0, user_id: 1},
   {height: 4, width: 4, obstacles: 1, creator: 2, opponent: 1, first_move: 1, user_id: 2},
 ]
@@ -41,7 +42,7 @@ Harness.run_test(mock_db: true) do
     puts "Test case: #{tc.inspect}"
     tc = {rand_seed: seed}.merge(tc)
 
-    create_result = Pushfour::Website.create_game(tc)
+    create_result = CreateGame.create_game(tc)
     puts 'Result of game creation:'
     puts create_result.inspect
 

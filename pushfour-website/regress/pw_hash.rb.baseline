@@ -1,0 +1,15 @@
+Input           : {:password=>"bob"}
+>> ArgumentError: must includ a salt
+
+Input           : {:password=>"bob", :salt=>"saltysalt", :iterations=>1023}
+>> ArgumentError: too few iterations
+
+Input           : {:password=>"bob", :salt=>"saltysalt", :iterations=>1024}
+>> Hash         : eca149aef58bac443b4662af56da3c50614c3b09703c1bfeaf47acce8d5916c9
+
+Input           : {:password=>"bob", :salt=>"saltysalt"}
+>> Hash         : 5fffc054ff425073856836d8018cb01d923655f572dcd41b6350cf674bcd04cd
+
+Input           : {:password=>"b.o.b", :salt=>"saltysalt"}
+>> Hash         : ab8b242b9af99a7aaabe973a60cf708cf7c7597ffcefb0a2168c56110750df9f
+

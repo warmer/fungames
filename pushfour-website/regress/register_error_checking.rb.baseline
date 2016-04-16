@@ -10,7 +10,7 @@ Test case: {:name=>"bob2", :password=>"pass1", :password2=>nil}
 
 ============================================================
 Test case: {:name=>"bob3", :password=>nil, :password2=>"pass2"}
-{:errors=>["Must enter a password", "Passwords must match"], :name=>"bob3"}
+{:errors=>["Must enter a password"], :name=>"bob3"}
 []
 
 ============================================================
@@ -20,7 +20,7 @@ Test case: {:name=>"", :password=>"pass1", :password2=>"pass1"}
 
 ============================================================
 Test case: {:name=>nil, :password=>"pass1", :password2=>"pass1"}
-{:errors=>["User name may only contain letters, numbers, underscores, and dashes.", "Name cannot be empty"], :name=>""}
+{:errors=>["User name may only contain letters, numbers, underscores, and dashes."], :name=>""}
 []
 
 ============================================================
@@ -46,15 +46,15 @@ Test case: {:name=>"bob7\\u0092", :password=>"pass1", :password2=>"pass1"}
 ============================================================
 Test case: {:name=>"8bob8", :password=>"pass1", :password2=>"pass1"}
 {:errors=>[], :name=>"8bob8"}
-[["8bob8", "0bab898d47b2ec7b9b68a13bf34fbe0f", 1]]
+[["8bob8", "678f21e547ebd7bce7b0b49afc6c8c6575375471654a0a4e46db84c095199699", 1]]
 
 ============================================================
 Test case: {:name=>"8bob8", :password=>"pass2", :password2=>"pass2"}
 {:errors=>["Name '8bob8' is in use"], :name=>"8bob8"}
-[["8bob8", "0bab898d47b2ec7b9b68a13bf34fbe0f", 1]]
+[["8bob8", "678f21e547ebd7bce7b0b49afc6c8c6575375471654a0a4e46db84c095199699", 1]]
 
 ============================================================
 Test case: {:name=>"bob8", :password=>"pass2", :password2=>"pass2"}
 {:errors=>[], :name=>"bob8"}
-[["8bob8", "0bab898d47b2ec7b9b68a13bf34fbe0f", 1], ["bob8", "e27317f517441b02dffa54d3324db25c", 2]]
+[["8bob8", "678f21e547ebd7bce7b0b49afc6c8c6575375471654a0a4e46db84c095199699", 1], ["bob8", "602ed666118eb0d17004b051e1b34e9e9545926ab2ad36ec5129ffefe9ff47f1", 2]]
 

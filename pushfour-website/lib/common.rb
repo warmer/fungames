@@ -1,5 +1,5 @@
-require 'sqlite3'
 require 'digest/md5'
+require 'openssl'
 
 module Pushfour
   module Website
@@ -30,6 +30,20 @@ module Pushfour
 
       def md5sum(str)
         Digest::MD5.hexdigest(str)
+      end
+
+      def pw_hash(opts = {})
+        password = opts.delete(:password) || ''
+        salt = opts.delete(:salt) || ''
+        iterations = opts.delete(:iterations) || 4096
+
+        raise ArgumentError, 'too few iterations' unless iterations.to_i >= 1024
+        raise ArgumentError, 'must include a password' if password.empty?
+        raise ArgumentError, 'must includ a salt' if salt.empty?
+
+        OpenSSL::PKCS5.pbkdf2_hmac(
+          password, salt, iterations, 32, OpenSSL::Digest::SHA256.new
+        ).unpack('H*')[0]
       end
 
       def sanitized_name(name)

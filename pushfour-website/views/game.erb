@@ -9,7 +9,7 @@
     var lastBoardString = "";
 
     function queryStatus() {
-      $.getJSON("<%= url(:full_game_details, id: game_id) %>", function(data) {
+      $.getJSON("<%= url(:full_game_details, id: game[:id]) %>", function(data) {
         updateBoard(data.board, data.game);
       });
     }

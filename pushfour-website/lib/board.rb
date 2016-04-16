@@ -1,6 +1,5 @@
 require_relative 'common.rb'
 require_relative 'database.rb'
-require_relative 'players.rb'
 
 module Pushfour
   module Website

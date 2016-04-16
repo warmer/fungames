@@ -32,7 +32,7 @@ module Pushfour
           db.execute <<-SQL
             CREATE TABLE IF NOT EXISTS #{PLAYER_TABLE}(
               Id INTEGER PRIMARY KEY,
-              PassHash VARCHAR(32),
+              PassHash VARCHAR(64),
               Created INTEGER DEFAULT CURRENT_TIMESTAMP,
               LastLogin INTEGER DEFAULT CURRENT_TIMESTAMP,
               Name VARCHAR(255));

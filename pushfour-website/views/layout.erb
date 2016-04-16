@@ -56,13 +56,19 @@
         <ul class="nav navbar-nav">
           <li><a href="<%= url(:players) %>">Players</a></li>
           <li><a href="<%= url(:games) %>">Games</a></li>
-          <li><a href="<%= url(:tournaments) %>">Tournaments</a></li>
-          <li><a href="<%= url(:stats) %>">Stats</a></li>
+          <% if false %>
+            <%# these pages aren't implemented yet %>
+            <li><a href="<%= url(:tournaments) %>">Tournaments</a></li>
+            <li><a href="<%= url(:stats) %>">Stats</a></li>
+          <% end %>
           <li><a href="<%= url(:make_game) %>">Play a Game!</a></li>
         </ul>
         <ul class="nav navbar-nav navbar-right">
           <% if session[:user_id] and session[:login_name] %>
-            <li><a href="<%= url(:profile) %>">Profile</a></li>
+            <% if false %>
+              <%# this page isn't implemented yet %>
+              <li><a href="<%= url(:profile) %>">Profile</a></li>
+            <% end %>
             <li><a href="<%= url(:logout) %>">Log out</a></li>
           <% else %>
             <li><a href="<%= url(:register) %>">Register</a></li>

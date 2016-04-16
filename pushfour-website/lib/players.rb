@@ -1,62 +1,30 @@
-require 'sqlite3'
-require 'digest/md5'
 require_relative 'common.rb'
-require_relative 'database.rb'
+require_relative 'player.rb'
 
 module Pushfour
   module Website
     class Players
-      extend Pushfour::Website::Common
+      extend Common
 
       def self.info_for(player_id)
-        player = nil
-
-        res = Pushfour::Website::Database.execute_query <<-HERE
-          SELECT id,name from #{Pushfour::Website::Database::PLAYER_TABLE}
-          WHERE id = #{player_id};
-        HERE
-        if res.size > 0
-          p = res[0]
-          player = {id: p[0], name: p[1]}
-        end
-
-        player
+        info = nil
+        player = Player.new(id: player_id) rescue nil
+        info = {id: player.id, name: player.name} if player
+        info
       end
 
       def self.player_list(params)
         errors = []
-        players = []
-        limit = start = exclude = 0
-        filter = ''
-
-        limit = params[:limit].to_i if params[:limit]
-        limit = 25 unless limit > 0
-        limit = 100 unless limit < 100
-
-        start = params[:start].to_i if params[:start]
-        start = 1 unless start > 0
-
-        exclude = params[:exclude].to_i if params[:exclude]
-        filter += "AND id != #{exclude} " if exclude > 0
-
-        res = Pushfour::Website::Database.execute_query <<-HERE
-          SELECT id,name from #{Pushfour::Website::Database::PLAYER_TABLE}
-          WHERE id >= #{start}
-          #{filter}
-          ORDER BY id ASC LIMIT #{limit};
-        HERE
-        if res.size > 0
-          res.each do |p|
-            players << {id: p[0], name: p[1]}
-          end
-        else
-          errors << 'No users found'
+        player_info = {players:[], limit: nil, start: nil}
+        begin
+          player_info = Player.list(params)
+        rescue => e
+          errors << e.message
         end
 
-        unless errors.size > 0
-        end
+        player_info[:players] = player_info[:players].map{|p| {id: p.id, name: p.name}}
 
-        {errors: errors, players: players, limit: limit, start: start}
+        {errors: errors}.merge(player_info)
       end
     end
   end

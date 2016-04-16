@@ -1,4 +1,4 @@
-[["user1", "7ddd4e549b62bfeb0fe27bdcc66988d8", 1], ["user2", "6896ae1b8d65b86b3ac0ca60f23307f0", 2]]
+[["user1", "f3f371d3fc61e6d04791beb959aebfb46bdd1b78cd0672d399ed58b669534255", 1], ["user2", "e590aaa0439d47f9497849fe5ea80c6e04dee75931811de9e381c5c3cef2b3a3", 2]]
 ============================================================
 Test case: {:game=>{:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>2, :first_move=>0, :user_id=>1}, :moves=>[{:player=>1, :x=>0, :y=>0}, {:player=>2, :x=>0, :y=>1}, {:player=>1, :x=>0, :y=>2}, {:player=>2, :x=>0, :y=>3}], :last_move=>0}
 Result of game creation:

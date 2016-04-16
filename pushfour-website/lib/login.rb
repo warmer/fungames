@@ -1,7 +1,5 @@
-require 'sqlite3'
-require 'digest/md5'
 require_relative 'common.rb'
-require_relative 'database.rb'
+require_relative 'player.rb'
 
 module Pushfour
   module Website
@@ -10,32 +8,27 @@ module Pushfour
 
       def self.login(params)
         errors = []
+        password = name = player = id = nil
 
-        raw_name = params[:name]
-        password = params[:password]
-        id = nil
+        raw_name = params.delete(:name) || ''
+        errors << 'Please provide a username' if raw_name.empty?
 
-        name = sanitized_name(raw_name)
-        if password and password.size > 0
-          if name.size > 0 and name == raw_name
-            pw_hash = md5sum(name + password)
-            res = Pushfour::Website::Database.execute_query <<-HERE
-              SELECT id from #{Pushfour::Website::Database::PLAYER_TABLE}
-              WHERE name LIKE '#{name}' AND passhash LIKE '#{pw_hash}';
-            HERE
-            if res.size > 0
-              id = res[0][0]
-            else
-              errors << 'Could not not find a user with the given credentials'
-            end
-          elsif name.size > 0
-            errors << 'Name contained illegal characters'
-          else
-            errors << 'Please provide provide ame'
-          end
-        else
-          errors << 'Must enter a password'
+        if errors.empty?
+          name = sanitized_name(raw_name)
+          errors << 'Name contained illegal characters' unless name == raw_name
         end
+
+        if errors.empty?
+          password = params.delete(:password) || ''
+          errors << 'Please provide a password' if password.empty?
+        end
+
+        if errors.empty?
+          player = Player.with(name, password)
+          errors << 'Could not not find a user with the given credentials' unless player
+        end
+
+        id = player.id if errors.empty?
 
         {errors: errors, name: name, id: id}
       end

@@ -1,31 +1,31 @@
-[["basic_user", "7ca0b53f81b292908f0626d98912c04f", 1]]
+[["basic_user", "434503e36477a7aaa1e0289635f491cb4a6536ff7ca1494ad1c0b781e1591462", 1]]
 ============================================================
 Test case: {:name=>"basic_user", :password=>"incorrect"}
 {:errors=>["Could not not find a user with the given credentials"], :name=>"basic_user", :id=>nil}
-[["basic_user", "7ca0b53f81b292908f0626d98912c04f", 1]]
+[["basic_user", "434503e36477a7aaa1e0289635f491cb4a6536ff7ca1494ad1c0b781e1591462", 1]]
 
 ============================================================
 Test case: {:name=>"basic_user", :password=>nil}
-{:errors=>["Must enter a password"], :name=>"basic_user", :id=>nil}
-[["basic_user", "7ca0b53f81b292908f0626d98912c04f", 1]]
+{:errors=>["Please provide a password"], :name=>"basic_user", :id=>nil}
+[["basic_user", "434503e36477a7aaa1e0289635f491cb4a6536ff7ca1494ad1c0b781e1591462", 1]]
 
 ============================================================
 Test case: {:name=>"basic_user", :password=>""}
-{:errors=>["Must enter a password"], :name=>"basic_user", :id=>nil}
-[["basic_user", "7ca0b53f81b292908f0626d98912c04f", 1]]
+{:errors=>["Please provide a password"], :name=>"basic_user", :id=>nil}
+[["basic_user", "434503e36477a7aaa1e0289635f491cb4a6536ff7ca1494ad1c0b781e1591462", 1]]
 
 ============================================================
 Test case: {:name=>"unknown_user", :password=>"test"}
 {:errors=>["Could not not find a user with the given credentials"], :name=>"unknown_user", :id=>nil}
-[["basic_user", "7ca0b53f81b292908f0626d98912c04f", 1]]
+[["basic_user", "434503e36477a7aaa1e0289635f491cb4a6536ff7ca1494ad1c0b781e1591462", 1]]
 
 ============================================================
 Test case: {:name=>nil, :password=>"test"}
-{:errors=>["Please provide provide ame"], :name=>"", :id=>nil}
-[["basic_user", "7ca0b53f81b292908f0626d98912c04f", 1]]
+{:errors=>["Please provide a username"], :name=>nil, :id=>nil}
+[["basic_user", "434503e36477a7aaa1e0289635f491cb4a6536ff7ca1494ad1c0b781e1591462", 1]]
 
 ============================================================
 Test case: {:name=>"basic_(user)", :password=>"test"}
 {:errors=>["Name contained illegal characters"], :name=>"basic_user", :id=>nil}
-[["basic_user", "7ca0b53f81b292908f0626d98912c04f", 1]]
+[["basic_user", "434503e36477a7aaa1e0289635f491cb4a6536ff7ca1494ad1c0b781e1591462", 1]]
 

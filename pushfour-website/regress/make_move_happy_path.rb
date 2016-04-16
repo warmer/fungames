@@ -45,14 +45,14 @@ Harness.run_test(mock_db: true) do
     puts "Test case: #{tc.inspect}"
     tc = {rand_seed: seed}.merge(tc)
 
-    create_result = Pushfour::Website.create_game(tc[:game])
+    create_result = CreateGame.create_game(tc[:game])
     puts 'Result of game creation:'
     puts create_result.inspect
     game_id = create_result[:game]
 
     tc[:moves].each_with_index do |move, idx|
       puts "Player #{move[:player]} moving to [#{move[:x]}, #{move[:y]}]"
-      res = Pushfour::Website.make_move(
+      res = MakeMove.make_move(
         game_id: game_id, player: move[:player], x: move[:x], y: move[:y]
       )
       puts 'Make move result:'
@@ -60,7 +60,7 @@ Harness.run_test(mock_db: true) do
       puts
     end
 
-    status = Pushfour::Website.get_status(game_id: game_id, last_move: tc[:last_move])
+    status = GameStatus.get_status(game_id: game_id, last_move: tc[:last_move])
     puts 'Get status result:'
     puts status.inspect
 

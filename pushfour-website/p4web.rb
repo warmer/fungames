@@ -19,6 +19,7 @@ URL = {
   tournament: PATH_ROOT + 'tournament/:id',
   make_move: PATH_ROOT + 'make_move',
   make_game: PATH_ROOT + 'new_game',
+  bot_move: PATH_ROOT + 'bot_move',
   register: PATH_ROOT + 'register',
   profile: PATH_ROOT + 'profile',
   players: PATH_ROOT + 'players',
@@ -41,19 +42,23 @@ class PushfourWebsite < Sinatra::Base
     rotate_csrf unless session[:csrf]
 
     if !request.safe?
-      cookie_auth = request.cookies['auth_token']
-      session_auth = session[:auth_token]
+      # this is a bot API request which is validated differently
+      if request.path_info =~ /^bot_.*/ and params[:bot_api_key]
+      else
+        cookie_auth = request.cookies['auth_token']
+        session_auth = session[:auth_token]
 
-      form_ok = session[:csrf] == params[:csrf_token]
-      cookie_ok = session_auth == cookie_auth
+        form_ok = session[:csrf] == params[:csrf_token]
+        cookie_ok = session_auth == cookie_auth
 
-      unless form_ok && cookie_ok
-        puts "Form ok? #{form_ok}"
-        puts "Cookie ok? #{cookie_ok} [#{cookie_auth} not #{session_auth}]"
+        unless form_ok && cookie_ok
+          puts "Form ok? #{form_ok}"
+          puts "Cookie ok? #{cookie_ok} [#{cookie_auth} not #{session_auth}]"
+          rotate_csrf
+          halt 403, erb(:error)
+        end
         rotate_csrf
-        halt 403, erb(:error)
       end
-      rotate_csrf
     end
   end
 
@@ -86,11 +91,15 @@ class PushfourWebsite < Sinatra::Base
     raw_params = filter(params, [:game_id, :x, :y])
     player = session[:user_id]
     params = {player: player}.merge(raw_params)
-    results = Pushfour::Website.make_move(params)
+    results = MakeMove.make_move(params)
     # the CSRF token needs to be sent back to the page so more moves
     # can be made without the client needing to refresh
     results[:csrf] = session[:csrf]
     results.to_json
+  end
+
+  post URL[:bot_move] do
+    
   end
 
   # page load requests
@@ -164,7 +173,7 @@ class PushfourWebsite < Sinatra::Base
     raw_params = filter(params, [:height, :width, :obstacles, :creator, :opponent, :first_move])
     raw_params = raw_params.merge(user_id: session[:user_id])
 
-    results = Pushfour::Website.create_game(raw_params)
+    results = CreateGame.create_game(raw_params)
 
 
     if results[:errors].size == 0
@@ -177,21 +186,20 @@ class PushfourWebsite < Sinatra::Base
 
   get URL[:full_game_details] do |id|
     opts = {game_id: id, user_id: session[:user_id]}
-    results = Pushfour::Website.load_game(opts)
-
+    results = MakeMove.load_game(opts)
     results.to_json
   end
 
   get URL[:game] do |id|
     opts = {game_id: id, user_id: session[:user_id]}
-    results = Pushfour::Website.load_game(opts)
+    results = MakeMove.load_game(opts)
 
     erb :game, locals: locals(results)
   end
 
   get URL[:games] do
     raw_params = filter(params, [:start])
-    results = Pushfour::Website.list(raw_params)
+    results = GameStatus.list(raw_params)
 
     erb :games, locals: locals(results)
   end
