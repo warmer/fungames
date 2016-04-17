@@ -1,4 +1,5 @@
 require 'sqlite3'
+require 'fileutils'
 require_relative 'common.rb'
 
 module Pushfour
@@ -23,6 +24,7 @@ module Pushfour
       def create(opts = {})
         silent = opts.delete(:silent)
         db_location ||= db_file
+        FileUtils.mkdir_p(File.dirname(db_location))
         exception = nil
 
         puts "Writing database file at #{db_location}" unless silent
