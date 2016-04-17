@@ -14,6 +14,7 @@ module Pushfour
       MOVE_TABLE = 'Moves'
 
       def db_file(new_path = nil)
+        @@database_path ||= ENV['PUSHFOUR_DB_FILE']
         @@database_path ||= DB_FILE
         @@database_path = new_path if new_path
         @@database_path

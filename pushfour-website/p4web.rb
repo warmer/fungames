@@ -37,6 +37,7 @@ class PushfourWebsite < Sinatra::Base
   include Common
 
   use Rack::Session::Pool, :expire_after => 2592000
+  enable :logging, :dump_errors, :raise_errors, :show_exceptions
 
   before do
     rotate_csrf unless session[:csrf]
