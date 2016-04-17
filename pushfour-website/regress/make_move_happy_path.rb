@@ -20,6 +20,19 @@ tcs = [
     ],
     last_move: 0,
   },
+
+  { game: {height: 4, width: 4, obstacles: 0, creator: 1, opponent: 2, first_move: 0, user_id: 1},
+    moves: [
+      {player: 1, side: 'b', channel: 0},
+      {player: 2, x: 0, y: 1},
+      {player: 1, side: 'b', channel: 0},
+      {player: 2, x: 1, y: 1},
+      {player: 1, side: 'l', channel: 3},
+      {player: 2, side: 'r', channel: 1},
+      {player: 1, side: 't', channel: 1},
+    ],
+    last_move: 0,
+  },
 ]
 seed = 4
 
@@ -51,12 +64,9 @@ Harness.run_test(mock_db: true) do
     game_id = create_result[:game]
 
     tc[:moves].each_with_index do |move, idx|
-      puts "Player #{move[:player]} moving to [#{move[:x]}, #{move[:y]}]"
-      res = MakeMove.make_move(
-        game_id: game_id, player: move[:player], x: move[:x], y: move[:y]
-      )
-      puts 'Make move result:'
-      puts res
+      puts "Move: #{move}"
+      res = MakeMove.make_move(move.merge(game_id: game_id))
+      puts "ERROR: #{res[:errors].join(',')}" unless res[:errors].empty?
       puts
     end
 

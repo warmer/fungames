@@ -3,22 +3,35 @@
 Test case: {:game=>{:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>2, :first_move=>0, :user_id=>1}, :moves=>[{:player=>1, :x=>0, :y=>0}, {:player=>2, :x=>0, :y=>1}, {:player=>1, :x=>0, :y=>2}, {:player=>2, :x=>0, :y=>3}], :last_move=>0}
 Result of game creation:
 {:errors=>[], :board=>1, :game=>1}
-Player 1 moving to [0, 0]
-Make move result:
-{:errors=>[]}
+Move: {:player=>1, :x=>0, :y=>0}
 
-Player 2 moving to [0, 1]
-Make move result:
-{:errors=>[]}
+Move: {:player=>2, :x=>0, :y=>1}
 
-Player 1 moving to [0, 2]
-Make move result:
-{:errors=>[]}
+Move: {:player=>1, :x=>0, :y=>2}
 
-Player 2 moving to [0, 3]
-Make move result:
-{:errors=>[]}
+Move: {:player=>2, :x=>0, :y=>3}
 
 Get status result:
 {:status=>0, :moves=>[{:id=>1, :movenumber=>1, :player=>0, :xlocation=>0, :ylocation=>0}, {:id=>2, :movenumber=>2, :player=>1, :xlocation=>0, :ylocation=>1}, {:id=>3, :movenumber=>3, :player=>0, :xlocation=>0, :ylocation=>2}, {:id=>4, :movenumber=>4, :player=>1, :xlocation=>0, :ylocation=>3}], :current_turn=>0, :errors=>[]}
+
+============================================================
+Test case: {:game=>{:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>2, :first_move=>0, :user_id=>1}, :moves=>[{:player=>1, :side=>"b", :channel=>0}, {:player=>2, :x=>0, :y=>1}, {:player=>1, :side=>"b", :channel=>0}, {:player=>2, :x=>1, :y=>1}, {:player=>1, :side=>"l", :channel=>3}, {:player=>2, :side=>"r", :channel=>1}, {:player=>1, :side=>"t", :channel=>1}], :last_move=>0}
+Result of game creation:
+{:errors=>[], :board=>2, :game=>2}
+Move: {:player=>1, :side=>"b", :channel=>0}
+
+Move: {:player=>2, :x=>0, :y=>1}
+
+Move: {:player=>1, :side=>"b", :channel=>0}
+
+Move: {:player=>2, :x=>1, :y=>1}
+
+Move: {:player=>1, :side=>"l", :channel=>3}
+
+Move: {:player=>2, :side=>"r", :channel=>1}
+
+Move: {:player=>1, :side=>"t", :channel=>1}
+
+Get status result:
+{:status=>0, :moves=>[{:id=>5, :movenumber=>1, :player=>0, :xlocation=>0, :ylocation=>0}, {:id=>6, :movenumber=>2, :player=>1, :xlocation=>0, :ylocation=>1}, {:id=>7, :movenumber=>3, :player=>0, :xlocation=>0, :ylocation=>2}, {:id=>8, :movenumber=>4, :player=>1, :xlocation=>1, :ylocation=>1}, {:id=>9, :movenumber=>5, :player=>0, :xlocation=>3, :ylocation=>3}, {:id=>10, :movenumber=>6, :player=>1, :xlocation=>2, :ylocation=>1}, {:id=>11, :movenumber=>7, :player=>0, :xlocation=>1, :ylocation=>0}], :current_turn=>1, :errors=>[]}
 

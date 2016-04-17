@@ -88,8 +88,39 @@ module Pushfour
 
         x = val_if_int(params.delete(:x))
         y = val_if_int(params.delete(:y))
-        errors << 'Invalid x' unless x
-        errors << 'Invalid y' unless y
+        side_raw = params.delete(:side)
+        channel = val_if_int(params.delete(:channel))
+
+        if side_raw or channel
+          return '[x, y] and [side, channel] are mutually exclusive' if x or y
+          return 'channel not specified with side' unless channel
+          return 'side not specified with channel' unless side_raw
+          side = side_raw.to_s[0] || ''
+          return 'side not given a value' if side.empty?
+          return 'invalid value for side' unless side == side_raw
+          return 'invalid value for side' unless ['l', 'r', 't', 'b'].include? side
+
+          depth = nil
+          case side
+            when 'l'
+              y = channel
+              x = @game_detail[:move_depth][:left][y]
+            when 'r'
+              y = channel
+              x = @game_detail[:move_depth][:right][y]
+            when 't'
+              x = channel
+              y = @game_detail[:move_depth][:top][x]
+            when 'b'
+              x = channel
+              y = @game_detail[:move_depth][:bottom][x]
+          end
+        end
+
+        return 'Invalid x' unless x
+        return 'Invalid y' unless y
+        return 'x out of range' unless x >= 0 and x < @board.width
+        return 'y out of range' unless y >= 0 and y < @board.height
 
         mb = @game_detail[:movable_blocks]
         return "Cannot move to #{x}, #{y}" unless mb.include? [x, y]

@@ -18,9 +18,10 @@ module Pushfour
 
         if @id
           @name = params.delete(:name)
+          @api_key = params.delete(:api_key)
           raise ArgumentError, "Too many params for player: #{params.keys}" unless params.empty?
 
-          load_player unless @name
+          load_player unless @name and @api_key
         else
           raw_name = params.delete(:name)
           password = params.delete(:password)
@@ -40,6 +41,25 @@ module Pushfour
         end
       end
 
+      def self.with_api_key(raw_key)
+        player = nil
+        key = sanitized_key(raw_key)
+        raise ArgumentError, 'Invalid API key' unless key == raw_key
+        raise ArgumentError, 'Invalid API key' unless key.length == 64
+        res = Database.execute_query <<-HERE
+          SELECT id, name from #{Database::PLAYER_TABLE}
+          WHERE apikey LIKE '#{key}'
+        HERE
+
+        unless res.empty?
+          id = res[0][0]
+          name = res[0][1]
+          player = Player.new(id: id, name: name, api_key: key) rescue nil
+        end
+
+        player
+      end
+
       def self.with(raw_name, password)
         player = nil
         name = sanitized_name(raw_name)
@@ -47,12 +67,14 @@ module Pushfour
 
         passhash = pw_hash(salt: name, password: password)
         res = Database.execute_query <<-HERE
-          SELECT id from #{Database::PLAYER_TABLE}
+          SELECT id, apikey from #{Database::PLAYER_TABLE}
           WHERE name = '#{name}' AND passhash LIKE '#{passhash}';
         HERE
-          #WHERE name = '#{name}' AND passhash = '#{passhash}';
-        id = res[0][0] unless res.empty?
-        player = Player.new(id: id) if id rescue nil
+        unless res.empty?
+          id = res[0][0]
+          api_key = res[0][1]
+          player = Player.new(id: id, name: name, api_key: api_key) rescue nil
+        end
         player
       end
 
@@ -87,11 +109,9 @@ module Pushfour
           #{filter}
           ORDER BY id ASC LIMIT #{limit};
         HERE
-        if res.size > 0
-          res.each { |p| players << Player.new(id: p[0], name: p[1]) }
-        else
-          errors << 'No users found'
-        end
+
+        errors << 'No users found' if res.empty?
+        res.each { |p| players << Player.new(id: p[0], name: p[1]) }
 
         {players: players, limit: limit, start: start}
       end
@@ -100,24 +120,24 @@ module Pushfour
 
       def create_player(password)
         passhash = pw_hash(salt: @name, password: password)
+        @api_key = pw_hash(salt: @name, password: passhash)
         @id = Database.insert(
           Database::PLAYER_TABLE,
-          ['name', 'passhash'],
-          [@name, passhash]
+          ['name', 'passhash', 'apikey'],
+          [@name, passhash, @api_key]
         )
+        raise 'Database operation failed' unless @id
       end
 
       def load_player
         res = Database.execute_query <<-HERE
-          SELECT name from #{Database::PLAYER_TABLE}
+          SELECT name, apikey from #{Database::PLAYER_TABLE}
           WHERE id = #{@id};
         HERE
-        if res.empty?
-          raise 'Player not found'
-        else
-          p = res[0]
-          @name = p[0]
-        end
+        raise 'Player not found' if res.empty?
+
+        @name = res[0][0]
+        @api_key = res[0][1]
       end
     end
   end

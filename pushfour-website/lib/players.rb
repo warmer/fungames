@@ -13,6 +13,16 @@ module Pushfour
         info
       end
 
+      def self.for_key(raw_key)
+        errors = {}
+        api_key = sanitize_key(raw_key)
+        return {errors: 'Invalid API key'} unless api_key == raw_key
+        return {errors: 'Invalid API key'} unless api_key.length == 64
+        player = Player.with_api_key(api_key)
+        return {errors: 'Invalid API key'} unless player
+        {errors: [], player: {id: player.id, name: player.name}}
+      end
+
       def self.player_list(params)
         errors = []
         player_info = {players:[], limit: nil, start: nil}

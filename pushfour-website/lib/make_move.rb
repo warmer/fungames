@@ -14,7 +14,6 @@ module Pushfour
 
       # TODO: move to Game object
       def self.make_move(params)
-        errors = []
         game = nil
 
         game_id = val_if_int(params.delete(:game_id))
@@ -22,15 +21,14 @@ module Pushfour
 
         begin
           game = Game.new(id: game_id)
-          error = game.make_move(params)
-          errors << error if error
         rescue => e
-          $stderr.puts e.message
-          $stderr.puts e.backtrace.join("\n")
-          errors << e.message
+          return {errors: [e.message]}
         end
 
-        {errors: errors}
+        error = game.make_move(params)
+        return {errors: [error]} if error
+
+        {errors: []}
       end
 
       def self.load_game(params)

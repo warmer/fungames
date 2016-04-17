@@ -33,6 +33,7 @@ module Pushfour
             CREATE TABLE IF NOT EXISTS #{PLAYER_TABLE}(
               Id INTEGER PRIMARY KEY,
               PassHash VARCHAR(64),
+              ApiKey VARCHAR(64),
               Created INTEGER DEFAULT CURRENT_TIMESTAMP,
               LastLogin INTEGER DEFAULT CURRENT_TIMESTAMP,
               Name VARCHAR(255));

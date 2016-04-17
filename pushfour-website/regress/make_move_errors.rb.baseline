@@ -1,0 +1,108 @@
+[["user1", "f3f371d3fc61e6d04791beb959aebfb46bdd1b78cd0672d399ed58b669534255", 1], ["user2", "e590aaa0439d47f9497849fe5ea80c6e04dee75931811de9e381c5c3cef2b3a3", 2]]
+============================================================
+Test case: {:game=>{:height=>4, :width=>5, :obstacles=>0, :creator=>1, :opponent=>2, :first_move=>0, :user_id=>1}, :moves=>[{:player=>1, :x=>0, :y=>0}, {:player=>2, :x=>0, :y=>0}, {:player=>2, :x=>-1, :y=>0}, {:player=>2, :x=>5, :y=>0}, {:player=>2, :x=>0, :y=>-1}, {:player=>2, :x=>0, :y=>4}, {:player=>1, :x=>0, :y=>1}, {:player=>0, :x=>1, :y=>0}, {:player=>3, :x=>1, :y=>0}, {:player=>2, :x=>1, :y=>0, :side=>"b"}, {:player=>2, :side=>"b"}, {:player=>2, :side=>"b", :channel=>"one"}, {:player=>2, :side=>"b", :channel=>-1}, {:player=>2, :side=>"b", :channel=>4}, {:player=>2, :channel=>1}, {:player=>2, :side=>"bottom", :channel=>1}, {:player=>2, :side=>"f", :channel=>1}, {:player=>2, :x=>4, :y=>0}, {:player=>1, :x=>0, :y=>1}, {:player=>2, :x=>4, :y=>3}, {:player=>1, :x=>0, :y=>2}, {:player=>2, :x=>0, :y=>3}, {:player=>1, :side=>"t", :channel=>0}, {:player=>1, :side=>"t", :channel=>4}, {:player=>1, :side=>"b", :channel=>0}, {:player=>1, :side=>"b", :channel=>4}, {:player=>1, :side=>"l", :channel=>0}, {:player=>1, :side=>"l", :channel=>3}, {:player=>1, :side=>"r", :channel=>0}, {:player=>1, :side=>"r", :channel=>3}, {:player=>1, :x=>1, :y=>1}, {:player=>2, :x=>1, :y=>2}, {:player=>1, :x=>2, :y=>1}, {:player=>2, :x=>2, :y=>2}, {:player=>1, :x=>3, :y=>1}, {:player=>2, :x=>3, :y=>2}, {:player=>1, :x=>4, :y=>1}], :last_move=>0}
+Result of game creation:
+{:errors=>[], :board=>1, :game=>1}
+Move : {:player=>1, :x=>0, :y=>0}
+
+Move : {:player=>2, :x=>0, :y=>0}
+ERROR: Cannot move to 0, 0
+
+Move : {:player=>2, :x=>-1, :y=>0}
+ERROR: x out of range
+
+Move : {:player=>2, :x=>5, :y=>0}
+ERROR: x out of range
+
+Move : {:player=>2, :x=>0, :y=>-1}
+ERROR: y out of range
+
+Move : {:player=>2, :x=>0, :y=>4}
+ERROR: y out of range
+
+Move : {:player=>1, :x=>0, :y=>1}
+ERROR: Out of turn move
+
+Move : {:player=>0, :x=>1, :y=>0}
+ERROR: Invalid player id
+
+Move : {:player=>3, :x=>1, :y=>0}
+ERROR: Player not found
+
+Move : {:player=>2, :x=>1, :y=>0, :side=>"b"}
+ERROR: [x, y] and [side, channel] are mutually exclusive
+
+Move : {:player=>2, :side=>"b"}
+ERROR: channel not specified with side
+
+Move : {:player=>2, :side=>"b", :channel=>"one"}
+ERROR: channel not specified with side
+
+Move : {:player=>2, :side=>"b", :channel=>-1}
+ERROR: x out of range
+
+Move : {:player=>2, :side=>"b", :channel=>4}
+
+Move : {:player=>2, :channel=>1}
+ERROR: Out of turn move
+
+Move : {:player=>2, :side=>"bottom", :channel=>1}
+ERROR: Out of turn move
+
+Move : {:player=>2, :side=>"f", :channel=>1}
+ERROR: Out of turn move
+
+Move : {:player=>2, :x=>4, :y=>0}
+ERROR: Out of turn move
+
+Move : {:player=>1, :x=>0, :y=>1}
+
+Move : {:player=>2, :x=>4, :y=>3}
+
+Move : {:player=>1, :x=>0, :y=>2}
+
+Move : {:player=>2, :x=>0, :y=>3}
+
+Move : {:player=>1, :side=>"t", :channel=>0}
+ERROR: y out of range
+
+Move : {:player=>1, :side=>"t", :channel=>4}
+ERROR: y out of range
+
+Move : {:player=>1, :side=>"b", :channel=>0}
+ERROR: y out of range
+
+Move : {:player=>1, :side=>"b", :channel=>4}
+ERROR: y out of range
+
+Move : {:player=>1, :side=>"l", :channel=>0}
+ERROR: x out of range
+
+Move : {:player=>1, :side=>"l", :channel=>3}
+ERROR: x out of range
+
+Move : {:player=>1, :side=>"r", :channel=>0}
+ERROR: x out of range
+
+Move : {:player=>1, :side=>"r", :channel=>3}
+ERROR: x out of range
+
+Move : {:player=>1, :x=>1, :y=>1}
+
+Move : {:player=>2, :x=>1, :y=>2}
+
+Move : {:player=>1, :x=>2, :y=>1}
+
+Move : {:player=>2, :x=>2, :y=>2}
+
+Move : {:player=>1, :x=>3, :y=>1}
+
+Move : {:player=>2, :x=>3, :y=>2}
+ERROR: Game not active
+
+Move : {:player=>1, :x=>4, :y=>1}
+ERROR: Game not active
+
+Get status result:
+{:status=>2, :moves=>[{:id=>1, :movenumber=>1, :player=>0, :xlocation=>0, :ylocation=>0}, {:id=>2, :movenumber=>2, :player=>1, :xlocation=>4, :ylocation=>0}, {:id=>3, :movenumber=>3, :player=>0, :xlocation=>0, :ylocation=>1}, {:id=>4, :movenumber=>4, :player=>1, :xlocation=>4, :ylocation=>3}, {:id=>5, :movenumber=>5, :player=>0, :xlocation=>0, :ylocation=>2}, {:id=>6, :movenumber=>6, :player=>1, :xlocation=>0, :ylocation=>3}, {:id=>7, :movenumber=>7, :player=>0, :xlocation=>1, :ylocation=>1}, {:id=>8, :movenumber=>8, :player=>1, :xlocation=>1, :ylocation=>2}, {:id=>9, :movenumber=>9, :player=>0, :xlocation=>2, :ylocation=>1}, {:id=>10, :movenumber=>10, :player=>1, :xlocation=>2, :ylocation=>2}, {:id=>11, :movenumber=>11, :player=>0, :xlocation=>3, :ylocation=>1}], :current_turn=>0, :errors=>[]}
+
