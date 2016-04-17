@@ -44,7 +44,7 @@ class PushfourWebsite < Sinatra::Base
     if !request.safe?
       # this is a bot API request which is validated differently
       if request.path_info =~ /^bot_.*/ and params[:bot_api_key]
-        results = Players.for_key(params[:bot_api_key]
+        results = Players.for_key(params[:bot_api_key])
         halt 403, results[:errors] unless results[:errors].empty?
         halt 403, 'Invalid API key' unless results[:player]
         @api_player = results[:player]
