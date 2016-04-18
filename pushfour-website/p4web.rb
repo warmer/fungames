@@ -15,8 +15,10 @@ PATH_ROOT = '/'
 
 URL = {
   full_game_details: PATH_ROOT + 'game_details/:id',
+  player_game_list: PATH_ROOT + 'get_games',
   tournaments: PATH_ROOT + 'tournaments',
   tournament: PATH_ROOT + 'tournament/:id',
+  game_info: PATH_ROOT + 'game_info',
   make_move: PATH_ROOT + 'make_move',
   make_game: PATH_ROOT + 'new_game',
   bot_move: PATH_ROOT + 'bot_move',
@@ -93,9 +95,9 @@ class PushfourWebsite < Sinatra::Base
   # AJAX requests
 
   post URL[:make_move] do
-    raw_params = filter(params, [:game_id, :x, :y])
+    filtered = filter(params, [:game_id, :x, :y])
     player = session[:user_id]
-    params = {player: player}.merge(raw_params)
+    params = {player: player}.merge(filtered)
     results = MakeMove.make_move(params)
     # the CSRF token needs to be sent back to the page so more moves
     # can be made without the client needing to refresh
@@ -113,11 +115,28 @@ class PushfourWebsite < Sinatra::Base
     results.to_json
   end
 
+  get URL[:player_game_list] do
+    filtered = filter(params, [:player_id])
+    filtered = filtered.merge(player_turn: true)
+    results = GameStatus.list(filtered)
+    games = results[:games].map{|g| g[:id]}
+
+    games.sort.join(',')
+  end
+
+  get URL[:game_info] do
+    game_string = ''
+    filtered = filter(params, [:game_id])
+    game_string = GameStatus.game_string(filtered) || ''
+
+    game_string
+  end
+
   # page load requests
 
   get URL[:players] do
-    raw_params = filter(params, [:limit, :start])
-    results = Players.player_list(raw_params)
+    filtered = filter(params, [:limit, :start])
+    results = Players.player_list(filtered)
 
     erb :players, locals: locals(results)
   end
@@ -140,8 +159,8 @@ class PushfourWebsite < Sinatra::Base
   end
 
   post URL[:register] do
-    raw_params = filter(params, [:name, :password, :password2])
-    results = Registration.register(raw_params)
+    filtered = filter(params, [:name, :password, :password2])
+    results = Registration.register(filtered)
     if results[:errors].size == 0
       redirect to(URL[:login])
     else
@@ -154,8 +173,8 @@ class PushfourWebsite < Sinatra::Base
   end
 
   post URL[:login] do
-    raw_params = filter(params, [:name, :password])
-    results = Login.login(raw_params)
+    filtered = filter(params, [:name, :password])
+    results = Login.login(filtered)
     if results[:errors].size == 0
       session[:user_id] = results[:id]
       session[:login_name] = results[:name]
@@ -181,10 +200,10 @@ class PushfourWebsite < Sinatra::Base
   end
 
   post URL[:make_game] do
-    raw_params = filter(params, [:height, :width, :obstacles, :creator, :opponent, :first_move])
-    raw_params = raw_params.merge(user_id: session[:user_id])
+    filtered = filter(params, [:height, :width, :obstacles, :creator, :opponent, :first_move])
+    filtered = filtered.merge(user_id: session[:user_id])
 
-    results = CreateGame.create_game(raw_params)
+    results = CreateGame.create_game(filtered)
 
 
     if results[:errors].size == 0
@@ -209,8 +228,8 @@ class PushfourWebsite < Sinatra::Base
   end
 
   get URL[:games] do
-    raw_params = filter(params, [:start])
-    results = GameStatus.list(raw_params)
+    filtered = filter(params, [:start])
+    results = GameStatus.list(filtered)
 
     erb :games, locals: locals(results)
   end

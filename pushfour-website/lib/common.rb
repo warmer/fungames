@@ -59,6 +59,8 @@ module Pushfour
 
       def val_if_int(raw)
         parsed = raw.to_i
+        # maximum value that sqlite3 considers an integer: 2^63-1
+        parsed = '' unless parsed < 9223372036854775808
         (raw.to_s == parsed.to_s ? parsed : nil)
       end
 

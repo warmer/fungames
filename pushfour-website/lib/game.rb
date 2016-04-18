@@ -163,9 +163,24 @@ module Pushfour
         start = val_if_int(params.delete(:start))
         start = 0 unless start and start > 0
 
+        player_id = val_if_int(params.delete(:player_id))
+        player_turn = params.delete(:player_turn)
+        player_filter = ''
+        if player_id and player_turn
+          player_clause = <<-HERE
+            WHERE
+              ( (player1=#{player_id} AND turn=0)
+                OR (player2=#{player_id} AND turn=1)
+              ) AND status=0
+          HERE
+        elsif player_id
+          player_clause = "WHERE player1=#{player_id} OR player2=#{player_id}"
+        end
+
         res = Database.execute_query <<-HERE
           SELECT id,player1,player2,turn,status,board
           FROM #{Database::GAME_TABLE}
+          #{player_clause}
           ORDER BY id ASC
           LIMIT 50
           OFFSET #{start}

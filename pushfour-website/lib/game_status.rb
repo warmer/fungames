@@ -11,6 +11,10 @@ module Pushfour
         Game.list(params)
       end
 
+      def self.game_string(params)
+        Game.new(id: params.delete(:game_id)).game_string rescue nil
+      end
+
       def self.get_status(params)
         result = {status: nil, moves: nil, current_turn: nil, errors: []}
         game_id = val_if_int(params.delete(:game_id))

@@ -1,0 +1,107 @@
+[["user1", "f3f371d3fc61e6d04791beb959aebfb46bdd1b78cd0672d399ed58b669534255", "18e5f6167438b60261c93a4dbbae0e8742b85a9ea434788d2694c400aba2c0dc", 1], ["user2", "e590aaa0439d47f9497849fe5ea80c6e04dee75931811de9e381c5c3cef2b3a3", "fe19b971c3afe5e3ee9e86deeb730b315f90b8d39856f18a97500de9903e753b", 2]]
+============================================================
+Test case: {:game=>{:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>2, :first_move=>0, :user_id=>1}, :moves=>[{:player=>1, :x=>0, :y=>0}, {:player=>2, :x=>0, :y=>1}], :last_move=>0}
+Result of game creation:
+{:errors=>[], :board=>1, :game=>1}
+############################################################
+Move: {:player=>1, :x=>0, :y=>0}
+**Game database dump: id,player1,player2,turn,status
+[[1, 1, 2, 1, 0]]
+********************
+**Full game list for 1: {:games=>[{:id=>1, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>2, :name=>"user2"}, :status=>:In_progress, :board=>1}], :errors=>[]}
+**Active game list for 1: {:games=>[], :errors=>["No games found"]}
+**GET /get_games?player_id=1
+
+********************
+**Full game list for 2: {:games=>[{:id=>1, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>2, :name=>"user2"}, :status=>:In_progress, :board=>1}], :errors=>[]}
+**Active game list for 2: {:games=>[{:id=>1, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>2, :name=>"user2"}, :status=>:In_progress, :board=>1}], :errors=>[]}
+**GET /get_games?player_id=2
+1
+********************
+**Full game list for 3: {:games=>[], :errors=>["No games found"]}
+**Active game list for 3: {:games=>[], :errors=>["No games found"]}
+**GET /get_games?player_id=3
+
+******************************
+**GET /game_info?game_id=1
++,0+++++++++++++++,4,4,2,01,1
+****************************************
+Move: {:player=>2, :x=>0, :y=>1}
+**Game database dump: id,player1,player2,turn,status
+[[1, 1, 2, 0, 0]]
+********************
+**Full game list for 1: {:games=>[{:id=>1, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>1, :name=>"user1"}, :status=>:In_progress, :board=>1}], :errors=>[]}
+**Active game list for 1: {:games=>[{:id=>1, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>1, :name=>"user1"}, :status=>:In_progress, :board=>1}], :errors=>[]}
+**GET /get_games?player_id=1
+1
+********************
+**Full game list for 2: {:games=>[{:id=>1, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>1, :name=>"user1"}, :status=>:In_progress, :board=>1}], :errors=>[]}
+**Active game list for 2: {:games=>[], :errors=>["No games found"]}
+**GET /get_games?player_id=2
+
+********************
+**Full game list for 3: {:games=>[], :errors=>["No games found"]}
+**Active game list for 3: {:games=>[], :errors=>["No games found"]}
+**GET /get_games?player_id=3
+
+******************************
+**GET /game_info?game_id=1
++,0+++1+++++++++++,4,4,2,01,0
+****************************************
+############################################################
+Get status result:
+{:status=>0, :moves=>[{:id=>1, :movenumber=>1, :player=>0, :xlocation=>0, :ylocation=>0}, {:id=>2, :movenumber=>2, :player=>1, :xlocation=>0, :ylocation=>1}], :current_turn=>0, :errors=>[]}
+
+============================================================
+Test case: {:game=>{:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>2, :first_move=>0, :user_id=>1}, :moves=>[{:player=>1, :x=>0, :y=>0}, {:player=>2, :x=>0, :y=>1}], :last_move=>0}
+Result of game creation:
+{:errors=>[], :board=>2, :game=>2}
+############################################################
+Move: {:player=>1, :x=>0, :y=>0}
+**Game database dump: id,player1,player2,turn,status
+[[1, 1, 2, 0, 0], [2, 1, 2, 1, 0]]
+********************
+**Full game list for 1: {:games=>[{:id=>1, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>1, :name=>"user1"}, :status=>:In_progress, :board=>1}, {:id=>2, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>2, :name=>"user2"}, :status=>:In_progress, :board=>2}], :errors=>[]}
+**Active game list for 1: {:games=>[{:id=>1, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>1, :name=>"user1"}, :status=>:In_progress, :board=>1}], :errors=>[]}
+**GET /get_games?player_id=1
+1
+********************
+**Full game list for 2: {:games=>[{:id=>1, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>1, :name=>"user1"}, :status=>:In_progress, :board=>1}, {:id=>2, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>2, :name=>"user2"}, :status=>:In_progress, :board=>2}], :errors=>[]}
+**Active game list for 2: {:games=>[{:id=>2, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>2, :name=>"user2"}, :status=>:In_progress, :board=>2}], :errors=>[]}
+**GET /get_games?player_id=2
+2
+********************
+**Full game list for 3: {:games=>[], :errors=>["No games found"]}
+**Active game list for 3: {:games=>[], :errors=>["No games found"]}
+**GET /get_games?player_id=3
+
+******************************
+**GET /game_info?game_id=2
++,0+++++++++++++++,4,4,2,01,1
+****************************************
+Move: {:player=>2, :x=>0, :y=>1}
+**Game database dump: id,player1,player2,turn,status
+[[1, 1, 2, 0, 0], [2, 1, 2, 0, 0]]
+********************
+**Full game list for 1: {:games=>[{:id=>1, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>1, :name=>"user1"}, :status=>:In_progress, :board=>1}, {:id=>2, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>1, :name=>"user1"}, :status=>:In_progress, :board=>2}], :errors=>[]}
+**Active game list for 1: {:games=>[{:id=>1, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>1, :name=>"user1"}, :status=>:In_progress, :board=>1}, {:id=>2, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>1, :name=>"user1"}, :status=>:In_progress, :board=>2}], :errors=>[]}
+**GET /get_games?player_id=1
+1,2
+********************
+**Full game list for 2: {:games=>[{:id=>1, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>1, :name=>"user1"}, :status=>:In_progress, :board=>1}, {:id=>2, :player1=>{:id=>1, :name=>"user1"}, :player2=>{:id=>2, :name=>"user2"}, :turn=>{:id=>1, :name=>"user1"}, :status=>:In_progress, :board=>2}], :errors=>[]}
+**Active game list for 2: {:games=>[], :errors=>["No games found"]}
+**GET /get_games?player_id=2
+
+********************
+**Full game list for 3: {:games=>[], :errors=>["No games found"]}
+**Active game list for 3: {:games=>[], :errors=>["No games found"]}
+**GET /get_games?player_id=3
+
+******************************
+**GET /game_info?game_id=2
++,0+++1+++++++++++,4,4,2,01,0
+****************************************
+############################################################
+Get status result:
+{:status=>0, :moves=>[{:id=>3, :movenumber=>1, :player=>0, :xlocation=>0, :ylocation=>0}, {:id=>4, :movenumber=>2, :player=>1, :xlocation=>0, :ylocation=>1}], :current_turn=>0, :errors=>[]}
+
