@@ -41,8 +41,9 @@ Harness.run_test(mock_db: true, run_web: true) do
   db_result = Database.execute_query <<-HERE
     SELECT name,passhash,apikey,id FROM #{Database::PLAYER_TABLE}
   HERE
-
   puts db_result.inspect
+
+  api_keys = db_result.map{|r| r[2]}
 
   game_ids = []
 
@@ -61,8 +62,11 @@ Harness.run_test(mock_db: true, run_web: true) do
 
     tc[:moves].each_with_index do |move, idx|
       puts "Move: #{move}"
-      res = MakeMove.make_move(move.merge(game_id: game_id))
-      puts "ERROR: #{res[:errors].join(',')}" unless res[:errors].empty?
+      path = '/bot_move'
+      params = {api_key: api_keys[move[:player] - 1], game_id: game_id, x: move[:x], y: move[:y]}
+      puts "** POST #{path} with #{params}"
+      res = post(path, params)
+      puts res.body
 
       puts "**Game database dump: id,player1,player2,turn,status"
       db_result = Database.execute_query <<-HERE

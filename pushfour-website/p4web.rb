@@ -46,10 +46,11 @@ class PushfourWebsite < Sinatra::Base
 
     if !request.safe?
       # this is a bot API request which is validated differently
-      if request.path_info =~ /^bot_.*/ and params[:bot_api_key]
-        results = Players.for_key(params[:bot_api_key])
+      if request.path_info =~ /^\/*bot_.*/ and params["api_key"]
+        results = Players.for_key(params["api_key"])
         halt 403, results[:errors] unless results[:errors].empty?
         halt 403, 'Invalid API key' unless results[:player]
+
         @api_player = results[:player]
       else
         cookie_auth = request.cookies['auth_token']
@@ -109,8 +110,8 @@ class PushfourWebsite < Sinatra::Base
     # @api_key should be populated by the before filter
     halt 403, 'Invalid API key' unless @api_player
 
-    filtered = filter(params, [:game, :x, :y, :side, :channel])
-    results = MakeMove.make_move(filtered)
+    filtered = filter(params, [:game_id, :x, :y, :side, :channel])
+    results = MakeMove.make_move(filtered.merge(player: @api_player[:id]))
 
     results.to_json
   end

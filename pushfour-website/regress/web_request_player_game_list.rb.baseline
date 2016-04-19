@@ -5,6 +5,8 @@ Result of game creation:
 {:errors=>[], :board=>1, :game=>1}
 ############################################################
 Move: {:player=>1, :x=>0, :y=>0}
+** POST /bot_move with {:api_key=>"18e5f6167438b60261c93a4dbbae0e8742b85a9ea434788d2694c400aba2c0dc", :game_id=>1, :x=>0, :y=>0}
+{"errors":[]}
 **Game database dump: id,player1,player2,turn,status
 [[1, 1, 2, 1, 0]]
 ********************
@@ -27,6 +29,8 @@ Move: {:player=>1, :x=>0, :y=>0}
 +,0+++++++++++++++,4,4,2,01,1
 ****************************************
 Move: {:player=>2, :x=>0, :y=>1}
+** POST /bot_move with {:api_key=>"fe19b971c3afe5e3ee9e86deeb730b315f90b8d39856f18a97500de9903e753b", :game_id=>1, :x=>0, :y=>1}
+{"errors":[]}
 **Game database dump: id,player1,player2,turn,status
 [[1, 1, 2, 0, 0]]
 ********************
@@ -58,6 +62,8 @@ Result of game creation:
 {:errors=>[], :board=>2, :game=>2}
 ############################################################
 Move: {:player=>1, :x=>0, :y=>0}
+** POST /bot_move with {:api_key=>"18e5f6167438b60261c93a4dbbae0e8742b85a9ea434788d2694c400aba2c0dc", :game_id=>2, :x=>0, :y=>0}
+{"errors":[]}
 **Game database dump: id,player1,player2,turn,status
 [[1, 1, 2, 0, 0], [2, 1, 2, 1, 0]]
 ********************
@@ -80,6 +86,8 @@ Move: {:player=>1, :x=>0, :y=>0}
 +,0+++++++++++++++,4,4,2,01,1
 ****************************************
 Move: {:player=>2, :x=>0, :y=>1}
+** POST /bot_move with {:api_key=>"fe19b971c3afe5e3ee9e86deeb730b315f90b8d39856f18a97500de9903e753b", :game_id=>2, :x=>0, :y=>1}
+{"errors":[]}
 **Game database dump: id,player1,player2,turn,status
 [[1, 1, 2, 0, 0], [2, 1, 2, 0, 0]]
 ********************

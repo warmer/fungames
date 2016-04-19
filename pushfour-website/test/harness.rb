@@ -49,6 +49,11 @@ module Pushfour
         Net::HTTP.get(uri)
       end
 
+      def post(path, params)
+        uri = URI("http://localhost:#{@web_port}/#{path}")
+        Net::HTTP.post_form(uri, params)
+      end
+
       def self.run_test(opts = {}, &blk)
         begin
           Harness.run_test_throw(opts, &blk)

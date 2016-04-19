@@ -15,7 +15,7 @@ module Pushfour
 
       def self.for_key(raw_key)
         errors = {}
-        api_key = sanitize_key(raw_key)
+        api_key = sanitized_key(raw_key)
         return {errors: 'Invalid API key'} unless api_key == raw_key
         return {errors: 'Invalid API key'} unless api_key.length == 64
         player = Player.with_api_key(api_key)
