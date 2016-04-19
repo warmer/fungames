@@ -17,9 +17,27 @@ else
   res
 end
 
+def post(url, params)
+  tries ||= 10
+  uri = URI(url)
+  res = Net::HTTP.post_form(uri, params)
+rescue Timeout::Error, EOFError, SocketError,
+        Errno::EINVAL, Errno::ECONNRESET, Errno::ECONNREFUSED,
+        Errno::ETIMEDOUT, Errno::EHOSTUNREACH, Net::HTTPBadResponse,
+        Net::HTTPHeaderSyntaxError, Net::ProtocolError => e
+  puts "Encountered an error: #{e}"
+  unless (tries -= 1).zero?
+    sleep 5 * (10 - tries)
+    retry
+  end
+else
+  res
+end
+
 module Pushfour
   module AI
-    SERVER_URL = 'http://pushfour.net'
+    #SERVER_URL = 'http://pushfour.net'
+    SERVER_URL = 'http://localhost:9292'
 
     INT_MASK = 0xffffffffffffffff
 
@@ -476,7 +494,7 @@ module Pushfour
     end
 
     def self.game_list(player)
-      res = get "#{SERVER_URL}/getgames.php?playerid=#{player.to_i}"
+      res = get "#{SERVER_URL}/get_games?player_id=#{player.to_i}"
       res = '0' unless res
       games = res.split(',').map {|id| id.to_i}
       games.delete(0)
@@ -484,7 +502,7 @@ module Pushfour
     end
 
     def self.game_info(game_id, player)
-      res = get "#{SERVER_URL}/gameinfo.php?gameid=#{game_id.to_i}&playerid=#{player.to_i}"
+      res = get "#{SERVER_URL}/game_info?game_id=#{game_id.to_i}"
       parse_game_string(res, game_id) if res
     end
 
@@ -537,10 +555,11 @@ module Pushfour
     end
 
     def self.send_move(game_id, player, side, channel, opts = {})
+      api_key = opts[:api_key]
       side = {left: 'l', right: 'r', top: 't', bottom: 'b'}[side]
       params = {
-        'game' => game_id,
-        'player' => player,
+        'game_id' => game_id,
+        'api_key' => api_key,
         'side' => side,
         'channel' => channel
       }
@@ -549,7 +568,7 @@ module Pushfour
       if opts[:echo_params]
         puts param_str
       else
-        res = get "#{SERVER_URL}/manager.php?#{param_str}"
+        res = post("#{SERVER_URL}/bot_move", params)
       end
     end
   end

@@ -61,6 +61,7 @@ module PushfourAI
       @poll_delay = opts[:poll_delay] || 5
       @search_depth = opts[:search_depth] || 3
       @permaban_file = opts[:permaban_file]
+      @api_key = opts[:api_key]
     end
 
     def debug(line = nil)
@@ -75,15 +76,16 @@ module PushfourAI
       thr = Thread.new do
         blacklist = []
         loop do
-          game_list = Pushfour.game_list(@id) - blacklist
+          game_list = Pushfour::AI.game_list(@id) - blacklist
           info "Finding moves for #{game_list}" unless game_list == []
           game_list.each do |game_id|
             next if blacklist.include? game_id
             s = Time.now
-            game = Pushfour.game_info(game_id, @id)
+            game = Pushfour::AI.game_info(game_id, @id)
             move, score = find_move(game)
             if move
-              Pushfour.send_website_move(game, move, player_id: @id, echo_params: false)
+              Pushfour::AI.send_website_move(game, move,
+                player_id: @id, echo_params: false, api_key: @api_key)
               info "#{game_id} should move #{move} (#{score}; took #{Time.now - s}s)"
             else
               blacklist << game_id

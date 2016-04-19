@@ -235,6 +235,13 @@ class PushfourWebsite < Sinatra::Base
     erb :games, locals: locals(results)
   end
 
+  get URL[:profile] do
+      redirect to(url(:index)) unless session[:user_id]
+      player = Players.profile_for(session[:user_id])
+
+      erb :profile, locals: locals(player: player)
+  end
+
   get URL[:login] do
 
     erb :login, locals: locals

@@ -13,6 +13,13 @@ module Pushfour
         info
       end
 
+      def self.profile_for(player_id)
+        info = nil
+        player = Player.new(id: player_id) rescue nil
+        info = {id: player.id, name: player.name, api_key: player.api_key} if player
+        info
+      end
+
       def self.for_key(raw_key)
         errors = {}
         api_key = sanitized_key(raw_key)
