@@ -92,7 +92,13 @@ module Pushfour
         raise exception if exception
       end
 
+      def select(table, columns, values)
+        raise 'Not yet implemented'
+      end
+
+      # TODO: deprecate
       def execute_query(query, opts = {})
+        profile('execute_query')
         verbose = opts.delete(:verbose)
         result = nil
 
@@ -121,6 +127,8 @@ module Pushfour
       end
 
       def update(table, columns, values, id, opts = {})
+        profile('update_' + table)
+
         verbose = opts.delete(:verbose)
         result = nil
 
@@ -156,6 +164,8 @@ module Pushfour
       end
 
       def insert(table, columns, values, opts = {})
+        profile('insert_' + table)
+
         verbose = opts.delete(:verbose)
         result = nil
 
@@ -188,6 +198,23 @@ module Pushfour
         raise exception if exception
 
         result
+      end
+
+      def profile_info
+        stats = profile_stats.dup
+        @@stats.reject! { true }
+        return stats
+      end
+
+      private
+
+      def profile_stats
+        @@stats ||= Hash.new{|h, key| h[key] = 0}
+        @@stats
+      end
+
+      def profile(stat, count = 1)
+        profile_stats[stat] += count
       end
     end
   end

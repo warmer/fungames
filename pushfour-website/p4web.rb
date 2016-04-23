@@ -2,8 +2,10 @@ require 'sinatra'
 require 'json'
 require 'pp'
 require 'sqlite3'
+require 'fileutils'
 
 require_relative 'lib/common.rb'
+require_relative 'lib/database.rb'
 require_relative 'lib/registration.rb'
 require_relative 'lib/create_game.rb'
 require_relative 'lib/make_move.rb'
@@ -38,11 +40,45 @@ class PushfourWebsite < Sinatra::Base
   include Pushfour::Website
   include Common
 
-  use Rack::Session::Pool, :expire_after => 2592000
-  enable :logging, :dump_errors, :raise_errors, :show_exceptions
+  configure do
+    use Rack::Session::Pool, :expire_after => 2592000
+    #enable :logging, :dump_errors, :raise_errors, :show_exceptions
+    enable :logging
+    disable :dump_errors, :show_exceptions, :raise_errors
+
+    log_dir = File.join(settings.root, 'log/')
+    FileUtils.mkdir_p(log_dir)
+
+    @@profile_log_path = File.join(log_dir, "#{settings.environment}-profile.log")
+    @@profile_log = File.new(@@profile_log_path, 'a+')
+    @@profile_log.sync = true
+
+    @@access_log_path = File.join(log_dir, "#{settings.environment}-access.log")
+    @@access_log = File.new(@@access_log_path, 'a+')
+    @@access_log.sync = true
+    use Rack::CommonLogger, @@access_log
+  end
+
+  after do
+    unless File.exist? @@profile_log_path
+      @@profile_log.reopen(@@profile_log_path, 'a+')
+      @@profile_log.sync = true
+    end
+
+    time = Time.now.utc.to_s
+    path = request.path_info
+    stats = Database.profile_info.to_json
+    @@profile_log.write("#{time} #{path} #{stats}\n")
+    @@profile_log.flush
+  end
 
   before do
     rotate_csrf unless session[:csrf]
+
+    unless File.exist? @@access_log_path
+      @@access_log.reopen(@@access_log_path, 'a+')
+      @@access_log.sync = true
+    end
 
     if !request.safe?
       # this is a bot API request which is validated differently
@@ -68,6 +104,10 @@ class PushfourWebsite < Sinatra::Base
         rotate_csrf
       end
     end
+  end
+
+  error do
+    'Something went wrong!'
   end
 
   def rotate_csrf

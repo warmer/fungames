@@ -59,22 +59,24 @@ module PushfourAI
       @info = true
       @dynamic_depth = opts[:dynamic_depth]
       @poll_delay = opts[:poll_delay] || 5
+      @min_poll_delay = opts[:min_poll_delay] || 5
       @search_depth = opts[:search_depth] || 3
       @permaban_file = opts[:permaban_file]
       @api_key = opts[:api_key]
     end
 
     def debug(line = nil)
-      puts line if @debug
+      puts "#{Time.now.strftime("%Y/%m/%d %H:%M:%S")} #{line}" if @debug
     end
 
     def info(line = nil)
-      puts line if @info
+      puts "#{Time.now.strftime("%Y/%m/%d %H:%M:%S")} #{line}" if @info
     end
 
     def run
       thr = Thread.new do
         blacklist = []
+        loops_with_games = 0
         loop do
           game_list = Pushfour::AI.game_list(@id) - blacklist
           info "Finding moves for #{game_list}" unless game_list == []
@@ -93,7 +95,13 @@ module PushfourAI
             end
           end
 
-          sleep @poll_delay
+          if game_list.length > 0
+            loops_with_games += 1 unless loops_with_games > 4
+          else
+            loops_with_games -= 1 if loops_with_games > 0
+          end
+
+          sleep [@poll_delay / (loops_with_games + 1), @min_poll_delay].max
         end
       end
       thr.join

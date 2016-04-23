@@ -37,7 +37,7 @@ end
 module Pushfour
   module AI
     #SERVER_URL = 'http://pushfour.net'
-    SERVER_URL = 'http://localhost:9292'
+    SERVER_URL = 'http://localhost:9876'
 
     INT_MASK = 0xffffffffffffffff
 

@@ -18,7 +18,7 @@ module Pushfour
       def initialize(opts = {})
         @mock_db = opts[:mock_db]
         @run_web = opts[:run_web]
-        @web_port = opts[:web_port] || 9876
+        @web_port = opts[:web_port] || 9293
       end
 
       def create_database
