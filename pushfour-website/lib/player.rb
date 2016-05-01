@@ -46,10 +46,8 @@ module Pushfour
         key = sanitized_key(raw_key)
         raise ArgumentError, 'Invalid API key' unless key == raw_key
         raise ArgumentError, 'Invalid API key' unless key.length == 64
-        res = Database.execute_query <<-HERE
-          SELECT id, name from #{Database::PLAYER_TABLE}
-          WHERE apikey LIKE '#{key}'
-        HERE
+        res = Database.select(%w(id name), Database::PLAYER_TABLE,
+          "WHERE apikey LIKE :key", {key: key})
 
         unless res.empty?
           id = res[0][0]
@@ -66,10 +64,9 @@ module Pushfour
         return nil if name.empty?
 
         passhash = pw_hash(salt: name, password: password)
-        res = Database.execute_query <<-HERE
-          SELECT id, apikey from #{Database::PLAYER_TABLE}
-          WHERE name = '#{name}' AND passhash LIKE '#{passhash}';
-        HERE
+        res = Database.select(%w(id apikey), Database::PLAYER_TABLE,
+          'WHERE name = :name AND passhash = :passhash',
+          {name: name, passhash: passhash})
         unless res.empty?
           id = res[0][0]
           api_key = res[0][1]
@@ -79,9 +76,8 @@ module Pushfour
       end
 
       def self.name_in_use?(name)
-        res = Database.execute_query <<-HERE
-          SELECT name from #{Database::PLAYER_TABLE} WHERE name='#{name}';
-        HERE
+        res = Database.select(['name'], Database::PLAYER_TABLE,
+          'WHERE name = :name', {name: name})
         res.size > 0
       end
 
@@ -98,17 +94,18 @@ module Pushfour
         start = params.delete(:start).to_i
         start = 1 unless start > 0
 
+        query_params = {start: start, limit: limit}
         exclude = params.delete(:exclude).to_i
-        filter += "AND id != #{exclude} " if exclude > 0
+        if exclude > 0
+          filter += "AND id != :exclude "
+          query_params[:exclude] = exclude
+        end
 
         raise ArgumentError, "Too many params for Player.list: #{params.keys}" unless params.empty?
 
-        res = Database.execute_query <<-HERE
-          SELECT id,name from #{Database::PLAYER_TABLE}
-          WHERE id >= #{start}
-          #{filter}
-          ORDER BY id ASC LIMIT #{limit};
-        HERE
+        res = Database.select(%w(id name), Database::PLAYER_TABLE,
+          "WHERE id >= :start #{filter} ORDER BY id ASC LIMIT :limit",
+          query_params)
 
         errors << 'No users found' if res.empty?
         res.each { |p| players << Player.new(id: p[0], name: p[1]) }
@@ -130,10 +127,8 @@ module Pushfour
       end
 
       def load_player
-        res = Database.execute_query <<-HERE
-          SELECT name, apikey from #{Database::PLAYER_TABLE}
-          WHERE id = #{@id};
-        HERE
+        res = Database.select(%w(name apikey), Database::PLAYER_TABLE,
+          'WHERE id = :id', {id: @id})
         raise 'Player not found' if res.empty?
 
         @name = res[0][0]

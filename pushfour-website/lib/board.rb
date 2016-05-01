@@ -54,11 +54,8 @@ module Pushfour
       end
 
       def load_board
-        res = Database.execute_query <<-HERE
-          SELECT width,height,boardstring
-          FROM #{Database::BOARD_TABLE}
-          WHERE id = #{@id};
-        HERE
+        res = Database.select(%w(width height boardstring),
+          Database::BOARD_TABLE, 'WHERE id = :id', {id: @id})
 
         if res.size > 0
           b = res[0]

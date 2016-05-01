@@ -92,7 +92,7 @@ module Pushfour
         raise exception if exception
       end
 
-      def select(table, columns, statement, values = {}, opts = {})
+      def select(columns, table, modifiers = '', values = {}, opts = {})
         profile('select_' + table)
 
         verbose = opts.delete(:verbose)
@@ -103,7 +103,9 @@ module Pushfour
         begin
           db = SQLite3::Database.open db_file
 
-          db.prepare "SELECT #{col_str} FROM #{table} #{statement}" do |query|
+          sel = "SELECT #{col_str} FROM #{table} #{modifiers}"
+
+          db.prepare sel do |query|
             puts "Executing: #{query}" if verbose
             result = query.execute(values).entries
           end

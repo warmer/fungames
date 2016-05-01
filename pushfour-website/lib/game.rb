@@ -178,10 +178,8 @@ module Pushfour
         end
         player_clause += " ORDER BY id ASC LIMIT 50 OFFSET :start"
 
-        res = Database.select(Database::GAME_TABLE,
-          %w(id player1 player2 turn status board),
-          player_clause,
-          values)
+        res = Database.select(%w(id player1 player2 turn status board),
+          Database::GAME_TABLE, player_clause, values)
         if res.size > 0
           res.each do |p|
             player1 = players[p[1]]
@@ -215,12 +213,8 @@ module Pushfour
       def move_number
         move = 0
 
-        res = Database.execute_query <<-HERE
-          SELECT max(movenumber)
-          FROM #{Database::MOVE_TABLE}
-          WHERE game = #{@id}
-          GROUP BY game;
-        HERE
+        res = Database.select(['max(MoveNumber)'],
+          Database::MOVE_TABLE, 'WHERE game = :id GROUP BY game;', {id: @id})
 
         move = res[0][0] if res and res[0]
         move
@@ -269,12 +263,10 @@ module Pushfour
         errors << 'Invalid game ID' unless game_id and game_id > 0
 
         if errors.size == 0
-          res = Database.execute_query <<-HERE
-            SELECT id,movenumber,player,xlocation,ylocation,movedate
-            FROM #{Database::MOVE_TABLE}
-            WHERE game = #{game_id}
-            ORDER BY movenumber ASC;
-          HERE
+          res = Database.select(
+            %w(id movenumber player xlocation ylocation movedate),
+            Database::MOVE_TABLE, 'WHERE game = :game_id ORDER BY movenumber ASC',
+            {game_id: game_id})
           res.each do |m|
             moves << {
               id: m[0], movenumber: m[1], player: m[2],
@@ -299,11 +291,8 @@ module Pushfour
       end
 
       def load_game
-        res = Database.execute_query <<-HERE
-          SELECT player1,player2,turn,status,board
-          FROM #{Database::GAME_TABLE}
-          WHERE id = #{@id};
-        HERE
+        res = Database.select(%w(player1 player2 turn status board),
+          Database::GAME_TABLE, 'WHERE id = :id', {id: @id})
 
         raise ArgumentError, 'Game status not found' unless res.size > 0
         res = res[0]
