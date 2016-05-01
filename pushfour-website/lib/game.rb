@@ -165,7 +165,8 @@ module Pushfour
         player_id = val_if_int(params.delete(:player_id))
         player_turn = params.delete(:player_turn)
         player_filter = ''
-        values = {player_id: player_id, start: start}
+        player_clause = ''
+        values = {start: start}
         if player_id and player_turn
           player_clause = <<-HERE
             WHERE
@@ -173,8 +174,10 @@ module Pushfour
                 OR (player2 = :player_id AND turn=1)
               ) AND status=0
           HERE
+          values[:player_id] = player_id
         elsif player_id
           player_clause = "WHERE player1 = :player_id OR player2 = :player_id"
+          values[:player_id] = player_id
         end
         player_clause += " ORDER BY id ASC LIMIT 50 OFFSET :start"
 
