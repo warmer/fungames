@@ -84,7 +84,7 @@ module Pushfour
 
         players = [@player1, @player2]
         player_turn = players[@turn]
-        return 'Out of turn move' unless player_turn == player_id
+        return 'Out of turn move' unless player_turn[:id] == player_id
 
         x = val_if_int(params.delete(:x))
         y = val_if_int(params.delete(:y))
@@ -154,7 +154,6 @@ module Pushfour
         nil
       end
 
-      # TODO: convert to class method of Game
       def self.list(params)
         errors = []
         games = []
@@ -166,25 +165,23 @@ module Pushfour
         player_id = val_if_int(params.delete(:player_id))
         player_turn = params.delete(:player_turn)
         player_filter = ''
+        values = {player_id: player_id, start: start}
         if player_id and player_turn
           player_clause = <<-HERE
             WHERE
-              ( (player1=#{player_id} AND turn=0)
-                OR (player2=#{player_id} AND turn=1)
+              ( (player1 = :player_id AND turn=0)
+                OR (player2 = :player_id AND turn=1)
               ) AND status=0
           HERE
         elsif player_id
-          player_clause = "WHERE player1=#{player_id} OR player2=#{player_id}"
+          player_clause = "WHERE player1 = :player_id OR player2 = :player_id"
         end
+        player_clause += " ORDER BY id ASC LIMIT 50 OFFSET :start"
 
-        res = Database.execute_query <<-HERE
-          SELECT id,player1,player2,turn,status,board
-          FROM #{Database::GAME_TABLE}
-          #{player_clause}
-          ORDER BY id ASC
-          LIMIT 50
-          OFFSET #{start}
-        HERE
+        res = Database.select(Database::GAME_TABLE,
+          %w(id player1 player2 turn status board),
+          player_clause,
+          values)
         if res.size > 0
           res.each do |p|
             player1 = players[p[1]]
@@ -234,8 +231,8 @@ module Pushfour
 
         # "creator" will be set if this is NOT an anonymous game
         if @creator
-          @player1 = [@creator, @opponent][@first_move]
-          @player2 = [@opponent, @creator][@first_move]
+          @player1 = Players.info_for([@creator, @opponent][@first_move])
+          @player2 = Players.info_for([@opponent, @creator][@first_move])
         else
           @anonymous = 1
           @p1_token = SecureRandom.base64
@@ -250,7 +247,7 @@ module Pushfour
         @id = Database.insert(
           Database::GAME_TABLE,
           [:player1, :player2, :anonymous, :turn, :status, :board],
-          [@player1, @player2, @anonymous, 0, status_id_for(:in_progress), @board.id]
+          [@player1[:id], @player2[:id], @anonymous, 0, status_id_for(:in_progress), @board.id]
         )
         raise 'Could not create game' unless @id and @id > 0
       end
@@ -311,8 +308,8 @@ module Pushfour
         raise ArgumentError, 'Game status not found' unless res.size > 0
         res = res[0]
         @moves = load_moves(game_id: @id)[:moves]
-        @player1 = res[0].to_i
-        @player2 = res[1].to_i
+        @player1 = Players.info_for(res[0].to_i)
+        @player2 = Players.info_for(res[1].to_i)
         @turn = res[2].to_i
         @status = res[3].to_i
         @board_id = res[4].to_i

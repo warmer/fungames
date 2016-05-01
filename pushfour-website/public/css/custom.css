@@ -44,6 +44,12 @@
 .edge-glow1 {
   background-color: #00f;
 }
+.turn-0 {
+  color: #f00;
+}
+.turn-1 {
+  color: #00f;
+}
 .piece-0 {
 }
 .piece-1 {

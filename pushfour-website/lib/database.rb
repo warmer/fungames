@@ -92,8 +92,32 @@ module Pushfour
         raise exception if exception
       end
 
-      def select(table, columns, values)
-        raise 'Not yet implemented'
+      def select(table, columns, statement, values = {}, opts = {})
+        profile('select_' + table)
+
+        verbose = opts.delete(:verbose)
+        result = nil
+
+        col_str = columns.join(',')
+
+        begin
+          db = SQLite3::Database.open db_file
+
+          db.prepare "SELECT #{col_str} FROM #{table} #{statement}" do |query|
+            puts "Executing: #{query}" if verbose
+            result = query.execute(values).entries
+          end
+        rescue SQLite3::Exception => e
+          puts 'SQLite Exception'
+          puts e
+          exception = e
+        ensure
+          db.close if db
+        end
+
+        raise exception if exception
+
+        result
       end
 
       # TODO: deprecate

@@ -1,5 +1,6 @@
 <% if defined?(game) and game and game[:game_detail] and game[:game_detail][:xy] %>
   <div id="gamespace">
+    <h1></h1>
     <table id="game_board" class="table_game_board">
     </table>
   </div>
@@ -14,8 +15,9 @@
       });
     }
 
-    // update the state of the world every 3 seconds
-    var updateIntervalID = setInterval(queryStatus, 3000);
+    // update the state of the world every 3 seconds at first
+    var updateIntervalSec = 3;
+    var updateIntervalID = setInterval(queryStatus, updateIntervalSec * 1000);
 
     queryStatus();
 
@@ -69,13 +71,10 @@
           default: break;
         }
         if(x >= 0 && x < board.width && y >= 0 && y < board.height) {
-          console.log("Moving to x: " + x + ", y: " + y);
           var data = {x: x, y: y, game_id: game.id, csrf_token: csrfToken };
           $.post("<%= url(:make_move) %>", data)
             .done(function(res) {
               res = $.parseJSON(res);
-              console.log("Success!");
-              console.log(res);
               csrfToken = res.csrf;
             })
             .fail(function(res) {
@@ -84,8 +83,8 @@
               location.reload();
             })
             .always(function(res) {
-              console.log("Always!");
-              console.log(res);
+              updateIntervalSec = 3;
+              updateIntervalID = setInterval(queryStatus, updateIntervalSec * 1000);
             });
         }
       }
@@ -93,16 +92,19 @@
       var turn = game.turn;
       clicked = false;
 
+      var header = d3.select("#gamespace").selectAll("h1")
+        .data([game.players[turn]]);
+      header.enter().append("h1");
+      header.attr("class", "turn-" + turn)
+
       // is the game over?
       if(game.status != 0) {
-        var header = d3.select("#gamespace")
-          .insert("h1", ":first-child");
         switch(game.status) {
           case 1:
             header.text("Stalemate!");
             break;
           case 2:
-            header.text("Player " + (turn + 1) + " won!");
+            header.text(game.players[turn].name + " won!");
             break;
           default:
             header.text("Game over!");
@@ -112,14 +114,29 @@
         // don't continue updating the board if the game is over
         window.clearInterval(updateIntervalID)
       }
+      else {
+        header.text("Current turn: " + game.players[turn].name);
+      }
       // don't update anything if nothing has changed
       if(board.board_string == lastBoardString) {
+        // slow the rate at which we check for updated boards
+        if(updateIntervalSec < 15) {
+          updateIntervalSec++;
+        }
+        // clear the existing interval and create a new one
+        window.clearInterval(updateIntervalID);
+        updateIntervalID = setInterval(queryStatus, updateIntervalSec * 1000);
         return;
       }
       lastBoardString = board.board_string;
-      console.log({board: board, game: game});
 
-      var playerTurn = (player == game.players[turn]);
+      var player_ids = game.players.map(function(p) { return p.id; });
+
+      var playerTurn = (player == player_ids[turn]);
+      // don't poll for new moves when it's OUR turn
+      if(playerTurn) {
+        window.clearInterval(updateIntervalID);
+      }
 
       var topRowData = game.game_detail.move_depth.top.map(function(p) {
         return {'offset': p, 'type': 'topmove'};
@@ -175,12 +192,12 @@
           })
           .on("mouseover", function(d, i) {
             if(playerTurn && d.cell.offset != undefined && !clicked) {
-              edgeGlow(this, d, i, game.players.indexOf(player), true);
+              edgeGlow(this, d, i, player_ids.indexOf(player), true);
             }
           })
           .on("mouseout", function(d, i) {
             if(playerTurn && d.cell.offset != undefined) {
-              edgeGlow(this, d, i, game.players.indexOf(player), false);
+              edgeGlow(this, d, i, player_ids.indexOf(player), false);
             }
           })
           .on("click", function(d, i) {

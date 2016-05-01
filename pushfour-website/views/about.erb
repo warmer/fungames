@@ -1,0 +1,148 @@
+<div class="page-header">
+  <h1>About Pushfour</h1>
+</div>
+
+<h2>Bot APIs</h2>
+<p>
+  To allow an AI to submit moves to the <em>Pushfour</em> website, register an
+  account for your AI and find the API Key on the profile page of that player.
+</p>
+
+<h3>General Workflow</h3>
+<ol>
+  <li>Get the list of game IDs for which it is the bot's turn to move</li>
+  <li>
+    For each game ID in the above list:
+    <ol type="a">
+      <li>Get the game string</li>
+      <li>Submit a move</li>
+    </ol>
+  </li>
+  <li>Sleep for 6-30 seconds</li>
+</ol>
+
+<h3>Get the list of game IDs <small><code>GET /get_games?player_id=&lt;id&gt;</code></small></h3>
+<p><code>&lt;id&gt;</code> is an integer</p>
+<p>
+  Returns a text array of game IDs. Returns an empty string if there are no
+  active game IDs for &lt;id&gt;
+</p>
+<p>Example:</p>
+<p><code>GET /get_games?player_id=2</code></p>
+<p><samp>1,4</samp></p>
+
+<h3>Get the game string <small><code>GET /game_info?game_id=&lt;id&gt;</code></small></h3>
+<p><code>&lt;id&gt;</code> is an integer</p>
+<p>
+  Returns a comma-delimited string with information about the game state for
+  the given game ID.
+</p>
+<p>Example:</p>
+<p><code>GET /game_info?game_id=2</code></p>
+<p><samp>+,0+++1+++++#+++++,4,4,2,01,0</samp></p>
+<p>
+  When the above string is split by comma (<code>,</code>), this is what each
+  token represents:
+  <ol start="0">
+    <li>
+      <code>+</code> - the character that represents an empty space on the board
+    </li>
+    <li>
+      <code>0+++1+++++#+++++</code> - a string representing each block on
+      the board. <code>+</code> characters are empty spaces, <code>0</code>
+      chars are blocks occupied by the first player, <code>1</code> chars are
+      blocks occupied by the second player, and <code>#</code> chars are blocks
+      occupied by obstacles.
+      <br /><br />
+      The string is a 1-dimensional view of a 2-dimenstional board. The string
+      is represented as <samp>[row 0][row 1][row 2][row 3]</samp>, where
+      <samp>[row 0]</samp> is the top row of the board, from top-left to
+      top-right.
+    </li>
+    <li><code>4</code> - the width, in blocks, of the board</li>
+    <li><code>4</code> - the height, in blocks, of the board</li>
+    <li><code>2</code> - the number of players in this game</li>
+    <li>
+      <code>01</code> - the array of characters representing each player in the
+      game. This is an ordered string, so <code>0</code> is the first player
+      and <code>1</code> is the second player.
+    </li>
+    <li>
+      <code>0</code> - the character of the player whose turn it currently is.
+    </li>
+  </ol>
+</p>
+
+<h3>Send a move <small><code>POST /bot_move</code></small></h3>
+<p>
+  Send an
+  <a href="https://en.wikipedia.org/wiki/POST_(HTTP)">application/x-www-form-urlencoded</a>
+
+  POST to the website with the following fields:
+  <ul>
+    <li>
+      <code>api_key</code> - the string containing the required API key
+      for the bot's user.
+    </li>
+    <li>
+      <code>game_id</code> - the ID of the game for which the bot is submitting
+      a move.
+    </li>
+    <li>
+      <code>side</code> - the side of the board from which the move is
+      submitted. The only valid options for side are:
+      <ul>
+        <li><code>t</code> - from the top side of the board</li>
+        <li><code>l</code> - from the left side of the board</li>
+        <li><code>b</code> - from the bottom of the board</li>
+        <li><code>r</code> - from the right side of the board</li>
+      </ul>
+    </li>
+    <li>
+      <code>channel</code> - the 0-offset integer for the channel on the side
+      in which the move was submitted. Notes for each side:
+      <ul>
+        <li><code>t</code> - 0 starts at the left</li>
+        <li><code>l</code> - 0 starts at the top</li>
+        <li><code>b</code> - 0 starts at the left</li>
+        <li><code>r</code> - 0 starts at the top</li>
+      </ul>
+    </li>
+  </ul>
+
+  Alternatively, POST to the website with the following fields:
+  <ul>
+    <li>
+      <code>api_key</code> - the string containing the required API key
+      for the bot's user.
+    </li>
+    <li>
+      <code>game_id</code> - the ID of the game for which the bot is submitting
+      a move.
+    </li>
+    <li>
+      <code>x</code> - the 0-offset integer for the x-coordinate (column) of
+      the move.
+    </li>
+    <li>
+      <code>y</code> - the 0-offset integer for the y-coordinate (row) of the
+      move.
+    </li>
+  </ul>
+</p>
+
+<h2>History</h2>
+<p>
+  The name <em>Pushfour</em> was originally coined by
+  <a href="https://github.com/kedji">kedji</a>, who implemented a
+  <em>Pushfour</em> bot for a chat program.
+</p>
+<p>
+  In 2008, while taking a break from a senior design project,
+  <a href="https://github.com/croasus">croasus</a> and
+  <a href="https://github.com/warmer">warmer</a> decided to create a website
+  to host <em>Pushfour</em>. That site was written in PHP.
+</p>
+<p>
+  In 2016, <em>Pushfour</em> was rewritten in Ruby.
+</p>

@@ -1,3 +1,4 @@
+require 'date'
 require 'sinatra'
 require 'json'
 require 'pp'
@@ -33,7 +34,8 @@ URL = {
   game: PATH_ROOT + 'game/:id',
   logout: PATH_ROOT + 'logout',
   login: PATH_ROOT + 'login',
-  index: PATH_ROOT,
+  about: PATH_ROOT + 'about',
+  index: PATH_ROOT + 'home',
 }
 
 class PushfourWebsite < Sinatra::Base
@@ -65,10 +67,10 @@ class PushfourWebsite < Sinatra::Base
       @@profile_log.sync = true
     end
 
-    time = Time.now.utc.to_s
+    time = DateTime.now.new_offset(0).iso8601
     path = request.path_info
     stats = Database.profile_info.to_json
-    @@profile_log.write("#{time} #{path} #{stats}\n")
+    @@profile_log.write("#{time} #{request.request_method} #{path} #{stats}\n")
     @@profile_log.flush
   end
 
@@ -276,15 +278,24 @@ class PushfourWebsite < Sinatra::Base
   end
 
   get URL[:profile] do
-      redirect to(url(:index)) unless session[:user_id]
-      player = Players.profile_for(session[:user_id])
+    redirect to(url(:index)) unless session[:user_id]
+    player = Players.profile_for(session[:user_id])
 
-      erb :profile, locals: locals(player: player)
+    erb :profile, locals: locals(player: player)
   end
 
   get URL[:login] do
 
     erb :login, locals: locals
+  end
+
+  get '/' do
+    redirect to(url(:index))
+  end
+
+  get URL[:about] do
+
+    erb :about, locals: locals
   end
 
   get URL[:index] do
