@@ -5,7 +5,6 @@ require_relative '../lib/database.rb'
 require_relative '../lib/registration.rb'
 require_relative '../lib/login.rb'
 require_relative '../lib/create_game.rb'
-require_relative '../lib/game_status.rb'
 
 include Pushfour::Website
 
@@ -58,9 +57,6 @@ Harness.run_test(mock_db: true) do
         values
       )
     end
-
-    status = GameStatus.get_status(game_id: game_id, last_move: tc[:last_move])
-    puts status.inspect
 
     puts
   end

@@ -5,7 +5,6 @@ require_relative '../lib/database.rb'
 require_relative '../lib/registration.rb'
 require_relative '../lib/login.rb'
 require_relative '../lib/create_game.rb'
-require_relative '../lib/game_status.rb'
 require_relative '../lib/make_move.rb'
 
 include Pushfour::Website
@@ -76,9 +75,9 @@ Harness.run_test(mock_db: true, run_web: true) do
 
       [1,2,3].each do |player_id|
         puts '*' * 20
-        game_list = GameStatus.list(player_id: player_id)
+        game_list = Game.list(player_id: player_id)
         puts "**Full game list for #{player_id}: #{game_list}"
-        game_list = GameStatus.list(player_id: player_id, player_turn: true)
+        game_list = Game.list(player_id: player_id, player_turn: true)
         puts "**Active game list for #{player_id}: #{game_list}"
         path = "/get_games?player_id=#{player_id}"
         puts "**GET #{path}"
@@ -92,11 +91,6 @@ Harness.run_test(mock_db: true, run_web: true) do
       puts res
       puts '*' * 40
     end
-
-    puts '#' * 60
-    status = GameStatus.get_status(game_id: game_id, last_move: tc[:last_move])
-    puts 'Get status result:'
-    puts status.inspect
 
     puts
   end

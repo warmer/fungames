@@ -10,7 +10,6 @@ require_relative 'lib/database.rb'
 require_relative 'lib/registration.rb'
 require_relative 'lib/create_game.rb'
 require_relative 'lib/make_move.rb'
-require_relative 'lib/game_status.rb'
 require_relative 'lib/login.rb'
 require_relative 'lib/players.rb'
 
@@ -161,7 +160,7 @@ class PushfourWebsite < Sinatra::Base
   get URL[:player_game_list] do
     filtered = filter(params, [:player_id])
     filtered = filtered.merge(player_turn: true)
-    results = GameStatus.list(filtered)
+    results = Game.list(filtered)
     games = results[:games].map{|g| g[:id]}
 
     games.sort.join(',')
@@ -170,7 +169,8 @@ class PushfourWebsite < Sinatra::Base
   get URL[:game_info] do
     game_string = ''
     filtered = filter(params, [:game_id])
-    game_string = GameStatus.game_string(filtered) || ''
+    id = val_if_int(filtered[:game_id])
+    game_string = Game.new(id: id).game_string || '' if id
 
     game_string
   end
@@ -272,7 +272,7 @@ class PushfourWebsite < Sinatra::Base
 
   get URL[:games] do
     filtered = filter(params, [:start])
-    results = GameStatus.list(filtered)
+    results = Game.list(filtered)
 
     erb :games, locals: locals(results)
   end

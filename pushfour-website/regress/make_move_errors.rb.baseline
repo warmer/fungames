@@ -103,6 +103,4 @@ ERROR: Game not active
 Move : {:player=>1, :x=>4, :y=>1}
 ERROR: Game not active
 
-Get status result:
-{:status=>2, :moves=>[{:id=>1, :movenumber=>1, :player=>0, :xlocation=>0, :ylocation=>0}, {:id=>2, :movenumber=>2, :player=>1, :xlocation=>4, :ylocation=>0}, {:id=>3, :movenumber=>3, :player=>0, :xlocation=>0, :ylocation=>1}, {:id=>4, :movenumber=>4, :player=>1, :xlocation=>4, :ylocation=>3}, {:id=>5, :movenumber=>5, :player=>0, :xlocation=>0, :ylocation=>2}, {:id=>6, :movenumber=>6, :player=>1, :xlocation=>0, :ylocation=>3}, {:id=>7, :movenumber=>7, :player=>0, :xlocation=>1, :ylocation=>1}, {:id=>8, :movenumber=>8, :player=>1, :xlocation=>1, :ylocation=>2}, {:id=>9, :movenumber=>9, :player=>0, :xlocation=>2, :ylocation=>1}, {:id=>10, :movenumber=>10, :player=>1, :xlocation=>2, :ylocation=>2}, {:id=>11, :movenumber=>11, :player=>0, :xlocation=>3, :ylocation=>1}], :current_turn=>0, :errors=>[]}
 

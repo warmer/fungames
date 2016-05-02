@@ -52,9 +52,6 @@ Move: {:player=>2, :x=>0, :y=>1}
 **GET /game_info?game_id=1
 +,0+++1+++++++++++,4,4,2,01,0
 ****************************************
-############################################################
-Get status result:
-{:status=>0, :moves=>[{:id=>1, :movenumber=>1, :player=>0, :xlocation=>0, :ylocation=>0}, {:id=>2, :movenumber=>2, :player=>1, :xlocation=>0, :ylocation=>1}], :current_turn=>0, :errors=>[]}
 
 ============================================================
 Test case: {:game=>{:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>2, :first_move=>0, :user_id=>1}, :moves=>[{:player=>1, :x=>0, :y=>0}, {:player=>2, :x=>0, :y=>1}], :last_move=>0}
@@ -109,7 +106,4 @@ Move: {:player=>2, :x=>0, :y=>1}
 **GET /game_info?game_id=2
 +,0+++1+++++++++++,4,4,2,01,0
 ****************************************
-############################################################
-Get status result:
-{:status=>0, :moves=>[{:id=>3, :movenumber=>1, :player=>0, :xlocation=>0, :ylocation=>0}, {:id=>4, :movenumber=>2, :player=>1, :xlocation=>0, :ylocation=>1}], :current_turn=>0, :errors=>[]}
 
