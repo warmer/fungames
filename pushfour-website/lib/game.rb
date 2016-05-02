@@ -257,17 +257,24 @@ module Pushfour
         errors = []
         games = []
         players = {}
+        # set to true if there are more results
+        paged = false
 
         start = val_if_int(params.delete(:start))
         start = 0 unless start and start > 0
 
+        limit = val_if_int(params.delete(:limit))
+        limit = 50 unless limit and limit > 0
+
+        filter_clause = ''
+        # ask for one more than the actual limit so we know if there's another
+        # page of results after this one
+        values = {start: start, limit: limit + 1}
+
         player_id = val_if_int(params.delete(:player_id))
         player_turn = params.delete(:player_turn)
-        player_filter = ''
-        player_clause = ''
-        values = {start: start}
         if player_id and player_turn
-          player_clause = <<-HERE
+          filter_clause = <<-'HERE'
             WHERE
               ( (player1 = :player_id AND turn=0)
                 OR (player2 = :player_id AND turn=1)
@@ -275,13 +282,13 @@ module Pushfour
           HERE
           values[:player_id] = player_id
         elsif player_id
-          player_clause = "WHERE player1 = :player_id OR player2 = :player_id"
+          filter_clause = 'WHERE player1 = :player_id OR player2 = :player_id'
           values[:player_id] = player_id
         end
-        player_clause += " ORDER BY id ASC LIMIT 50 OFFSET :start"
+        filter_clause += ' ORDER BY id DESC LIMIT :limit OFFSET :start'
 
-        res = Database.select(%w(id player1 player2 turn status board),
-          Database::GAME_TABLE, player_clause, values)
+        res = Database.select(%w(id player1 player2 turn status board created),
+          Database::GAME_TABLE, filter_clause, values)
         if res.size > 0
           res.each do |p|
             player1 = players[p[1]]
@@ -300,14 +307,19 @@ module Pushfour
             status = status_for(p[4])
 
             games << {id: p[0], player1: player1, player2: player2,
-              turn: turn, status: status, board: p[5]
+              turn: turn, status: status, board: p[5], created: p[6],
+              turn_num: p[3]
             }
+          end
+          if games.length > limit
+            games.pop
+            paged = true
           end
         else
           errors << 'No games found'
         end
 
-        {games: games, errors: errors}
+        {games: games, paged: paged, start: start, errors: errors}
       end
 
       private

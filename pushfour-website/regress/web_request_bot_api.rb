@@ -25,6 +25,22 @@ tcs = [
 ]
 seed = 4
 
+def cleaned_list(res)
+  games = res[:games].map do |g|
+    keys = g.keys.select do |k|
+      [:id, :player1, :player2, :turn, :status, :board].include? k
+    end
+    game = {}
+    keys.each do |k|
+      game[k] = g[k]
+    end
+    game
+  end
+  games.sort! {|a, b| a[:id] <=> b[:id]}
+  #{games: games, paged: res[:paged], start: res[:start], errors: res[:errors]}
+  {games: games, errors: res[:errors]}
+end
+
 Harness.run_test(mock_db: true, run_web: true) do
   Player.register(
     name: 'user1',
@@ -74,9 +90,9 @@ Harness.run_test(mock_db: true, run_web: true) do
       [1,2,3].each do |player_id|
         puts '*' * 20
         game_list = Game.list(player_id: player_id)
-        puts "**Full game list for #{player_id}: #{game_list}"
+        puts "**Full game list for #{player_id}: #{cleaned_list(game_list)}"
         game_list = Game.list(player_id: player_id, player_turn: true)
-        puts "**Active game list for #{player_id}: #{game_list}"
+        puts "**Active game list for #{player_id}: #{cleaned_list(game_list)}"
         path = "/get_games?player_id=#{player_id}"
         puts "**GET #{path}"
         res = get path

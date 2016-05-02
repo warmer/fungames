@@ -53,6 +53,16 @@ div.navbar-header > a {
 .turn-1 {
   color: #00f;
 }
+.status-ended {
+  font-weight: bold;
+}
+.status-in_progress {
+  font-style: italic;
+}
+.status-stalemate {
+  color: gray;
+  text-decoration: line-through;
+}
 .piece-0 {
 }
 .piece-1 {
