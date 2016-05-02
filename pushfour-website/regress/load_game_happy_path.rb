@@ -4,7 +4,7 @@ require_relative '../test/harness.rb'
 require_relative '../lib/database.rb'
 require_relative '../lib/registration.rb'
 require_relative '../lib/login.rb'
-require_relative '../lib/create_game.rb'
+require_relative '../lib/game.rb'
 
 include Pushfour::Website
 
@@ -46,7 +46,7 @@ Harness.run_test(mock_db: true) do
     puts "Game: #{tc.inspect}"
     tc = {rand_seed: seed}.merge(tc)
 
-    create_result = CreateGame.create_game(tc)
+    create_result = Game.create_game(tc)
     puts 'Result of game creation:'
     puts create_result.inspect
 

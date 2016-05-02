@@ -8,7 +8,6 @@ require 'fileutils'
 require_relative 'lib/common.rb'
 require_relative 'lib/database.rb'
 require_relative 'lib/registration.rb'
-require_relative 'lib/create_game.rb'
 require_relative 'lib/login.rb'
 require_relative 'lib/players.rb'
 
@@ -245,7 +244,7 @@ class PushfourWebsite < Sinatra::Base
     filtered = filter(params, [:height, :width, :obstacles, :creator, :opponent, :first_move])
     filtered = filtered.merge(user_id: session[:user_id])
 
-    results = CreateGame.create_game(filtered)
+    results = Game.create_game(filtered)
 
 
     if results[:errors].size == 0
