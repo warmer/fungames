@@ -44,9 +44,10 @@ module Pushfour
         FileUtils.rm_f(TEST_DB_PATH)
       end
 
-      def get(path)
+      def get(path, body_only = true)
         uri = URI("http://localhost:#{@web_port}/#{path}")
-        Net::HTTP.get(uri)
+        res = Net::HTTP.get_response(uri)
+        body_only ? res.body : res
       end
 
       def post(path, params)

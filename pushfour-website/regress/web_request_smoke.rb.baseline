@@ -14,5 +14,40 @@ Move: {:player=>2, :x=>0, :y=>3}
 
 GET /game_details/1
 {"errors":[],"game":{"id":1,"players":[{"id":1,"name":"user1"},{"id":2,"name":"user2"}],"turn":0,"status":0,"game_detail":{"xy":[[1,0,0,0],[2,0,0,0],[1,0,0,0],[2,0,0,0]],"move_depth":{"left":[-1,-1,-1,-1],"right":[1,1,1,1],"top":[-1,3,3,3],"bottom":[4,0,0,0]},"game_over":0,"movable_blocks":[[1,0],[1,1],[1,2],[1,3],[2,0],[2,3],[3,0],[3,3]]},"moves":[{"id":1,"movenumber":1,"player":0,"xlocation":0,"ylocation":0},{"id":2,"movenumber":2,"player":1,"xlocation":0,"ylocation":1},{"id":3,"movenumber":3,"player":0,"xlocation":0,"ylocation":2},{"id":4,"movenumber":4,"player":1,"xlocation":0,"ylocation":3}]},"board":{"width":4,"height":4,"board_string":"0+++1+++0+++1+++"}}
+
+GET /game_info?game_id=1
++,0+++1+++0+++1+++,4,4,2,01,0
+
+GET /get_games?player_id=1
+1
+
+GET /get_games?player_id=2
+
+
+GET /players
+200 OK 
+
 GET /games
-3147
+200 OK 
+
+GET /about
+200 OK 
+
+GET /new_game
+302 Found 
+Location: /login
+
+GET /profile
+302 Found 
+Location: /home
+
+GET /logout
+302 Found 
+Location: /home
+
+GET /login
+200 OK 
+
+GET /register
+200 OK 
+

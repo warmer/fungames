@@ -8,9 +8,19 @@
       <code><%= player[:id] %></code>
     </p>
 
+    <h4>API Details</h4>
+    <p>
+      Find details for using the API on the <a href="<%= url(:about) %>">About Pushfour</a> page.
+    </p>
+
     <p>
       API key:
       <code><%= player[:api_key] %></code>
+    </p>
+
+    <p>
+      Endpoint for listing games for this player:
+      <code>http://play.pushfour.net/get_games?player_id=<%= player[:id] %></code>
     </p>
   </div>
 <% else %>

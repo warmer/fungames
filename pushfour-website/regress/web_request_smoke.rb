@@ -65,11 +65,31 @@ Harness.run_test(mock_db: true, run_web: true) do
     puts "GET #{path}"
     res = get path
     puts res
+    puts
+
+    path = "/game_info?game_id=#{game_id}"
+    puts "GET #{path}"
+    res = get path
+    puts res
+    puts
   end
 
-  path = "/games"
-  puts "GET #{path}"
-  res = get path
-  puts res.length
+  [1, 2].each do |player_id|
+    path = "/get_games?player_id=#{player_id}"
+    puts "GET #{path}"
+    res = get path
+    puts res
+    puts
+  end
+
+  paths = %w(/players /games /about /new_game /profile /logout /login /register)
+
+  paths.each do |path|
+    puts "GET #{path}"
+    res = get(path, false)
+    puts "#{res.code} #{res.message}"
+    puts "Location: /#{res['Location'].split('/', 4)[3]}" if res['Location']
+    puts
+  end
 
 end
