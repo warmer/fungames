@@ -1,7 +1,6 @@
 require 'securerandom'
 require_relative 'common.rb'
 require_relative 'database.rb'
-require_relative 'players.rb'
 require_relative 'common.rb'
 require_relative 'board.rb'
 require_relative '../../pushfour-ai/common.rb'
@@ -79,7 +78,7 @@ module Pushfour
         return 'Invalid player id' unless player_id and player_id > 0
 
         # load details about the current player
-        player_info = Players.info_for(player_id)
+        player_info = Player.info_for(player_id)
         return 'Player not found' unless player_info
 
         players = [@player1, @player2]
@@ -175,9 +174,9 @@ module Pushfour
         errors << 'There must be a positive number of obstacles' unless obstacles >= 0
 
         if creator
-          errors << 'Could not find creating user' unless Players.info_for(creator)
+          errors << 'Could not find creating user' unless Player.info_for(creator)
           errors << 'Opponent not specified' unless opponent
-          errors << 'Could not find opponent' unless opponent and Players.info_for(opponent)
+          errors << 'Could not find opponent' unless opponent and Player.info_for(opponent)
           errors << 'Must specify which opponent has the first move' unless first_move
           errors << 'First move out of bounds' unless first_move and [0, 1].include?(first_move)
           errors << 'Signed in user does not match creator' unless user == creator
@@ -288,8 +287,8 @@ module Pushfour
             player1 = players[p[1]]
             player2 = players[p[2]]
 
-            player1 ||= Players.info_for(p[1])
-            player2 ||= Players.info_for(p[2])
+            player1 ||= Player.info_for(p[1])
+            player2 ||= Player.info_for(p[2])
 
             players[p[1]] = player1
             players[p[2]] = player2
@@ -328,8 +327,8 @@ module Pushfour
 
         # "creator" will be set if this is NOT an anonymous game
         if @creator
-          @player1 = Players.info_for([@creator, @opponent][@first_move])
-          @player2 = Players.info_for([@opponent, @creator][@first_move])
+          @player1 = Player.info_for([@creator, @opponent][@first_move])
+          @player2 = Player.info_for([@opponent, @creator][@first_move])
         else
           @anonymous = 1
           @p1_token = SecureRandom.base64
@@ -400,8 +399,8 @@ module Pushfour
         raise ArgumentError, 'Game status not found' unless res.size > 0
         res = res[0]
         @moves = load_moves(game_id: @id)[:moves]
-        @player1 = Players.info_for(res[0].to_i)
-        @player2 = Players.info_for(res[1].to_i)
+        @player1 = Player.info_for(res[0].to_i)
+        @player2 = Player.info_for(res[1].to_i)
         @turn = res[2].to_i
         @status = res[3].to_i
         @board_id = res[4].to_i

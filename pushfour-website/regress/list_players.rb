@@ -2,8 +2,7 @@
 
 require_relative '../test/harness.rb'
 require_relative '../lib/database.rb'
-require_relative '../lib/registration.rb'
-require_relative '../lib/players.rb'
+require_relative '../lib/player.rb'
 
 include Pushfour::Website
 
@@ -36,7 +35,7 @@ tcs = [
 
 Harness.run_test(mock_db: true) do
   30.times do |i|
-    reg_result = Registration.register(
+    reg_result = Player.register(
       name: sprintf('foo%02d', i + 1),
       password: 'test',
       password2: 'test')
@@ -49,7 +48,7 @@ Harness.run_test(mock_db: true) do
   tcs.each do |tc|
     puts 'Test case:'
     puts tc.inspect
-    list_result = Players.player_list(tc)
+    list_result = Player.player_list(tc)
 
     puts 'Results returned:'
     puts list_result.inspect

@@ -7,8 +7,6 @@ require 'fileutils'
 
 require_relative 'lib/common.rb'
 require_relative 'lib/database.rb'
-require_relative 'lib/registration.rb'
-require_relative 'lib/players.rb'
 
 PATH_ROOT = '/'
 
@@ -81,7 +79,7 @@ class PushfourWebsite < Sinatra::Base
     if !request.safe?
       # this is a bot API request which is validated differently
       if request.path_info =~ /^\/*bot_.*/ and params["api_key"]
-        results = Players.for_key(params["api_key"])
+        results = Player.for_key(params["api_key"])
         halt 403, results[:errors] unless results[:errors].empty?
         halt 403, 'Invalid API key' unless results[:player]
 
@@ -176,7 +174,7 @@ class PushfourWebsite < Sinatra::Base
 
   get URL[:players] do
     filtered = filter(params, [:limit, :start])
-    results = Players.player_list(filtered)
+    results = Player.player_list(filtered)
 
     erb :players, locals: locals(results)
   end
@@ -186,7 +184,7 @@ class PushfourWebsite < Sinatra::Base
     error = player = nil
 
     if player_id > 0
-      player = Players.info_for(player_id)
+      player = Player.info_for(player_id)
       error = 'Player not found' unless player
     else
       error = 'Player not found'
@@ -200,7 +198,7 @@ class PushfourWebsite < Sinatra::Base
 
   post URL[:register] do
     filtered = filter(params, [:name, :password, :password2])
-    results = Registration.register(filtered)
+    results = Player.register(filtered)
     if results[:errors].size == 0
       redirect to(URL[:login])
     else
@@ -234,7 +232,7 @@ class PushfourWebsite < Sinatra::Base
     # for now, only logged-in players can make games
     redirect to(URL[:login]) if session[:user_id].nil?
 
-    results = Players.player_list(exclude: session[:user_id])
+    results = Player.player_list(exclude: session[:user_id])
 
     erb :create_game, locals: locals(results)
   end
@@ -249,7 +247,7 @@ class PushfourWebsite < Sinatra::Base
     if results[:errors].size == 0
       redirect to(url(:game, {id: results[:game]}))
     else
-      results = results.merge(Players.player_list(exclude: session[:user_id]))
+      results = results.merge(Player.player_list(exclude: session[:user_id]))
       erb :create_game, locals: locals(results)
     end
   end
@@ -276,7 +274,7 @@ class PushfourWebsite < Sinatra::Base
 
   get URL[:profile] do
     redirect to(url(:index)) unless session[:user_id]
-    player = Players.profile_for(session[:user_id])
+    player = Player.profile_for(session[:user_id])
 
     erb :profile, locals: locals(player: player)
   end

@@ -2,7 +2,7 @@
 
 require_relative '../test/harness.rb'
 require_relative '../lib/database.rb'
-require_relative '../lib/registration.rb'
+require_relative '../lib/player.rb'
 
 include Pushfour::Website
 
@@ -19,7 +19,7 @@ tcs = [
 Harness.run_test(mock_db: true) do
   tcs.each do |tc|
     puts "Test case: #{tc}"
-    reg_result = Registration.register(
+    reg_result = Player.register(
       name: tc[:name],
       password: tc[:password],
       password2: tc[:password])

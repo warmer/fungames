@@ -2,7 +2,7 @@
 
 require_relative '../test/harness.rb'
 require_relative '../lib/database.rb'
-require_relative '../lib/registration.rb'
+require_relative '../lib/player.rb'
 require_relative '../lib/game.rb'
 
 include Pushfour::Website
@@ -21,11 +21,11 @@ tcs = [
 seed = 4
 
 Harness.run_test(mock_db: true) do
-  Registration.register(
+  Player.register(
     name: 'user1',
     password: 'test',
     password2: 'test')
-  Registration.register(
+  Player.register(
     name: 'user2',
     password: 'test',
     password2: 'test')
