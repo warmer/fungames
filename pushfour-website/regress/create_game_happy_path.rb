@@ -3,7 +3,6 @@
 require_relative '../test/harness.rb'
 require_relative '../lib/database.rb'
 require_relative '../lib/registration.rb'
-require_relative '../lib/login.rb'
 require_relative '../lib/game.rb'
 
 obs_max = (225 / 4) + 1

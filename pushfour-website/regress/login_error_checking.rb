@@ -3,7 +3,6 @@
 require_relative '../test/harness.rb'
 require_relative '../lib/database.rb'
 require_relative '../lib/registration.rb'
-require_relative '../lib/login.rb'
 
 include Pushfour::Website
 
@@ -32,7 +31,7 @@ Harness.run_test(mock_db: true) do
     puts '=' * 60
 
     puts "Test case: #{tc.inspect}"
-    login_result = Login.login(tc)
+    login_result = Player.login(tc)
     puts login_result.inspect
 
     db_result = Database.execute_query <<-HERE

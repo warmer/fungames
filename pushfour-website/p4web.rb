@@ -8,7 +8,6 @@ require 'fileutils'
 require_relative 'lib/common.rb'
 require_relative 'lib/database.rb'
 require_relative 'lib/registration.rb'
-require_relative 'lib/login.rb'
 require_relative 'lib/players.rb'
 
 PATH_ROOT = '/'
@@ -215,7 +214,7 @@ class PushfourWebsite < Sinatra::Base
 
   post URL[:login] do
     filtered = filter(params, [:name, :password])
-    results = Login.login(filtered)
+    results = Player.login(filtered)
     if results[:errors].size == 0
       session[:user_id] = results[:id]
       session[:login_name] = results[:name]
