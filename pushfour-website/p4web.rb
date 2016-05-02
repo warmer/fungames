@@ -9,7 +9,6 @@ require_relative 'lib/common.rb'
 require_relative 'lib/database.rb'
 require_relative 'lib/registration.rb'
 require_relative 'lib/create_game.rb'
-require_relative 'lib/make_move.rb'
 require_relative 'lib/login.rb'
 require_relative 'lib/players.rb'
 
@@ -140,7 +139,7 @@ class PushfourWebsite < Sinatra::Base
     filtered = filter(params, [:game_id, :x, :y])
     player = session[:user_id]
     params = {player: player}.merge(filtered)
-    results = MakeMove.make_move(params)
+    results = Game.make_move(params)
     # the CSRF token needs to be sent back to the page so more moves
     # can be made without the client needing to refresh
     results[:csrf] = session[:csrf]
@@ -152,7 +151,7 @@ class PushfourWebsite < Sinatra::Base
     halt 403, 'Invalid API key' unless @api_player
 
     filtered = filter(params, [:game_id, :x, :y, :side, :channel])
-    results = MakeMove.make_move(filtered.merge(player: @api_player[:id]))
+    results = Game.make_move(filtered.merge(player: @api_player[:id]))
 
     results.to_json
   end
@@ -259,13 +258,13 @@ class PushfourWebsite < Sinatra::Base
 
   get URL[:full_game_details] do |id|
     opts = {game_id: id, user_id: session[:user_id]}
-    results = MakeMove.load_game(opts)
+    results = Game.load_game(opts)
     results.to_json
   end
 
   get URL[:game] do |id|
     opts = {game_id: id, user_id: session[:user_id]}
-    results = MakeMove.load_game(opts)
+    results = Game.load_game(opts)
 
     erb :game, locals: locals(results)
   end

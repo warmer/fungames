@@ -5,7 +5,6 @@ require_relative '../lib/database.rb'
 require_relative '../lib/registration.rb'
 require_relative '../lib/login.rb'
 require_relative '../lib/create_game.rb'
-require_relative '../lib/make_move.rb'
 
 include Pushfour::Website
 
@@ -80,7 +79,7 @@ Harness.run_test(mock_db: true) do
 
     puts "Test case: #{tc.inspect}"
 
-    load_result = MakeMove.load_game(tc)
+    load_result = Game.load_game(tc)
     puts 'Result of game load:'
     puts load_result
 

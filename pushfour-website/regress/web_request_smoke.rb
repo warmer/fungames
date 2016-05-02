@@ -5,7 +5,6 @@ require_relative '../lib/database.rb'
 require_relative '../lib/registration.rb'
 require_relative '../lib/login.rb'
 require_relative '../lib/create_game.rb'
-require_relative '../lib/make_move.rb'
 
 include Pushfour::Website
 
@@ -54,7 +53,7 @@ Harness.run_test(mock_db: true, run_web: true) do
 
     tc[:moves].each_with_index do |move, idx|
       puts "Move: #{move}"
-      res = MakeMove.make_move(move.merge(game_id: game_id))
+      res = Game.make_move(move.merge(game_id: game_id))
       puts "ERROR: #{res[:errors].join(',')}" unless res[:errors].empty?
       puts
     end
