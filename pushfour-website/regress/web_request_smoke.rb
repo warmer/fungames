@@ -70,6 +70,6 @@ Harness.run_test(mock_db: true, run_web: true) do
   path = "/games"
   puts "GET #{path}"
   res = get path
-  puts res.length > 100
+  puts res.length
 
 end

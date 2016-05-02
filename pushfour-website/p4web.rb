@@ -7,6 +7,8 @@ require 'fileutils'
 
 require_relative 'lib/common.rb'
 require_relative 'lib/database.rb'
+require_relative 'lib/player.rb'
+require_relative 'lib/game.rb'
 
 PATH_ROOT = '/'
 
@@ -102,7 +104,9 @@ class PushfourWebsite < Sinatra::Base
     end
   end
 
-  error do
+  error do |e|
+    puts e.message
+    puts e.backtrace
     'Something went wrong!'
   end
 
