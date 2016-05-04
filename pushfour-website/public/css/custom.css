@@ -32,6 +32,10 @@ div.navbar-header > a {
   height: 32px;
   width: 32px;
 }
+.board_block_sm {
+  height: 16px;
+  width: 16px;
+}
 .block {
   border: 1px solid black;
 }
@@ -79,5 +83,9 @@ div.navbar-header > a {
 }
 .table_game_board {
   border-spacing: 2px;
+  border-collapse: separate;
+}
+.table_game_board_sm {
+  border-spacing: 1px;
   border-collapse: separate;
 }

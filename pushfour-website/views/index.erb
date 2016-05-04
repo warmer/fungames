@@ -1,1 +1,74 @@
-Hello, world!
+<div id="gamespace">
+</div>
+
+<% if defined?(latest_games) and latest_games %>
+<script>
+  function buildPreview(name, data) {
+    console.log('Latest ' + name + ' Game');
+    console.log(data);
+    var board = data.board;
+    var game = data.game;
+
+    var player_ids = game.players.map(function(p) { return p.id; });
+
+    var xyData = game.game_detail.xy.map(function(row, rowIdx) {
+      return row.map(function(p) { return {'type': 'block', 'value': p}});
+    });
+
+    d3.select("#header_" + name.toLowerCase())
+      .text("Most Recent " + name + " Game");
+
+    var tbody = d3.select("#game_board_" + name.toLowerCase()).selectAll("tbody")
+          .data(function() { return [xyData];});
+
+    tbody.enter().append("tbody");
+
+    var rows = tbody.selectAll("tr")
+        .data(function(d) { return d; });
+    rows.enter().append("tr");
+
+    var blockData = rows.selectAll("td")
+        .data(function(d, idx) { return d.map(function(col) {
+            return {'cell': col, 'row': idx};
+          });
+        })
+    blockData
+      .enter()
+      .append("td");
+    blockData
+        .attr("class", function(d) {
+          var c = d.cell.type + " board_block_sm"
+          if(d.cell.type == 'block') { c += " piece-" + (d.cell.value & 0x07)}
+          return c;
+        })
+        .attr("id", function(d, i) {
+          return d.cell.type + "-" + (i - 1) + "-" + (d.row - 1);
+        });
+
+
+  }
+  <% latest_games.keys.each do |key| %>
+    $.getJSON("<%= url(:full_game_details, id: latest_games[key]) %>", function(data) {
+      buildPreview('<%= key %>', data);
+    });
+
+    var boardDiv = d3.select("#gamespace").append("div")
+      .attr("id", "game_<%= key.downcase %>")
+      .attr("class", "col-sm-3");
+
+    boardDiv.append("h3")
+      .attr("id", "header_<%= key.downcase %>");
+
+    boardDiv.append("a")
+      .attr("href", "<%= url(:game, id: latest_games[key]) %>")
+      .text("Game <%= latest_games[key] %>");
+
+    boardDiv.append("table")
+      .attr("class", "table_game_board_sm")
+      .attr("id", "game_board_<%= key.downcase %>");
+
+  <% end %>
+
+</script>
+<% end %>
+

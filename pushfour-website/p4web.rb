@@ -317,9 +317,9 @@ class PushfourWebsite < Sinatra::Base
 
   get URL[:index] do
     latest_games = {
-      stalemate: Game.latest_stalemate,
-      victory:   Game.latest_victory,
-      active:   Game.latest_active,
+      'Stalemated'  => Game.latest_stalemate,
+      'Completed'   => Game.latest_victory,
+      'Active'      => Game.latest_active,
     }
 
     erb :index, locals: locals(latest_games: latest_games)
