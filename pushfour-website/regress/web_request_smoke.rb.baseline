@@ -1,6 +1,6 @@
 [["user1", "f3f371d3fc61e6d04791beb959aebfb46bdd1b78cd0672d399ed58b669534255", "18e5f6167438b60261c93a4dbbae0e8742b85a9ea434788d2694c400aba2c0dc", 1], ["user2", "e590aaa0439d47f9497849fe5ea80c6e04dee75931811de9e381c5c3cef2b3a3", "fe19b971c3afe5e3ee9e86deeb730b315f90b8d39856f18a97500de9903e753b", 2]]
 ============================================================
-Test case: {:game=>{:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>2, :first_move=>0, :user_id=>1}, :moves=>[{:player=>1, :x=>0, :y=>0}, {:player=>2, :x=>0, :y=>1}, {:player=>1, :x=>0, :y=>2}, {:player=>2, :x=>0, :y=>3}], :last_move=>0}
+Test case: {:game=>{:height=>4, :width=>4, :obstacles=>0, :creator=>1, :opponent=>2, :first_move=>0, :user_id=>1}, :moves=>[{:player=>1, :x=>0, :y=>0}, {:player=>2, :x=>0, :y=>1}, {:player=>1, :x=>0, :y=>2}, {:player=>2, :x=>0, :y=>3}]}
 Result of game creation:
 {:errors=>[], :board=>1, :game=>1}
 Move: {:player=>1, :x=>0, :y=>0}
@@ -49,5 +49,12 @@ GET /login
 200 OK 
 
 GET /register
+200 OK 
+
+GET /
+302 Found 
+Location: /home
+
+GET /home
 200 OK 
 

@@ -14,6 +14,9 @@ PATH_ROOT = '/'
 
 URL = {
   full_game_details: PATH_ROOT + 'game_details/:id',
+  latest_stalemate: PATH_ROOT + 'latest_stalemate',
+  latest_victory: PATH_ROOT + 'latest_victory',
+  latest_active: PATH_ROOT + 'latest_active',
   player_game_list: PATH_ROOT + 'get_games',
   tournaments: PATH_ROOT + 'tournaments',
   tournament: PATH_ROOT + 'tournament/:id',
@@ -174,6 +177,21 @@ class PushfourWebsite < Sinatra::Base
     game_string
   end
 
+  get URL[:latest_stalemate] do
+    latest = Game.latest_stalemate
+    (latest || 0).to_s
+  end
+
+  get URL[:latest_victory] do
+    latest = Game.latest_victory
+    (latest || 0).to_s
+  end
+
+  get URL[:latest_active] do
+    latest = Game.latest_active
+    (latest || 0).to_s
+  end
+
   # page load requests
 
   get URL[:players] do
@@ -298,7 +316,12 @@ class PushfourWebsite < Sinatra::Base
   end
 
   get URL[:index] do
+    latest_games = {
+      stalemate: Game.latest_stalemate,
+      victory:   Game.latest_victory,
+      active:   Game.latest_active,
+    }
 
-    erb :index, locals: locals
+    erb :index, locals: locals(latest_games: latest_games)
   end
 end

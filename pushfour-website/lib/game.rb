@@ -253,6 +253,30 @@ module Pushfour
         }
       end
 
+      def self.latest_stalemate
+        filter = "WHERE status=#{status_id_for(:stalemate)} ORDER BY id DESC LIMIT 1"
+        res = Database.select(['id'], Database::GAME_TABLE, filter)
+        res ||= []
+        res[0] ||= [0]
+        res[0][0]
+      end
+
+      def self.latest_victory
+        filter = "WHERE status=#{status_id_for(:ended)} ORDER BY id DESC LIMIT 1"
+        res = Database.select(['id'], Database::GAME_TABLE, filter)
+        res ||= []
+        res[0] ||= [0]
+        res[0][0]
+      end
+
+      def self.latest_active
+        filter = "WHERE status=#{status_id_for(:in_progress)} ORDER BY id DESC LIMIT 1"
+        res = Database.select(['id'], Database::GAME_TABLE, filter)
+        res ||= []
+        res[0] ||= [0]
+        res[0][0]
+      end
+
       def self.list(params)
         errors = []
         games = []

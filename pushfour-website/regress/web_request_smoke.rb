@@ -15,7 +15,6 @@ tcs = [
       {player: 1, x: 0, y: 2},
       {player: 2, x: 0, y: 3},
     ],
-    last_move: 0,
   },
 ]
 seed = 4
@@ -82,7 +81,7 @@ Harness.run_test(mock_db: true, run_web: true) do
     puts
   end
 
-  paths = %w(/players /games /about /new_game /profile /logout /login /register)
+  paths = %w(/players /games /about /new_game /profile /logout /login /register / /home)
 
   paths.each do |path|
     puts "GET #{path}"
