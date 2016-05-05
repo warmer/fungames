@@ -1,8 +1,9 @@
 <% if defined?(game) and game and game[:game_detail] and game[:game_detail][:xy] %>
   <div id="gamespace">
     <h1></h1>
-    <table id="game_board" class="table_game_board">
-    </table>
+    <table id="game_board" class="table_game_board"></table>
+    <p id="players"></p>
+    <div id="details"></div>
   </div>
   <script>
     var clicked = false;
@@ -95,7 +96,7 @@
       var header = d3.select("#gamespace").selectAll("h1")
         .data([game.players[turn]]);
       header.enter().append("h1");
-      header.attr("class", "turn-" + turn)
+      header.attr("class", "turn-" + turn);
 
       // is the game over?
       if(game.status != 0) {
@@ -206,6 +207,34 @@
               queryStatus();
             }
           });
+
+      var subtitle = d3.select("#gamespace").selectAll("#players")
+        .data([game.players]);
+      subtitle.enter().append("p")
+      subtitle
+        .each(function(players) {
+          d3.select(this).append("a")
+            .attr("href", "<%= url(:player, id: '') %>" + players[0].id)
+            .attr("class", "turn-0")
+            .text(players[0].name);
+          d3.select(this).append("span")
+            .text(" vs ");
+          d3.select(this).append("a")
+            .attr("href", "<%= url(:player, id: '') %>" + players[1].id)
+            .attr("class", "turn-1")
+            .text(players[1].name);
+        });
+
+      var gameDetails = d3.select("#gamespace").selectAll("#details")
+        .data([game.moves]);
+      gameDetails.enter().append("div")
+      gameDetails
+        .each(function(moves) {
+          d3.select(this).append("p")
+            .text(moves.length + " total moves");
+
+        });
+
     } // END updateBoard
   </script>
 <% end %>

@@ -44,10 +44,26 @@
         .attr("id", function(d, i) {
           return d.cell.type + "-" + (i - 1) + "-" + (d.row - 1);
         });
-
+    var gameDetails = d3.select("#game_" + name.toLowerCase());
+    gameDetails.append("p")
+      .text(game.players[0].name + " vs " + game.players[1].name);
+    if(game["status"] == 0) {
+      gameDetails.append("p")
+        .text("Waiting for " + game.players[game.turn].name + " to move");
+    }
+    else if(game["status"] == 1) {
+      gameDetails.append("p")
+        .text("Stalemate after " + game.moves.length + " total moves");
+    }
+    else if(game["status"] == 2) {
+      gameDetails.append("p")
+        .text("Game won by " + game.players[game.turn].name +
+              " in " + ((game.moves.length + 1) / 2) + " moves");
+    }
 
   }
   <% latest_games.keys.each do |key| %>
+    <% next unless latest_games[key].to_i > 0 %>
     $.getJSON("<%= url(:full_game_details, id: latest_games[key]) %>", function(data) {
       buildPreview('<%= key %>', data);
     });
