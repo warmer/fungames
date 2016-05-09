@@ -43,7 +43,7 @@ module Pushfour
 
         OpenSSL::PKCS5.pbkdf2_hmac(
           password, salt, iterations, 32, OpenSSL::Digest::SHA256.new
-        ).unpack('H*')[0]
+        ).unpack('H*')[0].force_encoding('ASCII-8bit')
       end
 
       def sanitized_name(name)
