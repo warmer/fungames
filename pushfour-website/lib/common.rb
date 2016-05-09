@@ -49,12 +49,12 @@ module Pushfour
       def sanitized_name(name)
         name ||= ''
         # a-zA-Z0-9_-
-        name.gsub(/[^a-zA-Z0-9_-]/, '')
+        name.gsub(/[^a-zA-Z0-9_-]/, '').force_encoding('ASCII-8bit')
       end
 
       def sanitized_key(key)
         key ||= ''
-        key.gsub(/[^a-f0-9]/, '')
+        key.gsub(/[^a-f0-9]/, '').force_encoding('ASCII-8bit')
       end
 
       def val_if_int(raw)
