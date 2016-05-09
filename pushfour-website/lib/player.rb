@@ -47,7 +47,7 @@ module Pushfour
         raise ArgumentError, 'Invalid API key' unless key == raw_key
         raise ArgumentError, 'Invalid API key' unless key.length == 64
         res = Database.select(%w(id name), Database::PLAYER_TABLE,
-          "WHERE apikey LIKE :key", {key: key})
+          "WHERE apikey = :key", {key: key})
 
         unless res.empty?
           id = res[0][0]
