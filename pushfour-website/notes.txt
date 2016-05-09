@@ -1,0 +1,14 @@
+Achievements
+
+Win with the last possible move ("Playing the Long Game")
+Win with 5, 6, 7 in a row ("Above and Beyond", "Great Lengths", "Don't Act Like You're Not Impressed")
+Win in 4, 5 moves ("Noob Bully", "No Time for Losing")
+Lose in 3, 4 moves ("Shameful Embarrassment", "That Escalated Quickly")
+Complete two sequences of 4+ at once ("Make it a Combo")
+Complete three sequences of 4+ at once ("Hat Trick")
+Completely fill a game board (no gaps) ("Efficient Use of Space")
+
+First
+ - Completed Game
+ - Win
+ - Stalemate
