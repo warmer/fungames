@@ -20,7 +20,7 @@
 
     // update the state of the world every 3 seconds at first
     var updateIntervalSec = 3;
-    var updateIntervalID = setInterval(queryStatus, updateIntervalSec * 1000);
+    var updateIntervalID = null;
 
     queryStatus();
 
@@ -50,7 +50,7 @@
           default: break;
         }
         glow(ref, "edge-" + cls, isSet);
-      }
+      } // END edgeGlow()
 
       function makeMove(piece, index) {
         var x, y = null;
@@ -86,11 +86,11 @@
               location.reload();
             })
             .always(function(res) {
-              updateIntervalSec = 3;
-              updateIntervalID = setInterval(queryStatus, updateIntervalSec * 1000);
+              queryStatus();
             });
         }
-      }
+      } // END makeMove()
+
       var player = <%= session[:user_id] || 0 %>;
       var turn = game.turn;
       clicked = false;
@@ -131,6 +131,10 @@
         updateIntervalID = setInterval(queryStatus, updateIntervalSec * 1000);
         return;
       }
+      updateIntervalSec = 3;
+      // clear the existing interval and create a new one
+      window.clearInterval(updateIntervalID);
+      updateIntervalID = setInterval(queryStatus, updateIntervalSec * 1000);
       lastBoardString = board.board_string;
 
       var player_ids = game.players.map(function(p) { return p.id; });
@@ -206,7 +210,6 @@
           .on("click", function(d, i) {
             if(playerTurn && d.cell.offset != undefined && !clicked) {
               makeMove(d, i);
-              queryStatus();
             }
           });
 
