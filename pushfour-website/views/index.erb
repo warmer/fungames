@@ -4,8 +4,6 @@
 <% if defined?(latest_games) and latest_games %>
 <script>
   function buildPreview(name, data) {
-    console.log('Latest ' + name + ' Game');
-    console.log(data);
     var board = data.board;
     var game = data.game;
 
@@ -58,7 +56,7 @@
     else if(game["status"] == 2) {
       gameDetails.append("p")
         .text("Game won by " + game.players[game.turn].name +
-              " in " + ((game.moves.length + 1) / 2) + " moves");
+              " in " + Math.ceil(game.moves.length / 2) + " moves");
     }
 
   }
